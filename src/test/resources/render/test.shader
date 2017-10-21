@@ -20,8 +20,12 @@ Settings {
 Vertex {
 #version 330 core
 
+uniform mat4 view_matrix;
+
+layout (location = 0) in vec3 position;
+
 void main() {
-    gl_Position = view_matrix * position;
+    gl_Position = view_matrix * vec4(position, 0.0);
 }
 }
 

@@ -1,11 +1,17 @@
 package cn.lambdalib2.render;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.lwjgl.util.vector.Vector2f;
+import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.System.out;
+import static org.lwjgl.opengl.GL11.GL_FALSE;
+import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderScript {
 
@@ -27,43 +33,54 @@ public class ShaderScript {
     public final List<Property> instanceProperties = new ArrayList<>();
     public int drawOrder;
 
-    public RenderStates renderStates = new RenderStates();
+    public final RenderStates renderStates = new RenderStates();
 
-    public String vertexSource;
-    public String fragmentSource;
+    int glProgramID;
 
     ShaderScript() {}
 
 }
 
+// --- Parsing
+
 final class ShaderScriptParser {
 
-    static final String
+    private static final String
             regexID = "[a-zA-Z][0-9a-zA-Z\\-_]*",
             regexSpace = "(\\p{Space}|[\\r\\n])+",
-            regexLeftBracket = "\\{",
-            regexRightBracket = "\\}";
+            regexLeftBrace = "\\{",
+            regexRightBrace = "\\}",
+            regexLeftParen = "\\(",
+            regexRightParen = "\\)",
+            regexEq = "=",
+            regexComma = ",";
 
-    static Token tknID = new Token("ID", regexID),
+    private static Token tknID = new Token("ID", regexID),
             tknSpace = new Token("SPACE", regexSpace),
-            tknLeftBracket = new Token("LEFT_BRACKET", regexLeftBracket),
-            tknRightBracket = new Token("RIGHT_BRACKET", regexRightBracket),
-            tknInt = new Token("INT", "(\\+|\\-)?[0-9]+"),
+            tknLeftBrace = new Token("LEFT_BRACE", regexLeftBrace),
+            tknRightBrace = new Token("RIGHT_BRACE", regexRightBrace),
+            tknInt = new Token("INT", "[+\\-]?[0-9]+"),
             tknFloat = new Token("FLOAT", "[+\\-]?[0-9]+\\.[0-9]*([eE][0-9]+)?"),
-            tknSemi = new Token("SEMI", ";");
+            tknSemi = new Token("SEMI", ";"),
+            tknLeftParen = new Token("LEFT_PAREN", regexLeftParen),
+            tknRightParen = new Token("RIGHT_PAREN", regexRightParen),
+            tknEq = new Token("EQ", regexEq),
+            tknComma = new Token("COMMA", regexComma);
 
     public static ShaderScript load(String content) {
         Lexer mainLexer = new Lexer(content,
-                tknID, tknSpace, tknLeftBracket, tknRightBracket);
+                tknID, tknSpace, tknLeftBrace, tknRightBrace);
 
         ShaderScript script = new ShaderScript();
+
+        String vertexSource = null, fragmentSource = null;
 
         while (true) {
             MatchedToken t = nextTokenSkipSpaces(mainLexer);
             if (t == null) break;
 
             if (t.token == tknID) {
-                assertToken(mainLexer, nextTokenSkipSpaces(mainLexer), tknLeftBracket);
+                assertToken(mainLexer, nextTokenSkipSpaces(mainLexer), tknLeftBrace);
                 int sectionEndPos = parseSection(mainLexer);
 
                 String s = mainLexer.content.substring(mainLexer.currentIndex, sectionEndPos);
@@ -75,39 +92,171 @@ final class ShaderScriptParser {
                         parseSettings(script, s, mainLexer.lineNumber);
                     } break;
                     case "Vertex": {
-                        script.vertexSource = s;
+                        vertexSource = s;
                     } break;
                     case "Fragment": {
-                        script.fragmentSource = s;
+                        fragmentSource = s;
                     } break;
-                    default: errorLexer(mainLexer, "Invalid section " + t.content);
+                    default: throw errorLexer(mainLexer, "Invalid section " + t.content);
                 }
 
                 mainLexer.skipTo(sectionEndPos);
-                assertToken(mainLexer, nextTokenSkipSpaces(mainLexer), tknRightBracket);
+                assertToken(mainLexer, nextTokenSkipSpaces(mainLexer), tknRightBrace);
 
-            } else if (t.token == tknSpace) {
-                // DO NOTHING
             } else {
-                errorLexerUnexpected(mainLexer, t, tknID);
+                throw errorLexerUnexpected(mainLexer, t, tknID);
             }
         }
 
         // Check shader integrity
+        if (vertexSource == null || fragmentSource == null) {
+            throw new RuntimeException("No Vertex or Fragment shader specified");
+        }
 
+        // Compile shader
+        int programID = glCreateProgram();
+        linkShader(programID, GL_VERTEX_SHADER, vertexSource);
+        linkShader(programID, GL_FRAGMENT_SHADER, fragmentSource);
 
-        // Pre-compile shader
+        glLinkProgram(programID);
+        int result = glGetProgrami(programID, GL_LINK_STATUS);
+        if (result == GL_FALSE) {
+            String log = glGetProgramInfoLog(programID, glGetProgrami(programID, GL_INFO_LOG_LENGTH));
+            throw new RuntimeException("Error when linking shader program: " + log);
+        }
+
+        script.glProgramID = programID;
 
         return script;
     }
 
+    private static void linkShader(int programID, int progType, String source) {
+        int shaderID = glCreateShader(progType);
+        glShaderSource(shaderID, source);
+        glCompileShader(shaderID);
+
+        int result = glGetShaderi(shaderID, GL_COMPILE_STATUS);
+        if (result == GL_FALSE) {
+            String log = glGetShaderInfoLog(shaderID, glGetShaderi(shaderID, GL_INFO_LOG_LENGTH));
+            throw new RuntimeException("Error when compiling shader: " + log);
+        }
+
+        glAttachShader(programID, shaderID);
+    }
+
     private static void parseProperties(ShaderScript shader, String content, int lineNumber) {
         Lexer lexer = new Lexer(content,
-                tknID, tknSpace);
+                tknID, tknSpace, tknLeftParen, tknRightParen, tknSemi, tknComma,
+                tknLeftBrace, tknRightBrace, tknEq, tknFloat, tknInt);
 
         lexer.setInitPos(lineNumber, 0);
 
-        // TODO implement
+        // section-list := section-list data-section | data-section
+        while (true) {
+            MatchedToken t = nextTokenSkipSpaces(lexer);
+            if (t == null) break;
+
+            if (t.token == tknID) {
+                assertToken(lexer, nextTokenSkipSpaces(lexer), tknLeftBrace);
+                boolean isInstance;
+                switch (t.content) {
+                    case "Uniform": isInstance = false; break;
+                    case "Instance": isInstance = true; break;
+                    default: throw errorLexer(lexer,
+                            String.format("Invalid section name %s, must be Uniform or Instance", t.content));
+                }
+
+                List<ShaderScript.Property> propertyList = isInstance ? shader.instanceProperties : shader.uniformProperties;
+
+                // data-section := section_name { property-list }
+                // property-list := property-list property-statement | property-statement
+                // property-statement := property-name EQ initializer SEMI
+                // initializer := FLOAT | INT | vec2(...) | vec3(...) | vec4(...) | pass_data(ID)
+
+                while (true) {
+                    MatchedToken tName = nextTokenSkipSpaces(lexer);
+                    if (tName.token == tknRightBrace) {
+                        break;
+                    } else if (tName.token == tknID) {
+                        String propertyName = tName.content;
+                        assertNext(lexer, tknEq);
+
+                        ShaderScript.Property property = new ShaderScript.Property();
+                        property.name = propertyName;
+
+                        MatchedToken tInitHead = nextTokenSkipSpaces(lexer);
+                        if (tInitHead.token == tknID) {
+                            switch (tInitHead.content) {
+                                case "pass_data": {
+                                    assertNext(lexer, tknLeftParen);
+                                    String dataSource = assertNext(lexer, tknID).content;
+                                    assertNext(lexer, tknRightParen);
+
+                                    property.type = ShaderScript.PropertyType.PassData;
+                                    property.value = dataSource;
+                                } break;
+                                case "vec2": {
+                                    Vector2f vec = new Vector2f();
+                                    assertNext(lexer, tknLeftParen);
+                                    vec.x = assertNextNumber(lexer);
+                                    assertNext(lexer, tknComma);
+                                    vec.y = assertNextNumber(lexer);
+                                    assertNext(lexer, tknRightParen);
+
+                                    property.type = ShaderScript.PropertyType.Vec2;
+                                    property.value = vec;
+                                } break;
+                                case "vec3": {
+                                    Vector3f vec = new Vector3f();
+                                    assertNext(lexer, tknLeftParen);
+                                    vec.x = assertNextNumber(lexer);
+                                    assertNext(lexer, tknComma);
+                                    vec.y = assertNextNumber(lexer);
+                                    assertNext(lexer, tknComma);
+                                    vec.z = assertNextNumber(lexer);
+                                    assertNext(lexer, tknRightParen);
+
+                                    property.type = ShaderScript.PropertyType.Vec3;
+                                    property.value = vec;
+                                } break;
+                                case "vec4": {
+                                    Vector4f vec = new Vector4f();
+                                    assertNext(lexer, tknLeftParen);
+                                    vec.x = assertNextNumber(lexer);
+                                    assertNext(lexer, tknComma);
+                                    vec.y = assertNextNumber(lexer);
+                                    assertNext(lexer, tknComma);
+                                    vec.z = assertNextNumber(lexer);
+                                    assertNext(lexer, tknComma);
+                                    vec.w = assertNextNumber(lexer);
+                                    assertNext(lexer, tknRightParen);
+
+                                    property.type = ShaderScript.PropertyType.Vec4;
+                                    property.value = vec;
+                                } break;
+                                default: {
+                                    throw errorLexer(lexer, "Unsupported property type " + tInitHead.content);
+                                }
+                            }
+                        } else if (tInitHead.token == tknInt || tInitHead.token == tknFloat) {
+                            property.type = ShaderScript.PropertyType.Float;
+                            property.value = Float.parseFloat(tInitHead.content);
+                        } else {
+                            throw errorLexerUnexpected(lexer, tInitHead, tknID, tknInt, tknFloat);
+                        }
+
+                        propertyList.add(property);
+
+                        assertToken(lexer, nextTokenSkipSpaces(lexer), tknSemi);
+                    } else {
+                        throw errorLexerUnexpected(lexer, tName, tknRightBrace, tknID);
+                    }
+                }
+
+            } else {
+                throw errorLexerUnexpected(lexer, t, tknID);
+            }
+        }
     }
 
     private static void parseSettings(ShaderScript shader, String content, int lineNumber) {
@@ -124,7 +273,7 @@ final class ShaderScriptParser {
             while (true) {
                 MatchedToken pt = nextTokenSkipSpaces(lexer);
                 if (pt == null)
-                    errorEOF();
+                    throw errorEOF();
                 if (pt.token == tknSemi) {
                     break;
                 } else {
@@ -172,7 +321,7 @@ final class ShaderScriptParser {
                     renderStates.dstBlend = RenderStates.BlendFunc.valueOf(params.get(1).content);
                 } break;
                 default: {
-                    errorLexer(lexer, "Invalid settings property " + t.content);
+                    throw errorLexer(lexer, "Invalid settings property " + t.content);
                 }
             }
         }
@@ -200,7 +349,7 @@ final class ShaderScriptParser {
             }
         }
 
-        if (indentLevel != 0) errorEOF();
+        if (indentLevel != 0) throw errorEOF();
 
         return i - 1;
     }
@@ -227,20 +376,21 @@ final class ShaderScriptParser {
             }
         }
 
-        sb.append(", got ");
-        sb.append(token.token.name + "(" + token.content + ")");
+        sb.append(", got ")
+            .append(token.token.name)
+            .append("(").append(token.content).append(")");
         throw errorLexer(lexer, sb.toString());
     }
 
     private static RuntimeException errorLexer(Lexer lexer, String msg) {
-        throw error(String.format("[%d:%d] %s", lexer.lineNumber + 1, lexer.colNumber, msg));
+        return error(String.format("[%d:%d] %s", lexer.lineNumber + 1, lexer.colNumber, msg));
     }
 
     private static RuntimeException errorEOF() {
-        throw error("Premature EOF");
+        return error("Premature EOF");
     }
 
-    private static void assertToken(Lexer l, MatchedToken t, Token... expected) {
+    private static MatchedToken assertToken(Lexer l, MatchedToken t, Token... expected) {
         boolean found = false;
         for (Token tk : expected) {
             if (tk == t.token) {
@@ -249,31 +399,45 @@ final class ShaderScriptParser {
         }
 
         if (!found) {
-            errorLexerUnexpected(l, t, expected);
+            throw errorLexerUnexpected(l, t, expected);
         }
+        return t;
+    }
+
+    private static MatchedToken assertNext(Lexer l, Token ...expected) {
+        return assertToken(l, nextTokenSkipSpaces(l), expected);
+    }
+
+    private static float assertNumber(Lexer l, MatchedToken t) {
+        assertToken(l, t, tknFloat, tknInt);
+        return Float.parseFloat(t.content);
+    }
+
+    private static float assertNextNumber(Lexer l) {
+        return assertNumber(l, nextTokenSkipSpaces(l));
     }
 
     private static RuntimeException error(String msg) {
-        throw new RuntimeException(msg);
+        return new RuntimeException(msg);
     }
 
 }
 
 final class Token {
-    public final String name;
-    public final Pattern regex;
+    final String name;
+    final Pattern regex;
 
-    public Token(String name, String regex) {
+    Token(String name, String regex) {
         this.name = name;
         this.regex = Pattern.compile("^" + regex);
     }
 }
 
 final class MatchedToken {
-    public final Token token;
-    public final String content;
+    final Token token;
+    final String content;
 
-    public MatchedToken(Token token, String content) {
+    MatchedToken(Token token, String content) {
         this.token = token;
         this.content = content;
     }
@@ -281,30 +445,31 @@ final class MatchedToken {
 
 final class Lexer {
 
-    final Token[] tokens;
-    public final String content;
+    private final Token[] tokens;
+
+    final String content;
 
     int currentIndex = 0;
     int lineNumber = 0;
     int colNumber = 0;
 
-    MatchedToken lastMatched;
+    private MatchedToken lastMatched;
 
-    public Lexer(String content, Token ...tokens) {
+    Lexer(String content, Token ...tokens) {
         this.content = content;
         this.tokens = tokens;
     }
 
-    public void setInitPos(int lineNumber, int colNumber) {
+    void setInitPos(int lineNumber, int colNumber) {
         this.lineNumber = lineNumber;
         this.colNumber = colNumber;
     }
 
-    public boolean hasNext() {
+    boolean hasNext() {
         return currentIndex != content.length();
     }
 
-    public MatchedToken next() {
+    MatchedToken next() {
         if (!hasNext()) {
             lastMatched = null;
             return null;
@@ -334,15 +499,15 @@ final class Lexer {
             }
         }
 
-        throw new RuntimeException("Invalid content " +
-                content.substring(currentIndex, Math.min(currentIndex + 10, content.length())) + " ...");
+        throw new RuntimeException("Invalid content \"" +
+                StringEscapeUtils.escapeJava(content.substring(currentIndex, Math.min(currentIndex + 10, content.length()))) + "\" ...");
     }
 
-    public MatchedToken last() {
+    MatchedToken last() {
         return lastMatched;
     }
 
-    public void skipTo(int newIndex) {
+    void skipTo(int newIndex) {
         for (int i = currentIndex; i < newIndex; ++i) {
             char ch = content.charAt(i);
             if (ch == '\n') {
