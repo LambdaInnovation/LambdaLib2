@@ -1,0 +1,15 @@
+[
+{
+  "modid": "lambdalib2",
+  "name": "LambdaLib2",
+  "description": "A minecraft modding library.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Lambda Innovation"],
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
