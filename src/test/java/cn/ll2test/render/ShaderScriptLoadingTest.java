@@ -20,11 +20,7 @@ public class ShaderScriptLoadingTest {
         Display.setDisplayMode(new DisplayMode(800, 600));
         Display.create();
 
-        String shaderSource = IOUtils.toString(
-                ShaderScriptLoadingTest.class.getResource("/render/test.shader"),
-                Charset.forName("utf-8"));
-
-        ShaderScript script = ShaderScript.load(shaderSource);
+        ShaderScript script = ShaderScript.loadFromResource("/render/test.shader");
 
         out.println("Shader compilation successful");
 

@@ -1,12 +1,17 @@
 package cn.lambdalib2.render;
 
+import com.google.common.base.Charsets;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,14 +24,27 @@ public class ShaderScript {
         Float, Vec2, Vec3, Vec4, PassData
     }
 
-    public static class Property {
+    static class Property {
         public String name;
         public PropertyType type;
         public Object value;
+
+        int uniformLocation;
+    }
+
+    static class VertexAttribute {
+        public String name;
+        public Mesh.DataType semantic;
+        public GLPropertyType type;
+        public int index;
     }
 
     public static ShaderScript load(String content) {
         return ShaderScriptParser.load(content);
+    }
+
+    public static ShaderScript loadFromResource(String path) throws IOException {
+        return load(IOUtils.toString(ShaderScript.class.getResource(path), Charsets.UTF_8));
     }
 
     public final List<Property> uniformProperties = new ArrayList<>();
@@ -35,9 +53,22 @@ public class ShaderScript {
 
     public final RenderStates renderStates = new RenderStates();
 
+    final Map<String, Integer> uniformLocationMapping = new HashMap<>();
+
+    final Map<String, VertexAttribute> vertexLayout = new HashMap<>();
+
+    int floatsPerVertex;
+
     int glProgramID;
 
     ShaderScript() {}
+
+    public int getUniformLocation(String uniformName) {
+        if (uniformLocationMapping.containsKey(uniformName)) {
+            return uniformLocationMapping.get(uniformName);
+        }
+        return -1;
+    }
 
 }
 
@@ -127,7 +158,59 @@ final class ShaderScriptParser {
 
         script.glProgramID = programID;
 
+        // Cache info (uniform location)
+        for (ShaderScript.Property p : script.uniformProperties) {
+            int location = glGetUniformLocation(script.glProgramID, p.name);
+            if (location != -1) {
+                script.uniformLocationMapping.put(p.name, location);
+            }
+
+            p.uniformLocation = location;
+        }
+
+        // Store property layout indexes
+        int attrCount = glGetProgrami(script.glProgramID, GL_ACTIVE_ATTRIBUTES);
+        ByteBuffer nameBuffer = BufferUtils.createByteBuffer(
+            glGetProgrami(script.glProgramID, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH)
+        );
+        IntBuffer sizeBuffer = BufferUtils.createIntBuffer(1),
+                typeBuffer = BufferUtils.createIntBuffer(1),
+                lenBuffer = BufferUtils.createIntBuffer(1);
+
+        for (int i = 0; i < attrCount; ++i) {
+            nameBuffer.clear();
+            sizeBuffer.clear();
+            typeBuffer.clear();
+            lenBuffer.clear();
+
+            glGetActiveAttrib(script.glProgramID, i, lenBuffer, sizeBuffer, typeBuffer, nameBuffer);
+            String name = toString(nameBuffer, lenBuffer.get());
+            int index = glGetAttribLocation(script.glProgramID, name);
+
+            ShaderScript.VertexAttribute va = script.vertexLayout.get(name);
+            if (va != null) {
+                va.index = index;
+                va.type = GLPropertyType.fromGLType(typeBuffer.get());
+            }
+        }
+
+        // Remove invalid attributes
+        script.vertexLayout.entrySet().removeIf(it -> it.getValue().index == -1);
+
+        script.floatsPerVertex = script.vertexLayout.values()
+                .stream()
+                .mapToInt(it -> it.type.components)
+                .sum();
+
         return script;
+    }
+
+    private static String toString(ByteBuffer buffer, int len) {
+        StringBuilder sb = new StringBuilder();
+        while (len-- > 0) {
+            sb.append((char) buffer.get());
+        }
+        return sb.toString();
     }
 
     private static void linkShader(int programID, int progType, String source) {
@@ -158,104 +241,147 @@ final class ShaderScriptParser {
 
             if (t.token == tknID) {
                 assertToken(lexer, nextTokenSkipSpaces(lexer), tknLeftBrace);
-                boolean isInstance;
+
                 switch (t.content) {
-                    case "Uniform": isInstance = false; break;
-                    case "Instance": isInstance = true; break;
-                    default: throw errorLexer(lexer,
-                            String.format("Invalid section name %s, must be Uniform or Instance", t.content));
-                }
+                    case "VertexLayout": {
+                        // layout-list := layout-list layout-statement | layout-list
+                        // layout-statement := property-name EQ semantic-name SEMI;
+                        while (true) {
+                            MatchedToken tName = assertNext(lexer, tknRightBrace, tknID);
 
-                List<ShaderScript.Property> propertyList = isInstance ? shader.instanceProperties : shader.uniformProperties;
+                            if (tName.token == tknID) {
+                                assertNext(lexer, tknEq);
+                                String semantic = assertNext(lexer, tknID).content;
+                                assertNext(lexer, tknSemi);
 
-                // data-section := section_name { property-list }
-                // property-list := property-list property-statement | property-statement
-                // property-statement := property-name EQ initializer SEMI
-                // initializer := FLOAT | INT | vec2(...) | vec3(...) | vec4(...) | pass_data(ID)
+                                Mesh.DataType dataType = semanticToDataType(lexer, semantic);
 
-                while (true) {
-                    MatchedToken tName = nextTokenSkipSpaces(lexer);
-                    if (tName.token == tknRightBrace) {
-                        break;
-                    } else if (tName.token == tknID) {
-                        String propertyName = tName.content;
-                        assertNext(lexer, tknEq);
+                                ShaderScript.VertexAttribute va = new ShaderScript.VertexAttribute();
+                                va.semantic = dataType;
+                                va.index = -1;
+                                va.name = tName.content;
 
-                        ShaderScript.Property property = new ShaderScript.Property();
-                        property.name = propertyName;
-
-                        MatchedToken tInitHead = nextTokenSkipSpaces(lexer);
-                        if (tInitHead.token == tknID) {
-                            switch (tInitHead.content) {
-                                case "pass_data": {
-                                    assertNext(lexer, tknLeftParen);
-                                    String dataSource = assertNext(lexer, tknID).content;
-                                    assertNext(lexer, tknRightParen);
-
-                                    property.type = ShaderScript.PropertyType.PassData;
-                                    property.value = dataSource;
-                                } break;
-                                case "vec2": {
-                                    Vector2f vec = new Vector2f();
-                                    assertNext(lexer, tknLeftParen);
-                                    vec.x = assertNextNumber(lexer);
-                                    assertNext(lexer, tknComma);
-                                    vec.y = assertNextNumber(lexer);
-                                    assertNext(lexer, tknRightParen);
-
-                                    property.type = ShaderScript.PropertyType.Vec2;
-                                    property.value = vec;
-                                } break;
-                                case "vec3": {
-                                    Vector3f vec = new Vector3f();
-                                    assertNext(lexer, tknLeftParen);
-                                    vec.x = assertNextNumber(lexer);
-                                    assertNext(lexer, tknComma);
-                                    vec.y = assertNextNumber(lexer);
-                                    assertNext(lexer, tknComma);
-                                    vec.z = assertNextNumber(lexer);
-                                    assertNext(lexer, tknRightParen);
-
-                                    property.type = ShaderScript.PropertyType.Vec3;
-                                    property.value = vec;
-                                } break;
-                                case "vec4": {
-                                    Vector4f vec = new Vector4f();
-                                    assertNext(lexer, tknLeftParen);
-                                    vec.x = assertNextNumber(lexer);
-                                    assertNext(lexer, tknComma);
-                                    vec.y = assertNextNumber(lexer);
-                                    assertNext(lexer, tknComma);
-                                    vec.z = assertNextNumber(lexer);
-                                    assertNext(lexer, tknComma);
-                                    vec.w = assertNextNumber(lexer);
-                                    assertNext(lexer, tknRightParen);
-
-                                    property.type = ShaderScript.PropertyType.Vec4;
-                                    property.value = vec;
-                                } break;
-                                default: {
-                                    throw errorLexer(lexer, "Unsupported property type " + tInitHead.content);
-                                }
+                                shader.vertexLayout.put(tName.content, va);
+                            } else { // right brace
+                                break;
                             }
-                        } else if (tInitHead.token == tknInt || tInitHead.token == tknFloat) {
-                            property.type = ShaderScript.PropertyType.Float;
-                            property.value = Float.parseFloat(tInitHead.content);
-                        } else {
-                            throw errorLexerUnexpected(lexer, tInitHead, tknID, tknInt, tknFloat);
                         }
 
-                        propertyList.add(property);
+                    } break;
+                    default: {
+                        boolean isInstance;
+                        switch (t.content) {
+                            case "Uniform": isInstance = false; break;
+                            case "Instance": isInstance = true; break;
+                            default: throw errorLexer(lexer,
+                                    String.format("Invalid section name %s, must be Uniform, Instance or VertexLayout",
+                                            t.content));
+                        }
 
-                        assertToken(lexer, nextTokenSkipSpaces(lexer), tknSemi);
-                    } else {
-                        throw errorLexerUnexpected(lexer, tName, tknRightBrace, tknID);
+                        List<ShaderScript.Property> propertyList = isInstance ? shader.instanceProperties : shader.uniformProperties;
+
+                        // data-section := section_name { property-list }
+                        // property-list := property-list property-statement | property-statement
+                        // property-statement := property-name EQ initializer SEMI
+                        // initializer := FLOAT | INT | vec2(...) | vec3(...) | vec4(...) | pass_data(ID)
+
+                        while (true) {
+                            MatchedToken tName = nextTokenSkipSpaces(lexer);
+                            if (tName.token == tknRightBrace) {
+                                break;
+                            } else if (tName.token == tknID) {
+                                String propertyName = tName.content;
+                                assertNext(lexer, tknEq);
+
+                                ShaderScript.Property property = new ShaderScript.Property();
+                                property.name = propertyName;
+
+                                MatchedToken tInitHead = nextTokenSkipSpaces(lexer);
+                                if (tInitHead.token == tknID) {
+                                    switch (tInitHead.content) {
+                                        case "pass_data": {
+                                            assertNext(lexer, tknLeftParen);
+                                            String dataSource = assertNext(lexer, tknID).content;
+                                            assertNext(lexer, tknRightParen);
+
+                                            property.type = ShaderScript.PropertyType.PassData;
+                                            property.value = dataSource;
+                                        } break;
+                                        case "vec2": {
+                                            Vector2f vec = new Vector2f();
+                                            assertNext(lexer, tknLeftParen);
+                                            vec.x = assertNextNumber(lexer);
+                                            assertNext(lexer, tknComma);
+                                            vec.y = assertNextNumber(lexer);
+                                            assertNext(lexer, tknRightParen);
+
+                                            property.type = ShaderScript.PropertyType.Vec2;
+                                            property.value = vec;
+                                        } break;
+                                        case "vec3": {
+                                            Vector3f vec = new Vector3f();
+                                            assertNext(lexer, tknLeftParen);
+                                            vec.x = assertNextNumber(lexer);
+                                            assertNext(lexer, tknComma);
+                                            vec.y = assertNextNumber(lexer);
+                                            assertNext(lexer, tknComma);
+                                            vec.z = assertNextNumber(lexer);
+                                            assertNext(lexer, tknRightParen);
+
+                                            property.type = ShaderScript.PropertyType.Vec3;
+                                            property.value = vec;
+                                        } break;
+                                        case "vec4": {
+                                            Vector4f vec = new Vector4f();
+                                            assertNext(lexer, tknLeftParen);
+                                            vec.x = assertNextNumber(lexer);
+                                            assertNext(lexer, tknComma);
+                                            vec.y = assertNextNumber(lexer);
+                                            assertNext(lexer, tknComma);
+                                            vec.z = assertNextNumber(lexer);
+                                            assertNext(lexer, tknComma);
+                                            vec.w = assertNextNumber(lexer);
+                                            assertNext(lexer, tknRightParen);
+
+                                            property.type = ShaderScript.PropertyType.Vec4;
+                                            property.value = vec;
+                                        } break;
+                                        default: {
+                                            throw errorLexer(lexer, "Unsupported property type " + tInitHead.content);
+                                        }
+                                    }
+                                } else if (tInitHead.token == tknInt || tInitHead.token == tknFloat) {
+                                    property.type = ShaderScript.PropertyType.Float;
+                                    property.value = Float.parseFloat(tInitHead.content);
+                                } else {
+                                    throw errorLexerUnexpected(lexer, tInitHead, tknID, tknInt, tknFloat);
+                                }
+
+                                propertyList.add(property);
+
+                                assertToken(lexer, nextTokenSkipSpaces(lexer), tknSemi);
+                            } else {
+                                throw errorLexerUnexpected(lexer, tName, tknRightBrace, tknID);
+                            }
+                        }
                     }
                 }
 
             } else {
                 throw errorLexerUnexpected(lexer, t, tknID);
             }
+        }
+    }
+
+    private static Mesh.DataType semanticToDataType(Lexer lexer, String semantic) {
+        switch (semantic) {
+            case "POSITION": return Mesh.DataType.Position;
+            case "COLOR": return Mesh.DataType.Color;
+            case "UV1": return Mesh.DataType.UV1;
+            case "UV2": return Mesh.DataType.UV2;
+            case "UV3": return Mesh.DataType.UV3;
+            case "UV4": return Mesh.DataType.UV4;
+            default: throw errorLexer(lexer, "Unknown vertex layout " + semantic);
         }
     }
 

@@ -1,8 +1,21 @@
 package cn.lambdalib2.render;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.lang.System.out;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class RenderPass {
 
@@ -10,7 +23,15 @@ public class RenderPass {
     private List<BatchGroup> batchList = new ArrayList<>();
 
     public void draw(RenderMaterial material, Mesh mesh) {
+        draw(material, mesh, null);
+    }
 
+    public void draw(RenderMaterial material, Mesh mesh, InstanceData instanceData) {
+        DrawCall drawCall = new DrawCall();
+        drawCall.material = material;
+        drawCall.mesh = mesh;
+        drawCall.instanceData = instanceData;
+        drawCalls.add(drawCall);
     }
 
     public void dispatch() {
@@ -42,12 +63,65 @@ public class RenderPass {
         }
 
         for (BatchGroup batch : batchList) {
-            // TODO: Do actual draw call emission
+            // TODO: Currently assumes there is no InstanceData assigned. Support instancing.
+            emitDrawCall(batch);
         }
 
         // cleanup
         drawCalls.clear();
         batchList.clear();
+    }
+
+    private void emitDrawCall(BatchGroup batch) {
+        RenderMaterial mat = batch.material;
+        ShaderScript shader = mat.shader;
+        Mesh mesh = batch.mesh;
+
+        // Activate shader program
+        glUseProgram(shader.glProgramID);
+
+        // Create vao and setup
+        int vao = glGenVertexArrays();
+        glBindVertexArray(vao);
+
+        // Update material uniform
+        mat.updateUniformsOnCurrentProgram();
+
+        // Render states setup
+        shader.renderStates.apply();
+
+        // Update mesh buffers (if needed)
+        mesh.ensureBuffers();
+
+        // VBO setup
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.getVBO());
+        List<Mesh.DataLayoutItem> dataLayout = mesh.getDataLayout();
+
+        Map<Mesh.DataType, Integer> layoutMap = new HashMap<>();
+        dataLayout.forEach(it -> layoutMap.put(it.dataType, it.offset));
+
+        for (ShaderScript.VertexAttribute va : shader.vertexLayout.values()) {
+            Integer offset = layoutMap.get(va.semantic);
+
+            if (offset != null) {
+                glEnableVertexAttribArray(va.index);
+                glVertexAttribPointer(va.index, va.type.components, GL_FLOAT, false,
+                    4 * mesh.getFloatsPerVertex(), offset * 4);
+            }
+        }
+
+        // IBO setup
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.getIBO());
+
+        // Draw!
+        glDrawElements(GL_TRIANGLES, mesh.getIndicesCount(), GL_UNSIGNED_INT, 0);
+
+        // Cleanup VAO
+        glBindVertexArray(0);
+        glDeleteVertexArrays(vao);
+
+        // Cleanup program
+        glUseProgram(0);
     }
 
     private static class DrawCall {
