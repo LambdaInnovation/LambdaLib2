@@ -4,9 +4,14 @@ import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL20.*;
 
 public class RenderMaterial {
@@ -14,6 +19,7 @@ public class RenderMaterial {
     final ShaderScript shader;
 
     private Map<Integer, Object> valueMapping = new HashMap<>();
+    private HashMap<Integer, Texture2D> textureMapping = new HashMap<>();
 
     /**
      * Creates a new material from the shader
@@ -51,6 +57,15 @@ public class RenderMaterial {
         setObj(name, value);
     }
 
+    public void setTexture(String name, Texture2D texture) {
+        int location = shader.getUniformLocation(name);
+        if (location != -1) {
+            textureMapping.put(location, texture);
+        } else {
+            System.out.println("WARN: Invalid texture name " + name);
+        }
+    }
+
     private void setObj(String name, Object value) {
         int location = shader.getUniformLocation(name);
         if (location != -1) {
@@ -61,7 +76,7 @@ public class RenderMaterial {
     void updateUniformsOnCurrentProgram() {
         for (ShaderScript.Property property : shader.uniformProperties) {
             int location = property.uniformLocation;
-            if (location != -1) {
+            if (location != -1 && property.type != ShaderScript.PropertyType.Sampler2D) {
                 Object value = property.value;
                 if (valueMapping.containsKey(location)) {
                     value = valueMapping.get(location);
@@ -82,6 +97,31 @@ public class RenderMaterial {
                     throw new RuntimeException("Invalid uniform type " + value);
                 }
             }
+        }
+
+        int usedTextureCount = 0;
+        Map<Texture2D, Integer> textureToSampler = new HashMap<>();
+        Map<Integer, Integer> locationToSampler = new HashMap<>();
+
+        for (Map.Entry<Integer, Texture2D> entry : textureMapping.entrySet()) {
+            Texture2D tex = entry.getValue();
+            if (!textureToSampler.containsKey(tex)) {
+                textureToSampler.put(tex, usedTextureCount++);
+            }
+
+            int sampler = textureToSampler.get(tex);
+            locationToSampler.put(entry.getKey(), sampler);
+        }
+
+        for (Map.Entry<Texture2D, Integer> entry : textureToSampler.entrySet()) {
+            glActiveTexture(GL_TEXTURE0 + entry.getValue());
+            glBindTexture(GL_TEXTURE_2D, entry.getKey().getTextureID());
+        }
+
+        glActiveTexture(GL_TEXTURE0);
+
+        for (Map.Entry<Integer, Integer> entry : locationToSampler.entrySet()) {
+            glUniform1i(entry.getKey(), entry.getValue());
         }
     }
 

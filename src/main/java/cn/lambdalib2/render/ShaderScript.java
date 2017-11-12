@@ -21,7 +21,7 @@ import static org.lwjgl.opengl.GL20.*;
 public class ShaderScript {
 
     public enum PropertyType {
-        Float, Vec2, Vec3, Vec4, PassData
+        Float, Vec2, Vec3, Vec4, Sampler2D, PassData
     }
 
     static class Property {
@@ -283,7 +283,7 @@ final class ShaderScriptParser {
                         // data-section := section_name { property-list }
                         // property-list := property-list property-statement | property-statement
                         // property-statement := property-name EQ initializer SEMI
-                        // initializer := FLOAT | INT | vec2(...) | vec3(...) | vec4(...) | pass_data(ID)
+                        // initializer := FLOAT | INT | vec2(...) | vec3(...) | vec4(...) | pass_data(ID) | sampler2D
 
                         while (true) {
                             MatchedToken tName = nextTokenSkipSpaces(lexer);
@@ -345,6 +345,10 @@ final class ShaderScriptParser {
 
                                             property.type = ShaderScript.PropertyType.Vec4;
                                             property.value = vec;
+                                        } break;
+                                        case "sampler2D": {
+                                            property.type = ShaderScript.PropertyType.Sampler2D;
+                                            property.value = null;
                                         } break;
                                         default: {
                                             throw errorLexer(lexer, "Unsupported property type " + tInitHead.content);

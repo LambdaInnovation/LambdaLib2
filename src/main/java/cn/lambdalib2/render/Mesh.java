@@ -205,12 +205,12 @@ public class Mesh {
             dataLayout.add(new DataLayoutItem(DataType.UV2, offset));
             offset += getFloatWidth(uvs[1]);
         }
-        if (!uvs[0].isEmpty()) {
+        if (!uvs[2].isEmpty()) {
             verifyDataLength(uvs[2], "UV3");
             dataLayout.add(new DataLayoutItem(DataType.UV3, offset));
             offset += getFloatWidth(uvs[2]);
         }
-        if (!uvs[0].isEmpty()) {
+        if (!uvs[3].isEmpty()) {
             verifyDataLength(uvs[3], "UV4");
             dataLayout.add(new DataLayoutItem(DataType.UV4, offset));
             offset += getFloatWidth(uvs[3]);
