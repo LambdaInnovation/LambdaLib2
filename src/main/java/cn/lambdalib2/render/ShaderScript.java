@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
@@ -21,7 +22,7 @@ import static org.lwjgl.opengl.GL20.*;
 public class ShaderScript {
 
     public enum PropertyType {
-        Float, Vec2, Vec3, Vec4, Sampler2D, PassData
+        Float, Vec2, Vec3, Vec4, Sampler2D, PassData, Mat4
     }
 
     static class Property {
@@ -349,6 +350,10 @@ final class ShaderScriptParser {
                                         case "sampler2D": {
                                             property.type = ShaderScript.PropertyType.Sampler2D;
                                             property.value = null;
+                                        } break;
+                                        case "mat4": {
+                                            property.type = ShaderScript.PropertyType.Mat4;
+                                            property.value = new Matrix4f();
                                         } break;
                                         default: {
                                             throw errorLexer(lexer, "Unsupported property type " + tInitHead.content);

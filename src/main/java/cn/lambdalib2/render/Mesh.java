@@ -81,14 +81,26 @@ public class Mesh {
         markDirty();
     }
 
+    public void setUVsVec2(int channel, Vector2f[] uv) {
+        setUVsVec2(channel, Arrays.asList(uv));
+    }
+
     public void setUVsVec3(int channel, List<Vector3f> uv) {
         uvs[channel] = new ArrayList<>(uv);
         markDirty();
     }
 
+    public void setUVsVec3(int channel, Vector3f[] uv) {
+        setUVsVec3(channel, Arrays.asList(uv));
+    }
+
     public void setUVsVec4(int channel, List<Vector4f> uv) {
         uvs[channel] = new ArrayList<>(uv);
         markDirty();
+    }
+
+    public void setUVsVec4(int channel, Vector4f[] uv) {
+        setUVsVec4(channel, Arrays.asList(uv));
     }
 
     public void makeDynamic() {

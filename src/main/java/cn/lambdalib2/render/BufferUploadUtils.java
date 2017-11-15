@@ -16,6 +16,7 @@ class BufferUploadUtils {
             uploadBuffer = BufferUtils.createByteBuffer(Math.max(size, capacity * 2));
         }
 
+        uploadBuffer.clear().limit(size);
         return uploadBuffer;
     }
 

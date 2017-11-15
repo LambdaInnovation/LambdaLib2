@@ -1,9 +1,11 @@
 package cn.lambdalib2.render;
 
+import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
+import java.nio.FloatBuffer;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +59,10 @@ public class RenderMaterial {
         setObj(name, value);
     }
 
+    public void setMat4(String name, Matrix4f value) {
+        setObj(name, value);
+    }
+
     public void setTexture(String name, Texture2D texture) {
         int location = shader.getUniformLocation(name);
         if (location != -1) {
@@ -70,6 +76,8 @@ public class RenderMaterial {
         int location = shader.getUniformLocation(name);
         if (location != -1) {
             valueMapping.put(location, value);
+        } else {
+            System.out.println("WARN: Invalid uniform object name " + name);
         }
     }
 
@@ -93,6 +101,11 @@ public class RenderMaterial {
                 } else if (value instanceof Vector4f) {
                     Vector4f v = (Vector4f) value;
                     glUniform4f(location, v.x, v.y, v.z, v.w);
+                } else if (value instanceof Matrix4f) {
+                    FloatBuffer buf = BufferUploadUtils.requestFloatBuffer(16);
+                    ((Matrix4f) value).store(buf);
+                    buf.flip();
+                    glUniformMatrix4(location, false, buf);
                 } else {
                     throw new RuntimeException("Invalid uniform type " + value);
                 }
