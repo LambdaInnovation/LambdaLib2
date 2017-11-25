@@ -8,10 +8,6 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
-import scala.actors.threadpool.Arrays;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -32,7 +28,7 @@ public class FreeLookTest {
 
         ShaderScript shader = ShaderScript.loadFromResource("/render/free-look.shader");
         RenderMaterial mat = new RenderMaterial(shader);
-        Matrix4f projMatrix = TransformUtil.perspective(60, 800.0f / 600, 0.1f, 1000f);
+        Matrix4f projMatrix = TransformUtils.perspective(60, 800.0f / 600, 0.1f, 1000f);
         Matrix4f mvpMatrix = new Matrix4f();
 
         mat.setTexture("uTex", tex);
@@ -67,7 +63,7 @@ public class FreeLookTest {
             z += getMoveVertical() * dt * SPEED_SCALE;
             x += getMoveHorizontal() * dt * SPEED_SCALE;
 
-            Matrix4f translateMat = TransformUtil.translate(x, 0, z);
+            Matrix4f translateMat = TransformUtils.translate(x, 0, z);
             mat.setMat4("uMVP", Matrix4f.mul(projMatrix, translateMat, mvpMatrix));
 
             pass.draw(mat, mesh);

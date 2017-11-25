@@ -34,6 +34,10 @@ public class RenderPass {
         drawCalls.add(drawCall);
     }
 
+    public void clear() {
+        drawCalls.clear();
+    }
+
     public void dispatch() {
         drawCalls.sort((lhs, rhs) -> compareDict(
              Integer.compare(lhs.material.getDrawOrder(), rhs.material.getDrawOrder()),
@@ -59,7 +63,8 @@ public class RenderPass {
                 }
             }
 
-            createBatchGroup(batchingBegin, drawCalls.size());
+            if (batchingBegin != -1)
+                createBatchGroup(batchingBegin, drawCalls.size());
         }
 
         for (BatchGroup batch : batchList) {
@@ -109,6 +114,8 @@ public class RenderPass {
                     4 * mesh.getFloatsPerVertex(), offset * 4);
             }
         }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // IBO setup
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.getIBO());

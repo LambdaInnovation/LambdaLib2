@@ -10,7 +10,6 @@ Properties {
 }
 
 Settings {
-    Cull Off;
     DepthTest LEqual;
 }
 
@@ -25,7 +24,7 @@ in vec2 aUV;
 out vec2 vUV;
 
 void main() {
-    vec4 pos = uMVP * vec4(aPosition + vec3(0, 0, -3), 1);
+    vec4 pos = uMVP * vec4(aPosition, 1);
     gl_Position = pos;
     vUV = aUV;
 }
@@ -44,5 +43,6 @@ out vec4 fragColor;
 void main() {
     vec4 c = texture(uTex, vUV);
     fragColor = c;
+    // fragColor = vec4(vUV, 1, 1);
 }
 }

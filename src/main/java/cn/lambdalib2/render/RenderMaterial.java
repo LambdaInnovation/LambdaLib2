@@ -1,5 +1,7 @@
 package cn.lambdalib2.render;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
@@ -136,6 +138,10 @@ public class RenderMaterial {
         for (Map.Entry<Integer, Integer> entry : locationToSampler.entrySet()) {
             glUniform1i(entry.getKey(), entry.getValue());
         }
+    }
+
+    static void loadTexture(ResourceLocation src) {
+        Minecraft.getMinecraft().renderEngine.bindTexture(src);
     }
 
 }

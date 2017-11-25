@@ -1,8 +1,5 @@
 package cn.lambdalib2.render;
 
-import cn.lambdalib2.util.ResourceUtils;
-import net.minecraft.util.ResourceLocation;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -10,6 +7,7 @@ import java.io.InputStream;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class Texture2D {
@@ -41,9 +39,6 @@ public class Texture2D {
             throw new RuntimeException(ex);
         }
 
-        System.out.println(image.getColorModel());
-
-        IntBuffer uploadBuffer = BufferUploadUtils.requestIntBuffer(image.getWidth() * image.getHeight());
         int[] arr = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
 
         // TODO figure out why this is needed and if it is platform-dependent
@@ -52,12 +47,14 @@ public class Texture2D {
         }
 
         IntBuffer buffer = BufferUploadUtils.requestIntBuffer(image.getWidth() * image.getHeight());
+
         buffer.put(arr);
-        buffer.position(0).limit(arr.length);
+        buffer.flip();
 
         int textureID = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, uploadBuffer);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
         switch (settings.filterMode) {
             case Point:

@@ -44,8 +44,12 @@ public class ShaderScript {
         return ShaderScriptParser.load(content);
     }
 
-    public static ShaderScript loadFromResource(String path) throws IOException {
-        return load(IOUtils.toString(ShaderScript.class.getResource(path), Charsets.UTF_8));
+    public static ShaderScript loadFromResource(String path) {
+        try {
+            return load(IOUtils.toString(ShaderScript.class.getResource(path), Charsets.UTF_8));
+        } catch (Exception ex) {
+            throw new RuntimeException("Error loading shader script at " + path, ex);
+        }
     }
 
     public final List<Property> uniformProperties = new ArrayList<>();

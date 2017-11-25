@@ -21,11 +21,17 @@ class BufferUploadUtils {
     }
 
     public static FloatBuffer requestFloatBuffer(int size) {
-        return requestByteBuffer(size * 4).asFloatBuffer();
+        FloatBuffer buffer = requestByteBuffer(size * 4).asFloatBuffer();
+        buffer.clear().limit(size);
+
+        return buffer;
     }
 
     public static IntBuffer requestIntBuffer(int size) {
-        return requestByteBuffer(size * 4).asIntBuffer();
+        IntBuffer buffer = requestByteBuffer(size * 4).asIntBuffer();
+        buffer.clear().limit(size);
+
+        return buffer;
     }
 
 }
