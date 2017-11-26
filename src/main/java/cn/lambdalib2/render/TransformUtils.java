@@ -31,6 +31,19 @@ public class TransformUtils {
         return mat;
     }
 
+    public static Matrix4f scale(float sx, float sy, float sz) {
+        Matrix4f mat = new Matrix4f();
+        mat.m00 = sx;
+        mat.m11 = sy;
+        mat.m22 = sz;
+
+        return mat;
+    }
+
+    public static Matrix4f rotateEuler(float x, float y, float z) {
+        return quaternionToMatrix(eulerToQuaternion(x, y, z));
+    }
+
     public static Quaternion eulerToQuaternion(float x, float y, float z) {
         Quaternion q = new Quaternion();
         float cz = MathHelper.cos(z * 0.5f);

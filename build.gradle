@@ -83,7 +83,7 @@ task deobfJar(type: Jar, dependsOn: 'jar') {
 	from sourceSets.main.output
 	manifest {
 		attributes 'FMLCorePluginContainsFMLMod' : 'true'
-		attributes 'FMLCorePlugin' : 'cn.lambdalib.core.LLCorePlugin'
+		attributes 'FMLCorePlugin' : 'cn.lambdalib2.CorePlugin'
 	}
 }
 
