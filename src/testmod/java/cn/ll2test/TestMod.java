@@ -29,6 +29,7 @@ public class TestMod {
     @Mod.EventHandler
     public void clientInit(FMLInitializationEvent event) {
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityStrangeCube.class, new TESRStrangeCube());
+        MinecraftForge.EVENT_BUS.register(new TestDebugDraw());
     }
 
 }

@@ -96,7 +96,8 @@ public class RenderEventDispatch {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glBindTexture(GL_TEXTURE_2D, lastBoundTexture);
-
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
     }
 
     //

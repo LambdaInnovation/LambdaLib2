@@ -1,5 +1,6 @@
 package cn.lambdalib2.render.mc;
 
+import cn.lambdalib2.render.RenderPass;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -7,6 +8,10 @@ import org.lwjgl.util.vector.Vector3f;
  * Provides relevant information when rendering entities.
  */
 public class EntityRenderUtils {
+
+    public static RenderPass getRenderPass() {
+        return RenderEventDispatch.entityPass;
+    }
 
     /**
      * @return The camera up vector.
