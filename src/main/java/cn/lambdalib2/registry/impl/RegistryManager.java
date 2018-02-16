@@ -107,6 +107,7 @@ public enum RegistryManager {
         if (methods != null) {
             for (Method m : methods) {
                 try {
+                    m.setAccessible(true);
                     m.invoke(null, event);
                 } catch (Exception ex) {
                     throw new RuntimeException("Error when calling StateEventCallback " + m);
@@ -256,6 +257,7 @@ public enum RegistryManager {
         private void invokeCallback(List<Method> methods, Object arg) {
             for (Method m : methods) {
                 try {
+                    m.setAccessible(true);
                     m.invoke(null, arg);
                 } catch (Exception ex){
                     throw new RuntimeException("Error when invoking registry callback " + m, ex);
