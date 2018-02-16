@@ -6,24 +6,16 @@
  */
 package cn.lambdalib2;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.Sets;
+import cn.lambdalib2.registry.impl.RegistryManager;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import net.minecraftforge.fml.common.DummyModContainer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.LoadController;
 import net.minecraftforge.fml.common.ModMetadata;
 import net.minecraftforge.fml.common.discovery.ASMDataTable;
-import net.minecraftforge.fml.common.discovery.asm.ModAnnotation;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ModContainer extends DummyModContainer {
 
@@ -52,6 +44,9 @@ public class ModContainer extends DummyModContainer {
     @Subscribe
     public void constructMod(FMLConstructionEvent event) {
         log.info("LambdaLib2|Core is loading.");
+
+        ASMDataTable data = event.getASMHarvestedData();
+        RegistryManager.INSTANCE.readASMData(data);
     }
 
 }

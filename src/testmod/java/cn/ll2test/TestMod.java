@@ -1,5 +1,6 @@
 package cn.ll2test;
 
+import cn.lambdalib2.registry.RegistryMod;
 import cn.ll2test.client.render.TESRStrangeCube;
 import cn.ll2test.tileentity.TileEntityStrangeCube;
 import net.minecraft.block.Block;
@@ -13,6 +14,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+@RegistryMod
 @Mod(modid = "ll2test", version="0.1")
 public class TestMod {
 

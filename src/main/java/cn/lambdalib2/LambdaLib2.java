@@ -1,5 +1,6 @@
 package cn.lambdalib2;
 
+import cn.lambdalib2.registry.RegistryMod;
 import cn.lambdalib2.util.DebugDraw;
 import net.minecraft.init.Blocks;
 import net.minecraftforge.common.MinecraftForge;
@@ -9,6 +10,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+@RegistryMod
 @Mod(modid = LambdaLib2.MODID, version = LambdaLib2.VERSION)
 public class LambdaLib2
 {
