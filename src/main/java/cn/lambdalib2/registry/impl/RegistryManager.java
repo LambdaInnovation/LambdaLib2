@@ -1,12 +1,17 @@
 package cn.lambdalib2.registry.impl;
 
-import cn.lambdalib2.registry.StateEventCallback;
 import jdk.internal.org.objectweb.asm.Type;
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.minecart.MinecartCollisionEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.discovery.ASMDataTable;
 import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
 import net.minecraftforge.fml.common.discovery.asm.ModAnnotation.EnumHolder;
 import net.minecraftforge.fml.common.event.FMLStateEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -26,10 +31,17 @@ public enum RegistryManager {
 
     Set<ASMDataTable.ASMData> rawStateEventCallbacks;
 
+    Set<ASMDataTable.ASMData> rawRegistryCallbacks;
+
+    private final List<Method>
+            itemRegistryCallbacks = new ArrayList<>(),
+            blockRegistryCallbacks = new ArrayList<>();
+
     boolean initialized = false;
 
     public void readASMData(ASMDataTable table) {
         Set<String> removedClasses = new HashSet<>();
+        Set<ASMData> removedMethods = new HashSet<>();
         { // Get removed classes
             String startSide = FMLCommonHandler.instance().getSide().toString();
             Set<ASMDataTable.ASMData> sideData = table.getAll("net.minecraftforge.fml.relauncher.SideOnly");
@@ -40,6 +52,9 @@ public enum RegistryManager {
                         removedClasses.add(asmData.getClassName());
                     }
                 }
+                if (asmData.getObjectName().contains("(")) { // Is a method
+                    removedMethods.add(asmData);
+                }
             }
         }
 
@@ -49,8 +64,15 @@ public enum RegistryManager {
             rawStateEventCallbacks.addAll(
                     loadCallbacks.stream()
                             .filter(it -> !removedClasses.contains(it.getClassName()))
+                            .filter(it -> removedMethods.stream().noneMatch(m -> isClassObjectEqual(it, m)))
                             .collect(Collectors.toList()));
         }
+
+        rawRegistryCallbacks = table.getAll("cn.lambdalib2.registry.RegistryCallback")
+                .stream()
+                .filter(it -> !removedClasses.contains(it.getClassName()))
+                .filter(it -> removedMethods.stream().noneMatch(m -> isClassObjectEqual(it, m)))
+                .collect(Collectors.toSet());
 
         registryMods = table.getAll("cn.lambdalib2.registry.RegistryMod")
                 .stream()
@@ -58,6 +80,11 @@ public enum RegistryManager {
                 .collect(Collectors.toMap(ASMData::getClassName, this::createModContext));
 
         RegistryTransformer.setRegistryMods(registryMods.keySet());
+    }
+
+    private boolean isClassObjectEqual(ASMData lhs, ASMData rhs) {
+        return (lhs.getObjectName().equals(rhs.getObjectName())) &&
+                (lhs.getClassName().equals(rhs.getClassName()));
     }
 
     private String getPackageName(String className) {
@@ -137,21 +164,73 @@ public enum RegistryManager {
                 }
             }
 
-            // sort by priority
-            for (ModContext ctx : registryMods.values()) {
-                for (List<Method> list : ctx.loadCallbacks.values()) {
-                    list.sort((lhs, rhs) -> {
-                        int lp = priorityMap.get(lhs);
-                        int rp = priorityMap.get(rhs);
-                        return rp - lp;
-                    });
+            for (ASMData data : rawRegistryCallbacks) {
+                try {
+                    Class<?> klass = Class.forName(data.getClassName());
+
+                    String fullDesc = data.getObjectName();
+                    int idx = fullDesc.indexOf('(');
+                    String methodName = fullDesc.substring(0, idx);
+                    String desc = fullDesc.substring(idx);
+
+                    Type[] rawArgs = Type.getArgumentTypes(desc);
+                    Class[] args = new Class[rawArgs.length];
+                    for (int i = 0; i < rawArgs.length; ++i) {
+                        args[i] = Class.forName(rawArgs[i].getClassName());
+                    }
+
+                    Method method = klass.getMethod(methodName, args);
+                    if (!Modifier.isStatic(method.getModifiers())) {
+                        throw new IllegalArgumentException("@RegistryCallback methods must be static.");
+                    }
+                    if (args.length != 1) {
+                        throw new IllegalArgumentException("@RegistryCallback methods requires exactly 1 argument.");
+                    }
+
+                    String parTypeName = method.getGenericParameterTypes()[0].getTypeName();
+                    if (parTypeName.contains("Item")) {
+                        itemRegistryCallbacks.add(method);
+                    } else if (parTypeName.contains("Block")) {
+                        blockRegistryCallbacks.add(method);
+                    } else {
+                        throw new IllegalStateException("Invalid Registry Callback " + method);
+                    }
+
+                    priorityMap.put(method, (int) data.getAnnotationInfo().getOrDefault("priority", 0));
+
+                } catch (NoSuchMethodException|ClassNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
             }
 
+            rawRegistryCallbacks.clear();
+
+            Comparator<Method> priorityCmp = (lhs, rhs) -> {
+                int lp = priorityMap.get(lhs);
+                int rp = priorityMap.get(rhs);
+                return rp - lp;
+            };
+
+            // sort by priority
+            for (ModContext ctx : registryMods.values()) {
+                for (List<Method> list : ctx.loadCallbacks.values()) {
+                    list.sort(priorityCmp);
+                }
+            }
+
+            itemRegistryCallbacks.sort(priorityCmp);
+            blockRegistryCallbacks.sort(priorityCmp);
+
             rawStateEventCallbacks.clear();
+
+            registerEventHandler();
 
             initialized = true;
         }
+    }
+
+    void registerEventHandler() {
+        MinecraftForge.EVENT_BUS.register(new EventHandler());
     }
 
     ModContext findMod(String path) {
@@ -161,6 +240,28 @@ public enum RegistryManager {
             }
         }
         return null;
+    }
+
+    class EventHandler {
+        @SubscribeEvent
+        public void onRegisterBlocks(RegistryEvent.Register<Block> event) {
+            invokeCallback(blockRegistryCallbacks, event);
+        }
+
+        @SubscribeEvent
+        public void onRegisterItems(RegistryEvent.Register<Item> event) {
+            invokeCallback(itemRegistryCallbacks, event);
+        }
+
+        private void invokeCallback(List<Method> methods, Object arg) {
+            for (Method m : methods) {
+                try {
+                    m.invoke(null, arg);
+                } catch (Exception ex){
+                    throw new RuntimeException("Error when invoking registry callback " + m, ex);
+                }
+            }
+        }
     }
 
     public static void asm_RegistrationEvent(String mod, FMLStateEvent event) {
