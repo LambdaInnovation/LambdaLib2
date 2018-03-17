@@ -5,12 +5,14 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 apply plugin: 'maven'
+apply plugin: 'kotlin'
 
 version = "0.1"
 group = "cn.lambdalib2" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -21,8 +23,10 @@ compileJava {
     sourceCompatibility = targetCompatibility = '1.8'
 }
 
+compileJava.options.encoding = "UTF-8"
+
 minecraft {
-    version = "1.12.2-14.23.0.2491"
+    version = "1.12.2-14.23.2.2618"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.
@@ -30,8 +34,9 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not always work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20170624"
+    mappings = "snapshot_20171003"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    replace "@VERSION@", mod_version
 }
 
 dependencies {
@@ -56,6 +61,8 @@ dependencies {
     // for more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    compile "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
+    runtime "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
 
 }
 
@@ -76,6 +83,11 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+jar {
+    from configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    exclude 'dummyThing'
 }
 
 task deobfJar(type: Jar, dependsOn: 'jar') {

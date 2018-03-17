@@ -1,0 +1,17 @@
+shapeless(ll2test:test1) {
+    [@tests]
+}
+
+shaped(ll2test:test2) {
+    [$tt1, $tt3, @tests]
+    [ll2test:test3, ll2test:test1, ll2test:test3]
+}
+
+shaped_s(ll2test:test3) {
+    [ll2test:test1, ll2test:test2, nil]
+    [ll2test:test1, nil, nil]
+}
+
+smelting(ll2test:test1)[0.6] {
+    [ll2test:test2]
+}
