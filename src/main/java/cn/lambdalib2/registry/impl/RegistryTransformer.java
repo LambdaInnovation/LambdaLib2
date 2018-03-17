@@ -1,6 +1,5 @@
 package cn.lambdalib2.registry.impl;
 
-import com.sun.org.apache.bcel.internal.generic.INVOKESTATIC;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.*;

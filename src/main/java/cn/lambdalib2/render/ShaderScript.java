@@ -75,6 +75,10 @@ public class ShaderScript {
         return -1;
     }
 
+    public int getProgramID() {
+        return glProgramID;
+    }
+
 }
 
 // --- Parsing
