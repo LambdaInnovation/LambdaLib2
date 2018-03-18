@@ -13,6 +13,7 @@ public class PipelineTransformer implements IClassTransformer {
             ClassWriter cw = new ClassWriter(0);
             ClassVisitor cv = new EntityRendererVisitor(cw);
             ClassReader cr = new ClassReader(bytes);
+            System.out.println(("Transforming RenderGlobal"));
 
             cr.accept(cv, 0);
 
@@ -46,6 +47,7 @@ public class PipelineTransformer implements IClassTransformer {
             }
 
             if (name.equals(testName) && desc.equals(testDesc)) {
+                System.out.println(("Transforming RenderGlobal.renderEntities"));
                 return new MethodVisitor(Opcodes.ASM5, smv) {
 
                     @Override

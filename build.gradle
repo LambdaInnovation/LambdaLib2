@@ -90,18 +90,25 @@ jar {
     exclude 'dummyThing'
 }
 
-task deobfJar(type: Jar, dependsOn: 'jar') {
-	classifier 'dev'
-	from sourceSets.main.output
-	manifest {
-		attributes 'FMLCorePluginContainsFMLMod' : 'true'
-		attributes 'FMLCorePlugin' : 'cn.lambdalib2.CorePlugin'
-	}
+task deobfJar(type: Jar) {
+    classifier 'dev'
+    from sourceSets.main.output
+    manifest {
+        attributes 'FMLCorePluginContainsFMLMod' : 'true'
+        attributes 'FMLCorePlugin' : 'cn.lambdalib2.CorePlugin'
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.java
+    classifier = 'sources'
 }
 
 artifacts {
-	archives deobfJar
+    archives deobfJar
+    archives sourcesJar
 }
 
 build.dependsOn deobfJar
+build.dependsOn sourceJar 
 install.dependsOn build
