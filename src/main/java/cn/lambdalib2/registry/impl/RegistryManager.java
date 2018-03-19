@@ -136,17 +136,17 @@ public enum RegistryManager {
                             args[i] = Class.forName(rawArgs[i].getClassName());
                         }
 
-                        Method method = klass.getMethod(methodName, args);
+                        Method method = klass.getDeclaredMethod(methodName, args);
                         if (!Modifier.isStatic(method.getModifiers())) {
-                            throw new IllegalArgumentException("@StateEventCallback methods must be static.");
+                            throw new IllegalArgumentException("StateEventCallback method" + method + " must be static.");
                         }
                         if (args.length != 1) {
-                            throw new IllegalArgumentException("@StateEventCallback methods requires exactly 1 argument.");
+                            throw new IllegalArgumentException("StateEventCallback method" + method + " requires exactly 1 argument.");
                         }
 
                         Class<?> eventType = args[0];
                         if (!FMLStateEvent.class.isAssignableFrom(eventType)) {
-                            throw new IllegalArgumentException("@StateEventCallback method's first argument type must inherit FMLStateEvent");
+                            throw new IllegalArgumentException("StateEventCallback method" + method + " 's first argument type must inherit FMLStateEvent");
                         }
 
                         if (!mod.loadCallbacks.containsKey(eventType)) {
@@ -179,12 +179,12 @@ public enum RegistryManager {
                         args[i] = Class.forName(rawArgs[i].getClassName());
                     }
 
-                    Method method = klass.getMethod(methodName, args);
+                    Method method = klass.getDeclaredMethod(methodName, args);
                     if (!Modifier.isStatic(method.getModifiers())) {
-                        throw new IllegalArgumentException("@RegistryCallback methods must be static.");
+                        throw new IllegalArgumentException("RegistryCallback method " + method + " must be static.");
                     }
                     if (args.length != 1) {
-                        throw new IllegalArgumentException("@RegistryCallback methods requires exactly 1 argument.");
+                        throw new IllegalArgumentException("RegistryCallback method " + method + " requires exactly 1 argument.");
                     }
 
                     String parTypeName = method.getGenericParameterTypes()[0].getTypeName();
