@@ -19,8 +19,8 @@ import static org.lwjgl.opengl.GL11.*;
 public class RenderEventDispatch {
 
     private static boolean firstFrame = true;
-    private static long lastFrameTime = -1;
-    private static float thisFrameDeltaTime = 0;
+    private static double lastFrameTime = -1;
+    private static double thisFrameDeltaTime = 0;
 
     private static final Vector4f UP_VEC4 = new Vector4f(0, 1, 0, 1);
 
@@ -43,9 +43,9 @@ public class RenderEventDispatch {
 
     public static void beginRenderEntities(float partialTicks) {
         int pass = MinecraftForgeClient.getRenderPass();
-        long time = GameTimer.getTime();
+        double time = GameTimer.getTime();
 
-        float deltaTime;
+        double deltaTime;
 
         if (pass == 0) {
             // Update matrices
@@ -73,7 +73,7 @@ public class RenderEventDispatch {
                 firstFrame = false;
                 deltaTime = 0;
             } else {
-                deltaTime = (time - lastFrameTime) / 1000.0f;
+                deltaTime = (time - lastFrameTime);
             }
 
             lastFrameTime = time;
@@ -84,7 +84,7 @@ public class RenderEventDispatch {
 
         entityPass.clear();
 
-        MinecraftForge.EVENT_BUS.post(new RenderAllEntityEvent(pass, partialTicks, deltaTime));
+        MinecraftForge.EVENT_BUS.post(new RenderAllEntityEvent(pass, partialTicks, (float) deltaTime));
     }
 
     public static void endRenderEntities(float partialTicks) {
@@ -111,7 +111,7 @@ public class RenderEventDispatch {
     }
 
     public static float getDeltaTime() {
-        return thisFrameDeltaTime;
+        return (float) thisFrameDeltaTime;
     }
 
     //

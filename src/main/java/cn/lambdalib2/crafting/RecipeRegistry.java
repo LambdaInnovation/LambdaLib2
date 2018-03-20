@@ -153,7 +153,7 @@ public class RecipeRegistry {
 
     public void addRecipeFromResourceLocation(ResourceLocation src) {
         try {
-            addRecipeFromString(IOUtils.toString(ResourceUtils.getResourceStream(src)));
+            addRecipeFromString(IOUtils.toString(ResourceUtils.getResourceStream(src), "UTF-8"));
         } catch (Throwable e) {
             LambdaLib2.log.error("Failed to load recipes from file: " + src, e);
             e.printStackTrace();

@@ -2,6 +2,7 @@ package cn.lambdalib2.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -16,21 +17,36 @@ public enum GameTimer {
     INSTANCE;
 
     GameTimer() {
-        FMLCommonHandler.instance().bus().register(this);
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     static long storedTime, timeLag;
 
-    public static long getTime() {
-        return FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT ? getTimeClient() : getTimeServer();
+    static long beginTimeClient, beginTimeServer;
+
+    public static double getTime() {
+        boolean isClient = FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT;
+        return getTime(isClient);
     }
 
-    public static long getAbsTime() {
-        return MinecraftServer.getCurrentTimeMillis();
+    public static double getAbsTime() {
+        return getTime(false);
+    }
+
+    private static double getTime(boolean isClient) {
+        if (isClient) {
+            if (beginTimeClient == 0) beginTimeClient = getRawTimeClient();
+            long elapsed = getRawTimeClient() - beginTimeClient;
+            return elapsed / 1000.0;
+        } else {
+            if (beginTimeServer == 0) beginTimeServer = getRawTimeServer();
+            long elapsed = getRawTimeServer() - beginTimeServer;
+            return elapsed / 1000.0;
+        }
     }
 
     @SideOnly(Side.CLIENT)
-    private static long getTimeClient() {
+    private static long getRawTimeClient() {
         long time = Minecraft.getSystemTime();
         if(Minecraft.getMinecraft().isGamePaused()) {
             timeLag = time - storedTime;
@@ -40,7 +56,7 @@ public enum GameTimer {
         return time - timeLag;
     }
 
-    private static long getTimeServer() {
+    private static long getRawTimeServer() {
         return MinecraftServer.getCurrentTimeMillis();
     }
 
@@ -48,7 +64,7 @@ public enum GameTimer {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        getTimeClient();
+        getRawTimeClient();
     }
 
 }

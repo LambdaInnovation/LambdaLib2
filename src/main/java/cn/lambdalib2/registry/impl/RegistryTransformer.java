@@ -65,7 +65,7 @@ public class RegistryTransformer implements IClassTransformer {
             mv.visitLdcInsn(modClassName);
             mv.visitVarInsn(Opcodes.ALOAD, 1);
             mv.visitMethodInsn(Opcodes.INVOKESTATIC, "cn/lambdalib2/registry/impl/RegistryManager", "asm_RegistrationEvent",
-                    Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class), Type.getType(FMLStateEvent.class)));
+                    Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class), Type.getType(FMLStateEvent.class)), false);
             mv.visitInsn(Opcodes.RETURN);
             mv.visitEnd();
         }
