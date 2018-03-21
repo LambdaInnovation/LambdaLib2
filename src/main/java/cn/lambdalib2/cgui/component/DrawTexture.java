@@ -90,6 +90,14 @@ public class DrawTexture extends Component {
         return this;
     }
 
+    public DrawTexture setUVRect(double u, double v, double texWidth, double texHeight) {
+        this.u = u;
+        this.v = v;
+        this.texWidth = texWidth;
+        this.texHeight = texHeight;
+        return this;
+    }
+
     /**
      * Set the color as a **copy** of the given color.
      */

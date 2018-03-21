@@ -212,8 +212,8 @@ public class HudUtils {
     }
 
     private static void addVertexWithUV(double x, double y, double z, double u, double v) {
-        glVertex3d(x, y, z);
         glTexCoord2d(u, v);
+        glVertex3d(x, y, z);
     }
     
 }

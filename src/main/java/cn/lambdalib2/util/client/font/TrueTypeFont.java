@@ -232,10 +232,10 @@ public class TrueTypeFont implements IFont {
     }
 
     // Update the cached images to contain the given new characters.
-    private void updateCache(String str){
+    private void updateCache(String str) {
         Set<Integer> newchars = new HashSet<>();
-        for(int i:codePoints(str)) {
-            if(lookup.containsKey(i))
+        for(int i : codePoints(str)) {
+            if(!lookup.containsKey(i))
                 newchars.add(i);
         }
         newchars.forEach(this::writeImage);
