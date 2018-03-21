@@ -63,6 +63,7 @@ public class HudUtils {
         int twidth = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH),
             theight = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
         double f = 1.0 / twidth, f1 = 1.0 / theight;
+        glEnable(GL_TEXTURE_2D);
         glBegin(GL_QUADS);
         addVertexWithUV(x + 0,      y + height, zLevel, (u + 0) * f,          (v + texHeight) * f1);
         addVertexWithUV(x + width, y + height, zLevel, (u + texWidth) * f, (v + texHeight) * f1);

@@ -36,7 +36,7 @@ import cn.lambdalib2.cgui.event.RightClickEvent;
  */
 public class CGui extends WidgetContainer {
 
-    static final long DRAG_TIME_TOLE = 100;
+    static final double DRAG_TIME_TOLE = 0.1;
 
     private double width, height; //Only useful when calculating 'CENTER' align preference
     
@@ -149,16 +149,15 @@ public class CGui extends WidgetContainer {
             if(draggingNode == null) {
                 lastStartTime = time;
                 draggingNode = getTopWidget(mx, my);
+                System.out.println("StartDragging " + draggingNode);
                 if(draggingNode == null)
                     return false;
                 xOffset = mx - draggingNode.x;
                 yOffset = my - draggingNode.y;
             }
-            if(draggingNode != null) {
-                lastDragTime = time;
-                draggingNode.post(new DragEvent(xOffset, yOffset));
-                return true;
-            }
+            lastDragTime = time;
+            draggingNode.post(new DragEvent(xOffset, yOffset));
+            return true;
         }
         return false;
     }

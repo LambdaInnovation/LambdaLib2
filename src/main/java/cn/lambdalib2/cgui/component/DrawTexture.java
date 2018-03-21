@@ -36,7 +36,7 @@ public class DrawTexture extends Component {
     
     public boolean writeDepth = true;
 
-    public double u = 0, v = 0, texWidth = 1, texHeight = 1;
+    public double u = 0, v = 0, texWidth = 500, texHeight = 500;
     
     private int shaderId = 0;
 

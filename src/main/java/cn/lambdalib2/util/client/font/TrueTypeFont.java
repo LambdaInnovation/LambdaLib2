@@ -115,8 +115,9 @@ public class TrueTypeFont implements IFont {
      * behaviour.
      */
     @Override
-    public void draw(String str, double px, double y, FontOption option)
-    {
+    public void draw(String str, double px, double y, FontOption option) {
+        int lastTextureBinding = glGetInteger(GL_TEXTURE_BINDING_2D);
+
         double len = getTextWidth(str, option); // Which will call updateCache()
         for(int i=0;i<dirty.size();i++){
             if(dirty.get(i)) {
@@ -160,9 +161,9 @@ public class TrueTypeFont implements IFont {
             List<Vertex> list = batchInfoCache[i];
             if (!list.isEmpty()) {
                 int texture = generated.get(i);
+                ColorUtils.bindToGL(option.color);
                 glBindTexture(GL_TEXTURE_2D, texture);
                 glBegin(GL_QUADS);
-                ColorUtils.bindToGL(option.color);
                 for (Vertex v : list) {
                     glTexCoord2d(v.u, v.v);
                     glVertex3d(v.x, v.y, v.z);
@@ -175,6 +176,8 @@ public class TrueTypeFont implements IFont {
             glEnable(GL_ALPHA_TEST);
         }
         glAlphaFunc(preFunc, preRef);
+
+        glBindTexture(GL_TEXTURE_2D, lastTextureBinding);
     }
 
     private List<Integer> codePoints(String str){
@@ -247,20 +250,20 @@ public class TrueTypeFont implements IFont {
         BufferedImage image = new BufferedImage(charSize, charSize, BufferedImage.TYPE_INT_ARGB);
         int curtex = currentTexture();
 
-        Graphics2D g = image.createGraphics();
+        Graphics2D graphics = image.createGraphics();
         Font drawFont = resolve(ch);
 
-        g.setFont(drawFont);
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        graphics.setFont(drawFont);
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        FontMetrics metrics = g.getFontMetrics();
+        FontMetrics metrics = graphics.getFontMetrics();
         int width = metrics.charWidth((char) ch);
         // Draw to the image
-        g.setBackground(BACKGRND_COLOR);
-        g.clearRect(0, 0, charSize, charSize);
-        g.setColor(Color.WHITE);
+        graphics.setBackground(BACKGRND_COLOR);
+        graphics.clearRect(0, 0, charSize, charSize);
+        graphics.setColor(Color.WHITE);
 
-        g.drawString(new java.lang.StringBuilder(2).appendCodePoint(ch).toString(), 3, 1 + metrics.getAscent());
+        graphics.drawString(new java.lang.StringBuilder(2).appendCodePoint(ch).toString(), 3, 1 + metrics.getAscent());
 
         ByteBuffer byteBuffer;
         DataBuffer db = image.getData().getDataBuffer();
@@ -272,10 +275,12 @@ public class TrueTypeFont implements IFont {
                 int val = rawData[i];
                 int newIndex = i*4;
 
-                bytes[newIndex  ]= (byte) ((val >>> 24) & 0xFF);
-                bytes[newIndex+1]= (byte) ((val >>> 16) & 0xFF);
-                bytes[newIndex+2]= (byte) ((val >>> 8) & 0xFF);
-                bytes[newIndex+3]= (byte) (val & 0xFF);
+                byte r = (byte) ((val >>> 24) & 0xFF);
+                byte g = (byte) ((val >>> 16) & 0xFF);
+                byte b = (byte) ((val >>> 8) & 0xFF);
+                byte l = (byte) ((int) (r + g + b) / 3);
+                bytes[newIndex] = bytes[newIndex + 1] = bytes[newIndex + 2] = -1;
+                bytes[newIndex+3]= (byte) ((val & 0xFF) * l / 255);
             }
 
             byteBuffer = ByteBuffer.allocateDirect(
@@ -308,6 +313,6 @@ public class TrueTypeFont implements IFont {
 
         dirty.set(generated.size() - 1);
 
-        g.dispose();
+        graphics.dispose();
     }
 }
