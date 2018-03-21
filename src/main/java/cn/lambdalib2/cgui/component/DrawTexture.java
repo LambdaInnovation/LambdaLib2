@@ -35,6 +35,8 @@ public class DrawTexture extends Component {
     public double zLevel = 0;
     
     public boolean writeDepth = true;
+
+    public double u = 0, v = 0, texWidth = 1, texHeight = 1;
     
     private int shaderId = 0;
 
@@ -65,7 +67,7 @@ public class DrawTexture extends Component {
 
             if(texture != null && !texture.getResourcePath().equals("<null>")) {
                 HudUtils.loadTexture(texture);
-                HudUtils.rect(0, 0, w.transform.width, w.transform.height);
+                HudUtils.rect(0, 0, u, v, w.transform.width, w.transform.height, texWidth, texHeight);
             } else {
                 HudUtils.colorRect(0, 0, w.transform.width, w.transform.height);
             }
