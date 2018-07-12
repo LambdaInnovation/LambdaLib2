@@ -6,7 +6,7 @@
 */
 package cn.lambdalib2.cgui.component;
 
-import cn.lambdalib2.util.ColorUtils;
+import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.GameTimer;
 import cn.lambdalib2.util.HudUtils;
 import cn.lambdalib2.util.MathUtils;
@@ -29,7 +29,7 @@ public class ProgressBar extends Component {
     public ResourceLocation texture;
     public Direction dir = Direction.RIGHT;
     public double progress;
-    public Color color = ColorUtils.white();
+    public Color color = Colors.white();
 
     public ProgressBar() {
         super("ProgressBar");
@@ -94,7 +94,7 @@ public class ProgressBar extends Component {
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
                 }
 
-                ColorUtils.bindToGL(color);
+                Colors.bindToGL(color);
                 HudUtils.rawRect(x, y, u, v, w, h, tw, th);
                 GL11.glEnable(GL11.GL_TEXTURE_2D);
             }

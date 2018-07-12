@@ -16,7 +16,7 @@ import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import cn.lambdalib2.cgui.Widget;
 import cn.lambdalib2.cgui.event.FrameEvent;
-import cn.lambdalib2.util.ColorUtils;
+import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.HudUtils;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Color;
@@ -45,7 +45,7 @@ public class DrawTexture extends Component {
     }
 
     public DrawTexture(ResourceLocation texture) {
-        this(texture, ColorUtils.white());
+        this(texture, Colors.white());
     }
 
     public DrawTexture(String name, ResourceLocation _texture, Color _color) {
@@ -60,7 +60,7 @@ public class DrawTexture extends Component {
             glDepthMask(writeDepth);
             glUseProgram(shaderId);
 
-            ColorUtils.bindToGL(color);
+            Colors.bindToGL(color);
 
             double preLevel = HudUtils.zLevel;
             HudUtils.zLevel = zLevel;

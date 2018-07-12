@@ -20,10 +20,10 @@ public class DragBar extends Component {
     /**
      * Lower and upper bound of the drag area.
      */
-    public double lower, upper;
+    public float lower, upper;
     public Axis axis = Axis.Y;
 
-    public DragBar(double _y0, double _y1) {
+    public DragBar(float _y0, float _y1) {
         this();
         lower = _y0;
         upper = _y1;
@@ -33,7 +33,7 @@ public class DragBar extends Component {
         super("DragBar");
 
         listen(DragEvent.class, (w, event) -> {
-            double original;
+            float original;
             if (axis == Axis.X) {
                 original = w.transform.y;
             } else {
@@ -44,10 +44,10 @@ public class DragBar extends Component {
 
             if (axis == Axis.X) {
                 w.transform.y = original;
-                w.transform.x = MathUtils.clampd(lower, upper, w.transform.x);
+                w.transform.x = MathUtils.clampf(lower, upper, w.transform.x);
             } else {
                 w.transform.x = original;
-                w.transform.y = MathUtils.clampd(lower, upper, w.transform.y);
+                w.transform.y = MathUtils.clampf(lower, upper, w.transform.y);
             }
 
             w.getGui().updateWidget(w);
@@ -59,19 +59,19 @@ public class DragBar extends Component {
         return w.getComponent("DragBar");
     }
 
-    public double getProgress() {
-        double ret;
+    public float getProgress() {
+        float ret;
         if (axis == Axis.X) {
             ret = (widget.transform.x - lower) / (upper - lower);
         } else {
             ret = (widget.transform.y - lower) / (upper - lower);
         }
 
-        return MathUtils.clampd(0, 1, ret);
+        return MathUtils.clampf(0, 1, ret);
     }
 
-    public void setProgress(double prg) {
-        double val = lower + (upper - lower) * prg;
+    public void setProgress(float prg) {
+        float val = lower + (upper - lower) * prg;
         if (axis == Axis.X) {
             widget.transform.x = val;
         } else {
@@ -81,7 +81,7 @@ public class DragBar extends Component {
         widget.dirty = true;
     }
 
-    public DragBar setArea(double _lower,  double _upper) {
+    public DragBar setArea(float _lower,  float _upper) {
         lower = _lower;
         upper = _upper;
 

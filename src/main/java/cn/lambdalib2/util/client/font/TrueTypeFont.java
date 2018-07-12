@@ -1,6 +1,6 @@
 package cn.lambdalib2.util.client.font;
 
-import cn.lambdalib2.util.ColorUtils;
+import cn.lambdalib2.util.Colors;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.util.List;
-import java.util.Map.Entry;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -41,9 +40,9 @@ public class TrueTypeFont implements IFont {
     }
 
     static class Vertex {
-        double x, y, z, u, v;
+        float x, y, z, u, v;
 
-        public Vertex(double x, double y, double z, double u, double v) {
+        public Vertex(float x, float y, float z, float u, float v) {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -82,7 +81,7 @@ public class TrueTypeFont implements IFont {
     private BitSet dirty = new BitSet();
     private Map<Integer, CachedChar> lookup = new HashMap<>();
     private int step = 0;
-    private double texStep;
+    private float texStep;
 
     @SuppressWarnings("unchecked")
     private List<Vertex>[] batchInfoCache = new List[8];
@@ -92,7 +91,7 @@ public class TrueTypeFont implements IFont {
         charSize=(int)(font.getSize() * 1.4);
         maxPerCol = MathHelper.floor(1.0*TEXTURE_SZ_LIMIT / charSize);
         maxStep = maxPerCol * maxPerCol;
-        texStep = 1.0 / maxPerCol;
+        texStep = 1.0f / maxPerCol;
         newTexture();
 
         for (int i = 0; i < batchInfoCache.length; ++i) {
@@ -115,10 +114,10 @@ public class TrueTypeFont implements IFont {
      * behaviour.
      */
     @Override
-    public void draw(String str, double px, double y, FontOption option) {
+    public void draw(String str, float px, float y, FontOption option) {
         int lastTextureBinding = glGetInteger(GL_TEXTURE_BINDING_2D);
 
-        double len = getTextWidth(str, option); // Which will call updateCache()
+        float len = getTextWidth(str, option); // Which will call updateCache()
         for(int i=0;i<dirty.size();i++){
             if(dirty.get(i)) {
                 glBindTexture(GL_TEXTURE_2D, generated.get(i));
@@ -127,9 +126,9 @@ public class TrueTypeFont implements IFont {
         }
         dirty.clear();
 
-        double x = px;
-        double sz = option.fontSize;
-        double scale = option.fontSize / charSize;
+        float x = px;
+        float sz = option.fontSize;
+        float scale = option.fontSize / charSize;
 
         x = px - len * option.align.lenOffset;
 
@@ -161,7 +160,7 @@ public class TrueTypeFont implements IFont {
             List<Vertex> list = batchInfoCache[i];
             if (!list.isEmpty()) {
                 int texture = generated.get(i);
-                ColorUtils.bindToGL(option.color);
+                Colors.bindToGL(option.color);
                 glBindTexture(GL_TEXTURE_2D, texture);
                 glBegin(GL_QUADS);
                 for (Vertex v : list) {
@@ -192,7 +191,7 @@ public class TrueTypeFont implements IFont {
      * Get the width of given character when drawn with given FontOption.
      */
     @Override
-    public double getCharWidth(int chr, FontOption option)
+    public float getCharWidth(int chr, FontOption option)
     {
         if(!lookup.containsKey(chr)) {
             writeImage(chr);
@@ -204,10 +203,10 @@ public class TrueTypeFont implements IFont {
      * Get the text width that will be drawn if calls the {@link IFont#draw}.
      */
     @Override
-    public double getTextWidth(String str, FontOption option)
+    public float getTextWidth(String str, FontOption option)
     {
         updateCache(str);
-        double sum=0;
+        float sum=0;
         for(int i:codePoints(str)){
             sum+= (lookup.get(i)).width;
         }

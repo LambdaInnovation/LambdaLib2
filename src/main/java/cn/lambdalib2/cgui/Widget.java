@@ -34,8 +34,8 @@ public class Widget extends WidgetContainer {
     
     // Calculated absolute widget position and scale
     // Will only be updated if widget.dirty = true each frame
-    public double x, y;
-    public double scale;
+    public float x, y;
+    public float scale;
     
     /**
      * Whether this widget can be copied when going down copy recursion process.
@@ -58,22 +58,22 @@ public class Widget extends WidgetContainer {
     public Widget() {}
 
     // Ctors to aid syntax simplicity
-    public Widget(double width, double height) {
+    public Widget(float width, float height) {
         transform.setSize(width, height);
     }
 
-    public Widget(double x, double y, double width, double height) {
+    public Widget(float x, float y, float width, float height) {
         transform.setPos(x, y).setSize(width, height);
     }
 
 
     // Construction sugar
-    public Widget pos(double x, double y) {
+    public Widget pos(float x, float y) {
         transform.setPos(x, y);
         return this;
     }
 
-    public Widget size(double w, double h) {
+    public Widget size(float w, float h) {
         transform.setSize(w, h);
         return this;
     }
@@ -93,7 +93,7 @@ public class Widget extends WidgetContainer {
         return this;
     }
 
-    public Widget scale(double s) {
+    public Widget scale(float s) {
         transform.scale = s;
         return this;
     }
@@ -260,6 +260,10 @@ public class Widget extends WidgetContainer {
     public GuiEventBus eventBus() {
         return eventBus;
     }
+
+    public <T extends GuiEvent> Widget listen(Class<? extends T> clazz, Runnable handler) {
+        return listen(clazz, (widget, event) -> handler.run());
+    }
     
     public <T extends GuiEvent> Widget listen(Class<? extends T> clazz, IGuiEventHandler<T> handler) {
         listen(clazz, handler, 0);
@@ -321,14 +325,18 @@ public class Widget extends WidgetContainer {
         return parent == null ? thisName : parent.getFullName() + "/" + thisName;
     }
     
-    public boolean isPointWithin(double tx, double ty) {
-        double w = transform.width, h = transform.height;
-        double x1 = x + w * scale, y1 = y + h * scale;
+    public boolean isPointWithin(float tx, float ty) {
+        float w = transform.width, h = transform.height;
+        float x1 = x + w * scale, y1 = y + h * scale;
         return (x <= tx && tx <x1) && (y <= ty && ty < y1);
     }
     
     public boolean isFocused() {
         return gui != null && this == gui.getFocus();
+    }
+
+    public void markDirty() {
+        this.dirty = true;
     }
 
     @Override

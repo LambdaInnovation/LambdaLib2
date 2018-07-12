@@ -4,7 +4,7 @@ import org.lwjgl.util.Color;
 
 import static org.lwjgl.opengl.GL11.glColor4ub;
 
-public final class ColorUtils {
+public final class Colors {
 
     public static Color white() {
         return new Color(255, 255, 255, 255);
@@ -12,6 +12,15 @@ public final class ColorUtils {
 
     public static Color black() {
         return new Color(0, 0, 0, 255);
+    }
+
+    public static Color fromRGB32(int col) {
+        return new Color(
+            (col >> 24) & 0xFF,
+            (col >> 16) & 0xFF,
+            (col >> 8) & 0xFF,
+            255
+        );
     }
 
     public static Color fromRGBA32(int col) {
@@ -31,10 +40,14 @@ public final class ColorUtils {
         return new Color((int) (r * 255), (int) (g * 255), (int) (b * 255), (int) (a * 255));
     }
 
+    public static Color fromFloatMono(float x) {
+        return fromFloat(x, x, x, 1);
+    }
+
     public static void bindToGL(Color color) {
         glColor4ub(color.getRedByte(), color.getGreenByte(), color.getBlueByte(), color.getAlphaByte());
     }
 
-    private ColorUtils() {}
+    private Colors() {}
 
 }
