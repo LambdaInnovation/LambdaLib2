@@ -48,7 +48,7 @@ public class Tint extends Component {
         
         listen(FrameEvent.class, (w, event) -> {
             if(affectTexture) {
-                DrawTexture dt = DrawTexture.get(w);
+                DrawTexture dt = w.getComponent(DrawTexture.class);
                 if(dt != null) {
                     dt.color = event.hovering ? hoverColor : idleColor;
                 }

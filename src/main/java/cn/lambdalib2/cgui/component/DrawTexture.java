@@ -106,8 +106,4 @@ public class DrawTexture extends Component {
         return this;
     }
 
-    public static DrawTexture get(Widget w) {
-        return w.getComponent("DrawTexture");
-    }
-
 }

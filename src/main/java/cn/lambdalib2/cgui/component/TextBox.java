@@ -222,6 +222,11 @@ public class TextBox extends Component {
         return this;
     }
 
+    public TextBox setHeightAlign(HeightAlign align) {
+        heightAlign = align;
+        return this;
+    }
+
     private void validate() {
         if (!allowEdit) {
             displayOffset = caretPos = 0;

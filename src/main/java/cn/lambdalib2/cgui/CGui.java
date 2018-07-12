@@ -286,7 +286,15 @@ public class CGui extends WidgetContainer {
     public Widget getFocus() {
         return focus;
     }
-    
+
+    public float getMouseX() {
+        return mouseX;
+    }
+
+    public float getMouseY() {
+        return mouseY;
+    }
+
     //---Key Handling
     
     //---Internal Processing
