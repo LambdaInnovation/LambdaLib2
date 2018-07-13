@@ -23,8 +23,9 @@ public class DragBar extends Component {
     public float lower, upper;
     public Axis axis = Axis.Y;
 
-    public DragBar(float _y0, float _y1) {
+    public DragBar(Axis _axis, float _y0, float _y1) {
         this();
+        axis  = _axis;
         lower = _y0;
         upper = _y1;
     }
