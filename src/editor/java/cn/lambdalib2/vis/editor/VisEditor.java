@@ -27,11 +27,9 @@ import org.lwjgl.input.Keyboard;
 
 import static cn.lambdalib2.vis.editor.Styles.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class VisEditor extends CGuiScreen  {
 
@@ -167,6 +165,30 @@ public class VisEditor extends CGuiScreen  {
 
     private void startEditWorkDirs() {
         ScreenCover cover = new ScreenCover(VisEditor.this);
+
+        HierarchyTab window = new HierarchyTab(true, 0, 0, 150, 100, "Working Dirs", Window.STYLE_CLOSABLE) {
+            @Override
+            void rebuild() {
+                elements = Arrays.stream(VisConfig.getWorkDirs())
+                    .map(it -> new Element(it, elemTexture("folder")))
+                    .collect(Collectors.toList());
+                super.rebuild();
+            }
+        };
+        window.listen(Window.CloseEvent.class, cover::dispose);
+        window.initButton("Add directory", "add", w -> {
+            ScreenCover cover2 = new ScreenCover(VisEditor.this);
+            Window wndAskPath = new Window("Enter new path...", 0, 0, 100, 30, Window.STYLE_CLOSABLE);
+
+            wndAskPath.listen(Window.CloseEvent.class, cover2::dispose);
+            wndAskPath.transform.setCenteredAlign();
+
+            Widget textArea = new Widget(0, 15, 80, 12);
+            TextBox textBox = Styles.newTextBox(new FontOption(9, FontAlign.CENTER)).setContent("ENTER: Confirm");
+            textArea.addComponent(textBox);
+
+
+        });
         //TODO
     }
 

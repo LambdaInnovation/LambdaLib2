@@ -3,6 +3,7 @@ package cn.lambdalib2;
 import cn.lambdalib2.registry.RegistryMod;
 import cn.lambdalib2.util.DebugDraw;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -25,9 +26,12 @@ public class LambdaLib2
 
     public static Logger log;
 
+    public static Configuration config;
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         log = event.getModLog();
+        config = new Configuration(event.getSuggestedConfigurationFile());
     }
 
     @EventHandler

@@ -209,9 +209,11 @@ class HierarchyTab extends Window implements IHierarchyItem {
 
     private static final FontOption HINT_OPTION = new FontOption(8, FontAlign.CENTER);
 
-    private final int topHeight;
+    List<Element> elements = new ArrayList<>();
 
-    private final List<Element> elements = new ArrayList<>();
+    // private
+
+    private final int topHeight;
 
     private final Widget listArea;
 
@@ -280,7 +282,7 @@ class HierarchyTab extends Window implements IHierarchyItem {
         rebuild();
     }
 
-    final void rebuild() {
+    void rebuild() {
         float width = listArea.transform.width;
 
         // Clear current selection, but retain if still present

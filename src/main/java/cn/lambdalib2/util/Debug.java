@@ -49,5 +49,17 @@ public class Debug {
         log(String.format(format, params));
     }
 
+    public static void error(Exception ex) {
+        logger.error(ex);
+    }
+
+    public static void error(String msg, Exception ex) {
+        logger.error(msg, ex);
+    }
+
+    public static void error(String msg) {
+        logger.error(msg);
+    }
+
     private Debug() {}
 }
