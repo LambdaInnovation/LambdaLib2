@@ -19,7 +19,7 @@ final class Styles {
         COLOR_MODIFIED = Colors.fromRGB32(0x9f5a00);
 
     public static ResourceLocation texture(String path) {
-        return new ResourceLocation("lambdalib", "texture/vis/" + path + ".png");
+        return new ResourceLocation("lambdalib2", "textures/vis/" + path + ".png");
     }
 
     public static ResourceLocation elemTexture(String path) {

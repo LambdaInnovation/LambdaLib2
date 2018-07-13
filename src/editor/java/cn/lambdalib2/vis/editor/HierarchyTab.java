@@ -71,7 +71,7 @@ class Element extends Widget implements IHierarchyItem {
 
         _elementIconSz = height * 0.8f;
 
-        iconArea = new Widget();
+        iconArea = new Widget().raycast(false);
         iconArea.addComponent(new DrawTexture(icon));
 
         textArea = createText();
@@ -89,7 +89,7 @@ class Element extends Widget implements IHierarchyItem {
 
     protected Widget createText() {
         Widget ret = new Widget();
-        ret.transform.doesListenKey = true;
+        ret.transform.doesListenKey = false;
         ret.addComponent(new TextBox(new FontOption(0.9f * height)).setContent(elementName));
         return ret;
     }

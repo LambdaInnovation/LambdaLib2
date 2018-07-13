@@ -108,8 +108,8 @@ public class Widget extends WidgetContainer {
         return this;
     }
 
-    public Widget disallowRaycast() {
-        this.transform.doesListenKey = false;
+    public Widget raycast(boolean enable) {
+        transform.doesListenKey = enable;
         return this;
     }
 

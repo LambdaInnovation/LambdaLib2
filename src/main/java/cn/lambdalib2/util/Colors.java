@@ -16,9 +16,9 @@ public final class Colors {
 
     public static Color fromRGB32(int col) {
         return new Color(
-            (col >> 24) & 0xFF,
             (col >> 16) & 0xFF,
             (col >> 8) & 0xFF,
+            (col) & 0xFF,
             255
         );
     }

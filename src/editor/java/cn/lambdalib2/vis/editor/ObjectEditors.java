@@ -16,7 +16,7 @@ public class ObjectEditors {
     static class EditEvent implements GuiEvent {}
 
     interface ObjectEditor {
-        void upateRepr();
+        void updateDisplay();
     }
 
     abstract static class EditBox extends Widget implements ObjectEditor {
@@ -57,7 +57,8 @@ public class ObjectEditors {
             });
         }
 
-        final void updateDisplay() {
+        @Override
+        public void updateDisplay() {
             try {
                 text.setContent(getDisplayValue());
             } catch(Exception e) {

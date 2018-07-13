@@ -14,6 +14,7 @@ import cn.lambdalib2.registry.StateEventCallback;
 import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.client.font.IFont.FontAlign;
 import cn.lambdalib2.util.client.font.IFont.FontOption;
+import cn.lambdalib2.vis.editor.ObjectEditors.EditBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -27,6 +28,7 @@ import org.lwjgl.input.Keyboard;
 
 import static cn.lambdalib2.vis.editor.Styles.*;
 
+import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -187,9 +189,54 @@ public class VisEditor extends CGuiScreen  {
             TextBox textBox = Styles.newTextBox(new FontOption(9, FontAlign.CENTER)).setContent("ENTER: Confirm");
             textArea.addComponent(textBox);
 
+            EditBox input = new EditBox() {
+                String str = "";
 
+                {
+                    transform.y = -5;
+                    transform.width = 70;
+                    transform.setCenteredAlign();
+                }
+
+                @Override
+                String getDisplayValue() {
+                    return str;
+                }
+
+                @Override
+                void setValue(String content) {
+                    List<String> workDirs = new ArrayList<>(Arrays.asList(VisConfig.getWorkDirs()));
+                    if (new File(content).isDirectory() && !workDirs.contains(content)) {
+                        workDirs.add(content);
+                        VisConfig.setWorkDirs(workDirs.toArray(new String[0]));
+                        window.rebuild();
+                        cover2.dispose();
+                    } else {
+                        textBox.option.color.setColor(Styles.COLOR_ERROR);
+                        textBox.content = "Invalid path";
+                    }
+                }
+            };
+
+            wndAskPath.addWidget(textArea);
+            wndAskPath.addWidget(input);
+
+            cover2.addWidget(wndAskPath);
+            root.addWidget(cover2);
         });
-        //TODO
+        window.initButton("Remove directory", "remove", w -> {
+            Element selected = window.getSelected();
+            if (selected != null) {
+                List<String> workDirs = new ArrayList<>(Arrays.asList(VisConfig.getWorkDirs()));
+                workDirs.remove(selected.elementName);
+                VisConfig.setWorkDirs(workDirs.toArray(new String[0]));
+                window.rebuild();
+            }
+        });
+
+        window.transform.setCenteredAlign();
+        cover.addWidget(window);
+        root.addWidget(cover);
     }
 
     public enum VisEditorStartup {
@@ -275,7 +322,9 @@ class ScreenCover extends Widget {
     public ScreenCover(CGuiScreen env, boolean blackout) {
         this.env = env;
         if (blackout) {
-            addComponent(new DrawTexture().setTex(null).setColor(Colors.fromFloatMono(0.3f)));
+            addComponent(new DrawTexture()
+                .setTex(null)
+                .setColor(Colors.fromFloat(0, 0, 0, 0.3f)));
         }
         listen(RefreshEvent.class, this::updateSize);
     }

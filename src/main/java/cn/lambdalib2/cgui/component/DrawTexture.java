@@ -36,8 +36,10 @@ public class DrawTexture extends Component {
     
     public boolean writeDepth = true;
 
-    public double u = 0, v = 0, texWidth = 500, texHeight = 500;
-    
+    public boolean doesUseUV;
+
+    public double u = 0, v = 0, texWidth = 0, texHeight = 0;
+
     private int shaderId = 0;
 
     public DrawTexture() {
@@ -67,7 +69,11 @@ public class DrawTexture extends Component {
 
             if(texture != null && !texture.getResourcePath().equals("<null>")) {
                 HudUtils.loadTexture(texture);
-                HudUtils.rect(0, 0, u, v, w.transform.width, w.transform.height, texWidth, texHeight);
+                if (doesUseUV) {
+                    HudUtils.rect(0, 0, u, v, w.transform.width, w.transform.height, texWidth, texHeight);
+                } else {
+                    HudUtils.rect(0, 0, w.transform.width, w.transform.height);
+                }
             } else {
                 HudUtils.colorRect(0, 0, w.transform.width, w.transform.height);
             }
@@ -91,6 +97,7 @@ public class DrawTexture extends Component {
     }
 
     public DrawTexture setUVRect(double u, double v, double texWidth, double texHeight) {
+        doesUseUV = true;
         this.u = u;
         this.v = v;
         this.texWidth = texWidth;
