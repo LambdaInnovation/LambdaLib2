@@ -7,6 +7,7 @@
 package cn.lambdalib2;
 
 import cn.lambdalib2.registry.impl.RegistryManager;
+import cn.lambdalib2.s11n.network.NetworkS11n;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import net.minecraftforge.fml.common.DummyModContainer;
@@ -47,6 +48,7 @@ public class ModContainer extends DummyModContainer {
 
         ASMDataTable data = event.getASMHarvestedData();
         RegistryManager.INSTANCE.readASMData(data);
+        NetworkS11n.readASMData(data);
     }
 
 }
