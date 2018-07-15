@@ -399,7 +399,7 @@ class FileWindow extends ScreenCover {
                                 }
                                 if (!f.isDirectory()) {
                                     if (pathInputText.content.equals(f.getName())) {
-                                        // go_(this)
+                                        onConfirm();
                                     }
                                     pathInputText.setContent(f.getName());
                                 }
