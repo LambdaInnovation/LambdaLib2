@@ -266,16 +266,16 @@ public class Widget extends WidgetContainer {
     }
     
     public <T extends GuiEvent> Widget listen(Class<? extends T> clazz, IGuiEventHandler<T> handler) {
-        listen(clazz, handler, 0);
+        listen(clazz, 0, handler);
         return this;
     }
     
-    public <T extends GuiEvent> Widget listen(Class<? extends T> clazz, IGuiEventHandler<T> handler, int priority) {
+    public <T extends GuiEvent> Widget listen(Class<? extends T> clazz, int priority, IGuiEventHandler<T> handler) {
         eventBus.listen(clazz, handler, priority);
         return this;
     }
     
-    public <T extends GuiEvent> Widget listen(Class<? extends T> clazz, IGuiEventHandler<T> handler, int priority, boolean copyable) {
+    public <T extends GuiEvent> Widget listen(Class<? extends T> clazz, int priority, boolean copyable, IGuiEventHandler<T> handler) {
         eventBus.listen(clazz, handler, priority, copyable);
         return this;
     }

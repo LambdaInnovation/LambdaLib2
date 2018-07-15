@@ -211,11 +211,9 @@ class HierarchyTab extends Window implements IHierarchyItem {
 
     List<Element> elements = new ArrayList<>();
 
+    final Widget listArea;
+
     // private
-
-    private final int topHeight;
-
-    private final Widget listArea;
 
     private ElementList listCom;
 
@@ -224,6 +222,8 @@ class HierarchyTab extends Window implements IHierarchyItem {
     private Widget bar;
 
     private int buttonSz;
+
+    private boolean _hasButton;
 
 
     public HierarchyTab(boolean hasButton,
@@ -239,8 +239,9 @@ class HierarchyTab extends Window implements IHierarchyItem {
                         String name,
                         int style) {
         super(name, x, y, w, h, style);
-        topHeight = hasButton ? 10 : 0;
+        hasButton = _hasButton;
 
+        float topHeight = getTopHeight();
         listArea = new Widget(0, topHeight, w, h - topHeight);
         listArea.addComponent(new DrawTexture(null, Colors.fromFloatMono(0.2f)));
 
@@ -350,6 +351,10 @@ class HierarchyTab extends Window implements IHierarchyItem {
 
     public boolean doesRequireSelection() {
         return true;
+    }
+
+    public int getTopHeight() {
+        return _hasButton ? 10 : 0;
     }
 
     // PRIVATE

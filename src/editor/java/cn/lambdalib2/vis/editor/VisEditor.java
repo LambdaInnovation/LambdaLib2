@@ -6,22 +6,24 @@ import cn.lambdalib2.cgui.CGuiScreen;
 import cn.lambdalib2.cgui.Widget;
 import cn.lambdalib2.cgui.component.DrawTexture;
 import cn.lambdalib2.cgui.component.TextBox;
+import cn.lambdalib2.cgui.component.TextBox.ConfirmInputEvent;
 import cn.lambdalib2.cgui.component.Tint;
 import cn.lambdalib2.cgui.component.Transform.HeightAlign;
 import cn.lambdalib2.cgui.component.Transform.WidthAlign;
 import cn.lambdalib2.cgui.event.*;
 import cn.lambdalib2.registry.StateEventCallback;
 import cn.lambdalib2.util.Colors;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.client.font.IFont.FontAlign;
 import cn.lambdalib2.util.client.font.IFont.FontOption;
 import cn.lambdalib2.vis.editor.ObjectEditors.EditBox;
+import cn.lambdalib2.vis.editor.Popup.ButtonData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
@@ -31,6 +33,7 @@ import static cn.lambdalib2.vis.editor.Styles.*;
 import java.io.File;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class VisEditor extends CGuiScreen  {
@@ -239,6 +242,25 @@ public class VisEditor extends CGuiScreen  {
         root.addWidget(cover);
     }
 
+    void createFileWindow(boolean allowNewFile, String name, String buttonName,
+                                  Predicate<File> buttonCallback, Runnable abortCallback) {
+        Widget window = new FileWindow(this, allowNewFile, name, buttonName, buttonCallback, abortCallback);
+        root.addWidget(window);
+    }
+
+    void notify(String msg, Runnable onConfirmed) {
+        root.addWidget(new Popup(this, "Notification", msg,
+            Collections.singletonList(new ButtonData("OK", onConfirmed))));
+    }
+
+    void confirm(String msg, Runnable onOK, Runnable onCancel) {
+        root.addWidget(new Popup(this, "Notification", msg,
+            Arrays.asList(
+                new ButtonData("OK", onOK),
+                new ButtonData("Cancel", onCancel)
+            )));
+    }
+
     public enum VisEditorStartup {
         INSTANCE;
 
@@ -263,6 +285,178 @@ public class VisEditor extends CGuiScreen  {
 
 
 // Commonly used widgets
+
+class FileWindow extends ScreenCover {
+
+    private final VisEditor editor;
+
+    private final boolean allowNewFile;
+    private final String name;
+    private final String buttonName;
+
+    private final Predicate<File> buttonCallback;
+    private final Runnable abortCallback;
+
+    private final List<File> allWorkDirs;
+
+    private Optional<File> currentPath;
+
+    private TextBox pathTellerText, pathInputText;
+
+    private HierarchyTab tab;
+
+    FileWindow(VisEditor _editor, boolean _allowNewFile, String _name, String _buttonName,
+                                  Predicate<File> _buttonCallback, Runnable _abortCallback) {
+        super(_editor);
+        editor = _editor;
+
+        allowNewFile = _allowNewFile;
+        name = _name;
+        buttonName = _buttonName;
+        buttonCallback = _buttonCallback;
+        abortCallback = _abortCallback;
+
+        allWorkDirs = Arrays.stream(VisConfig.getWorkDirs())
+            .map(File::new)
+            .collect(Collectors.toList());
+
+        updatePath(VisConfig.getCurrentDir().map(File::new).orElse(null));
+
+        Widget pathTeller = new Widget(2, 1, 146, 10);
+        pathTellerText = new TextBox();
+        pathTeller.addComponent(monoTint(0.3f, 0.4f, false));
+        pathTeller.addComponent(pathTellerText);
+
+        Widget pathInput = new Widget(2, -1, 130, 10);
+        pathInput.transform.alignHeight = HeightAlign.BOTTOM;
+        pathInputText = newTextBox().allowEdit();
+        pathInput.addComponent(new DrawTexture(null, Colors.fromFloatMono(0.3f)));
+        pathInput.addComponent(pathInputText);
+
+        pathTeller.listen(LeftClickEvent.class, () -> {
+            SubMenu sn = new SubMenu();
+            allWorkDirs.stream().filter(it -> Objects.equals(it, currentPath.orElse(null)))
+                .forEach(dir -> {
+                    sn.addItem(dir.getAbsolutePath(), () -> {
+                        currentPath = Optional.of(dir);
+                        tab.rebuild();
+                        pathTellerText.setContent(dir.getAbsolutePath());
+                    });
+                });
+            sn.transform.y = 10;
+            sn.transform.alignWidth = WidthAlign.RIGHT;
+            pathTeller.addWidget(sn);
+        });
+
+        pathInput.listen(ConfirmInputEvent.class, this::onConfirm);
+
+        tab = new HierarchyTab(true, 0, 0, 150, 86, name, Window.STYLE_CLOSABLE) {
+
+            final Element noPathElem = new Element("Path doesn't exist", Styles.elemTexture("folder_open"));
+            final Element prevFolderElem = new Element("..", elemTexture("folder")) {
+                {
+                    listen(LeftClickEvent.class, 1, (w, e) -> {
+                        if (findTab().getSelected() == this) {
+                            updatePath(currentPath.get().getParentFile());
+                            rebuild();
+                        }
+                    });
+                }
+            };
+
+            String selectedPath = "";
+
+            {
+                listen(CloseEvent.class, () -> {
+                    FileWindow.this.dispose();
+                    abortCallback.run();
+                });
+
+                listArea.transform.x += 2;
+                listArea.transform.width -= 2;
+
+                transform.setCenteredAlign();
+                body.transform.height += 12;
+
+            }
+
+            @Override
+            public int getTopHeight() {
+                return 12;
+            }
+
+            @Override
+            void rebuild() {
+                if (currentPath.isPresent() && currentPath.get().isDirectory()) {
+                    File file = currentPath.get();
+                    elements = Arrays.stream(Debug.assertNotNull(file.listFiles()))
+                        .map(f -> {
+                            Element elem = new Element(f.getName(), f.isDirectory() ? Styles.elemTexture("folder") : Styles.elemTexture("file"));
+                            elem.listen(LeftClickEvent.class, () -> {
+                                if (f.isDirectory() && getSelected() == elem) {
+                                    updatePath(f);
+                                    rebuild();
+                                }
+                                if (!f.isDirectory()) {
+                                    if (pathInputText.content.equals(f.getName())) {
+                                        // go_(this)
+                                    }
+                                    pathInputText.setContent(f.getName());
+                                }
+                            });
+                            return elem;
+                        })
+                        .collect(Collectors.toList());
+                    if (!allWorkDirs.contains(file)) {
+                        elements.add(prevFolderElem);
+                    }
+                } else {
+                    elements.clear();
+                    elements.add(noPathElem);
+                }
+                super.rebuild();
+            }
+        };
+
+        Widget buttonAct = Styles.newButton(-1, -2, 15, 8, buttonName);
+        buttonAct.transform.alignHeight = HeightAlign.BOTTOM;
+        buttonAct.transform.alignWidth = WidthAlign.RIGHT;
+        buttonAct.listen(LeftClickEvent.class, this::onConfirm);
+
+        Widget body = tab.body;
+        body.addWidget(pathTeller);
+        body.addWidget(pathInput);
+        body.addWidget(buttonAct);
+
+        addWidget(tab);
+    }
+
+    void updatePath(File newPath) {
+        currentPath = Optional.ofNullable(newPath);
+        String pathStr = currentPath.map(File::getAbsolutePath).orElse("<No active path>");
+        pathTellerText.setContent(pathStr);
+    }
+
+    void onConfirm() {
+        if (currentPath.isPresent()) {
+            File newFile = new File(currentPath.get(), pathInputText.content);
+            if (newFile.isFile() || allowNewFile) {
+                if (buttonCallback.test(newFile)) {
+                    dispose();
+                }
+            } else if (newFile.isDirectory()) {
+                updatePath(newFile.getAbsoluteFile());
+                pathInputText.setContent("");
+                tab.rebuild();
+            } else {
+                editor.notify("Invalid file path " + pathInputText.content, () -> {});
+            }
+        } else {
+            editor.notify("You must select a valid path", () -> {});
+        }
+    }
+
+}
 
 class SubMenu extends Widget {
 
@@ -419,6 +613,55 @@ class Window extends Widget {
         ++buttonCount;
     }
 
-    
 }
 
+class Popup extends ScreenCover {
+
+    private static final int
+        FONT_SIZE = 8,
+        BUTTON_LEN = 18,
+        BUTTON_STEP = BUTTON_LEN + 5;
+
+    public static class ButtonData {
+        public final String name;
+        public final Runnable callback;
+
+        public ButtonData(String name, Runnable callback) {
+            this.name = name;
+            this.callback = callback;
+        }
+    }
+
+    private float strlen, buttonW;
+
+    public Popup(CGuiScreen env, String header, String msg, List<ButtonData> buttons) {
+        super(env);
+
+        strlen = 10 + Styles.font.getTextWidth(msg, new FontOption(FONT_SIZE));
+        buttonW = BUTTON_STEP * buttons.size() - 5;
+
+        float width = Math.max(strlen, Math.max(80, buttonW));
+
+        Window not = new Window(header, 0, 0, width, 45, 0);
+        not.transform.setCenteredAlign();
+
+        Widget textArea = new Widget(0, -10, width, 0);
+        textArea.transform.setCenteredAlign();
+
+        textArea.addComponent(newTextBox(new FontOption(FONT_SIZE, FontAlign.CENTER)).setContent(msg));
+
+        for (int i = 0; i < buttons.size(); ++i) {
+            ButtonData data = buttons.get(i);
+            Widget button = newButton(-buttonW / 2 + i * BUTTON_STEP + BUTTON_LEN / 2, 10, BUTTON_LEN, 7, data.name);
+            button.listen(LeftClickEvent.class, () -> {
+                data.callback.run();
+                Popup.this.dispose();;
+            });
+            button.transform.setCenteredAlign();
+            not.addWidget(button);
+        }
+
+        not.addWidget(textArea);
+        addWidget(not);
+    }
+}

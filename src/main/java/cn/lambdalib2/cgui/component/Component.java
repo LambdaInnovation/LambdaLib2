@@ -63,7 +63,7 @@ public class Component {
      */
     public void onAdded() {
         for(Node n : addedHandlers) {
-            widget.listen(n.type, n.handler, n.prio, false);
+            widget.listen(n.type, n.prio, false, n.handler);
         }
     }
     
