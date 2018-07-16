@@ -61,5 +61,9 @@ public class Debug {
         logger.error(msg);
     }
 
+    public static void warn(String msg) {
+        logger.warn(msg);
+    }
+
     private Debug() {}
 }
