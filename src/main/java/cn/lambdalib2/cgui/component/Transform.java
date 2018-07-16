@@ -13,26 +13,26 @@ package cn.lambdalib2.cgui.component;
 public class Transform extends Component {
     
     public enum WidthAlign { LEFT, CENTER, RIGHT;
-        public final double factor;
+        public final float factor;
         WidthAlign() {
-            factor = ordinal() * 0.5;
+            factor = ordinal() * 0.5f;
         }
     }
     
     public enum HeightAlign { TOP, CENTER, BOTTOM;
-        public final double factor;
+        public final float factor;
         HeightAlign() {
-            factor = ordinal() * 0.5;
+            factor = ordinal() * 0.5f;
         }
     }
     
-    public double width = 0.0, height = 0.0;
+    public float width = 0.0f, height = 0.0f;
     
-    public double x = 0, y = 0;
+    public float x = 0, y = 0;
     
-    public double pivotX = 0, pivotY = 0;
+    public float pivotX = 0, pivotY = 0;
     
-    public double scale = 1.0;
+    public float scale = 1.0f;
     
     /**
      * Whether the widget should be drawed.
@@ -53,13 +53,13 @@ public class Transform extends Component {
     }
     
     //Helper set methods
-    public Transform setPos(double _x, double _y) {
+    public Transform setPos(float _x, float _y) {
         x = _x;
         y = _y;
         return this;
     }
     
-    public Transform setSize(double _width, double _height) {
+    public Transform setSize(float _width, float _height) {
         width = _width;
         height = _height;
         return this;

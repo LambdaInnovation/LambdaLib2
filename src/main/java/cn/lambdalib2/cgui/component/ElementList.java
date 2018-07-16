@@ -25,7 +25,7 @@ public class ElementList extends Component {
     /**
      * The fixed vertical spacing between widgets.
      */
-    public double spacing = 0.0;
+    public float spacing = 0.0f;
     
     private int progress;
     
@@ -55,7 +55,7 @@ public class ElementList extends Component {
     }
     
     public int getMaxProgress() {
-        double sum = 0.0;
+        float sum = 0.0f;
 
         int i = subWidgets.size() - 1;
         while (i >= 0) {
@@ -100,7 +100,7 @@ public class ElementList extends Component {
     }
     
     private void updateList() {
-        double sum = 0.0;
+        float sum = 0.0f;
         for(Widget w : subWidgets) {
             w.transform.doesDraw = false;
         }
@@ -169,7 +169,7 @@ public class ElementList extends Component {
         }
     }
     
-    public double getFullHeight() {
+    public float getFullHeight() {
         return sumHeight(0, subWidgets.size());
     }
 
@@ -180,8 +180,8 @@ public class ElementList extends Component {
     /**
      * from inclusive, to exclusive
      */
-    private double sumHeight(int from, int to) {
-        double ret = 0.0;
+    private float sumHeight(int from, int to) {
+        float ret = 0.0f;
         for(int i = from; i < to; ++i) {
             ret += subWidgets.get(i).transform.height;
             ret += spacing;

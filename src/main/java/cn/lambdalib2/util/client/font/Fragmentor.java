@@ -24,15 +24,15 @@ public class Fragmentor {
         /**
          * Get the width of given character when drawed.
          */
-        double getCharWidth(int chr);
+        float getCharWidth(int chr);
 
         /**
          * Get the text width that will be drawn.
          */
-        double getTextWidth(String str);
+        float getTextWidth(String str);
     }
 
-    public static List<String> toMultiline(String str, IFontSizeProvider font, double local_x, double limit) {
+    public static List<String> toMultiline(String str, IFontSizeProvider font, float local_x, float limit) {
         Fragmentor frag = new Fragmentor(str);
         List<String> ret = new ArrayList<>();
 
@@ -41,7 +41,7 @@ public class Fragmentor {
             Pair<TokenType, String> next = frag.next();
             TokenType type = next.getLeft();
             String content = next.getRight();
-            double len = font.getTextWidth(content);
+            float len = font.getTextWidth(content);
             if (local_x + len > limit) {
                 if (!type.canSplit) { // Draws as whole in next line
                     if (builder.length() > 0) {
@@ -88,7 +88,7 @@ public class Fragmentor {
     /**
      * Converts a string with linesep to a list of string, based on the display property of the given font.
      */
-    public static List<String> toMultiline(String str, IFontSizeProvider font, double limit) {
+    public static List<String> toMultiline(String str, IFontSizeProvider font, float limit) {
         return toMultiline(str, font, 0, limit);
     }
 

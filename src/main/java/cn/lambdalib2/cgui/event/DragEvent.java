@@ -16,9 +16,9 @@ public class DragEvent implements GuiEvent {
     /**
      * Offset coordinates from dragging widget origin to current mouse position, in global scale level.
      */
-    public final double offsetX, offsetY;
+    public final float offsetX, offsetY;
 
-    public DragEvent(double _offsetX, double _offsetY) {
+    public DragEvent(float _offsetX, float _offsetY) {
         offsetX = _offsetX;
         offsetY = _offsetY;
     }

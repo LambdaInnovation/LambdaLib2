@@ -31,7 +31,7 @@ public class HierarchyDebugger extends Widget {
     }
 
     private static final FontOption option = new IFont.FontOption(10);
-    private double drawHierarchy(double x, double y, Widget w, String name, double fsize) {
+    private float drawHierarchy(float x, float y, Widget w, String name, float fsize) {
         IFont font = TrueTypeFont.defaultFont;
 
         StringBuilder sb = new StringBuilder();
@@ -50,7 +50,7 @@ public class HierarchyDebugger extends Widget {
         for (Widget sub : w.getDrawList()) {
             y += fsize * 1.1;
 
-            y = drawHierarchy(x + fsize * 0.5, y, sub, sub.getName(), fsize * 0.9);
+            y = drawHierarchy(x + fsize * 0.5f, y, sub, sub.getName(), fsize * 0.9f);
         }
 
         return y;

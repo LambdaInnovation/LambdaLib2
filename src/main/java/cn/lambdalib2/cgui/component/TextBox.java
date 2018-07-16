@@ -31,6 +31,7 @@ import cn.lambdalib2.cgui.event.GuiEvent;
 import cn.lambdalib2.cgui.event.KeyEvent;
 import cn.lambdalib2.cgui.event.LeftClickEvent;
 import net.minecraft.util.ChatAllowedCharacters;
+import org.lwjgl.util.vector.Vector2f;
 
 import javax.vecmath.Vector2d;
 
@@ -78,9 +79,9 @@ public class TextBox extends Component {
     public boolean doesEcho = false;
     public char echoChar = '*';
     
-    public double zLevel = 0;
+    public float zLevel = 0;
 
-    public double xOffset, yOffset;
+    public float xOffset, yOffset;
 
     private int caretPos = 0;
 
@@ -100,14 +101,14 @@ public class TextBox extends Component {
         listen(FrameEvent.class, (w, e) -> {
             validate();
 
-            final Vector2d origin = origin();
-            final double widthLimit = w.transform.width - xOffset;
+            final Vector2f origin = origin();
+            final float widthLimit = w.transform.width - xOffset;
 
             final String processed = processedContent().substring(displayOffset);
 
             final int localCaret = caretPos - displayOffset; // ∈[0, processed.length]
 
-            double acc = 0.0;
+            float acc = 0.0f;
             int i = processed.length();
             if (emit) {
                 for (i = 0; i < processed.length() && acc < widthLimit; ++i) {
@@ -187,11 +188,11 @@ public class TextBox extends Component {
                 return;
             }
 
-            final Vector2d origin = origin();
+            final Vector2f origin = origin();
             final String display = processedContent().substring(displayOffset);
-            final double rel_x = origin.x - font.getTextWidth(display, option) * option.align.lenOffset + evt.x;
+            final float rel_x = origin.x - font.getTextWidth(display, option) * option.align.lenOffset + evt.x;
 
-            double acc = 0.0;
+            float acc = 0.0f;
             int ind = 0;
             for (; acc < rel_x && ind < display.length(); ++ind) {
                 acc += font.getCharWidth(display.codePointAt(ind), option);
@@ -221,6 +222,11 @@ public class TextBox extends Component {
         return this;
     }
 
+    public TextBox setHeightAlign(HeightAlign align) {
+        heightAlign = align;
+        return this;
+    }
+
     private void validate() {
         if (!allowEdit) {
             displayOffset = caretPos = 0;
@@ -232,10 +238,10 @@ public class TextBox extends Component {
         }
     }
 
-    private Vector2d origin() {
-        return new Vector2d(
-                widget.transform.width * option.align.lenOffset + xOffset,
-                Math.max(0, widget.transform.height - option.fontSize) * heightAlign.factor + yOffset
+    private Vector2f origin() {
+        return new Vector2f(
+            (float) (widget.transform.width * option.align.lenOffset + xOffset),
+            (float) (Math.max(0, widget.transform.height - option.fontSize) * heightAlign.factor + yOffset)
         );
     }
 
@@ -244,12 +250,12 @@ public class TextBox extends Component {
     }
 
     private void checkCaretRegion() {
-        final double widthLimit = widthLimit();
+        final float widthLimit = widthLimit();
         final String local = processedContent().substring(displayOffset);
         final int localCaret = caretPos - displayOffset;
-        final double distance = sumLength(local, 0, localCaret);
+        final float distance = sumLength(local, 0, localCaret);
         if (distance > widthLimit) {
-            double acc = 0.0;
+            float acc = 0.0f;
             int mini = 0;
             for (; mini < localCaret && distance - acc > widthLimit; ++mini) {
                 acc += font.getCharWidth(local.codePointAt(mini), option);
@@ -264,7 +270,7 @@ public class TextBox extends Component {
         assert caretPos == 0 || displayOffset < caretPos;
     }
 
-    private double widthLimit() {
+    private float widthLimit() {
         return widget.transform.width - xOffset;
     }
 
@@ -280,7 +286,7 @@ public class TextBox extends Component {
         return ret;
     }
 
-    private double sumLength(String str, int begin, int end) {
+    private float sumLength(String str, int begin, int end) {
         return font.getTextWidth(str.substring(begin, end), option);
     }
     

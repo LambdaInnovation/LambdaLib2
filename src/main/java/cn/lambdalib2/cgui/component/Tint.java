@@ -6,7 +6,7 @@
 */
 package cn.lambdalib2.cgui.component;
 
-import cn.lambdalib2.util.ColorUtils;
+import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.HudUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -32,7 +32,7 @@ public class Tint extends Component {
     }
 
     public Tint() {
-        this(ColorUtils.fromFloat(1, 1, 1, 0.6f), ColorUtils.fromFloat(1, 1, 1, 1));
+        this(Colors.fromFloat(1, 1, 1, 0.6f), Colors.fromFloat(1, 1, 1, 1));
     }
 
     public Tint(Color idle, Color hover, boolean _affectTexture) {
@@ -48,13 +48,13 @@ public class Tint extends Component {
         
         listen(FrameEvent.class, (w, event) -> {
             if(affectTexture) {
-                DrawTexture dt = DrawTexture.get(w);
+                DrawTexture dt = w.getComponent(DrawTexture.class);
                 if(dt != null) {
                     dt.color = event.hovering ? hoverColor : idleColor;
                 }
             } else {
-                if(event.hovering) ColorUtils.bindToGL(hoverColor);
-                else ColorUtils.bindToGL(idleColor);
+                if(event.hovering) Colors.bindToGL(hoverColor);
+                else Colors.bindToGL(idleColor);
                 
                 GL11.glDisable(GL11.GL_ALPHA_TEST);
                 HudUtils.pushZLevel();

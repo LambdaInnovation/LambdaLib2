@@ -6,7 +6,7 @@
 */
 package cn.lambdalib2.util.client.font;
 
-import cn.lambdalib2.util.ColorUtils;
+import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.client.font.Fragmentor.IFontSizeProvider;
 import cn.lambdalib2.s11n.SerializeType;
 import org.lwjgl.util.Color;
@@ -19,21 +19,21 @@ import java.util.List;
 public interface IFont {
 
     enum FontAlign {
-        LEFT(0), CENTER(0.5), RIGHT(1);
+        LEFT(0), CENTER(0.5f), RIGHT(1);
 
-        public final double lenOffset;
+        public final float lenOffset;
 
-        FontAlign(double _lenOffset) {
+        FontAlign(float _lenOffset) {
             lenOffset = _lenOffset;
         }
     }
 
     class Extent {
         public int linesDrawn;
-        public double width;
-        public double height;
+        public float width;
+        public float height;
 
-        public Extent(int _lines, double _width, double _height) {
+        public Extent(int _lines, float _width, float _height) {
             linesDrawn = _lines;
             width = _width;
             height = _height;
@@ -43,7 +43,7 @@ public interface IFont {
     @SerializeType
     class FontOption {
 
-        public double fontSize;
+        public float fontSize;
         public FontAlign align;
         public Color color;
 
@@ -51,30 +51,30 @@ public interface IFont {
             this(10);
         }
 
-        public FontOption(double _fontsz) {
+        public FontOption(float _fontsz) {
             this(_fontsz, FontAlign.LEFT);
         }
 
-        public FontOption(double _fontsz, Color _color) {
+        public FontOption(float _fontsz, Color _color) {
             this(_fontsz, FontAlign.LEFT, _color);
         }
 
-        public FontOption(double _fontsz, int hex) {
-            this(_fontsz, ColorUtils.fromRGBA32(hex));
+        public FontOption(float _fontsz, int hex) {
+            this(_fontsz, Colors.fromRGBA32(hex));
         }
 
-        public FontOption(double _fontsz, FontAlign _align) {
-            this(_fontsz, _align, ColorUtils.white());
+        public FontOption(float _fontsz, FontAlign _align) {
+            this(_fontsz, _align, Colors.white());
         }
 
-        public FontOption(double _fontsz, FontAlign _align, Color _color) {
+        public FontOption(float _fontsz, FontAlign _align, Color _color) {
             fontSize = _fontsz;
             align = _align;
             color = _color;
         }
 
-        public FontOption(double _fontsz, FontAlign _align, int hex) {
-            this(_fontsz, _align, ColorUtils.fromRGBA32(hex));
+        public FontOption(float _fontsz, FontAlign _align, int hex) {
+            this(_fontsz, _align, Colors.fromRGBA32(hex));
         }
 
         @Override
@@ -93,22 +93,22 @@ public interface IFont {
      * The string is assumed to not include line-seperate characters. (\n or \r). Violating this yields undefined
      *     behaviour.
      */
-    void draw(String str, double x, double y, FontOption option);
+    void draw(String str, float x, float y, FontOption option);
 
     /**
      * Get the width of given character when drawed with given FontOption.
      */
-    double getCharWidth(int chr, FontOption option);
+    float getCharWidth(int chr, FontOption option);
 
     /**
      * Get the text width that will be drawn if calls the {@link IFont#draw}.
      */
-    double getTextWidth(String str, FontOption option);
+    float getTextWidth(String str, FontOption option);
 
     /**
      * Draws a line-seperated string at the given position.
      */
-    default void drawSeperated(String str, final double x, double y, double limit, FontOption option) {
+    default void drawSeperated(String str, final float x, float y, float limit, FontOption option) {
         List<String> lines = Fragmentor.toMultiline(str, provider(option), limit);
         for (int i = 0; i < lines.size(); ++i) {
             draw(lines.get(i), x, y + i * option.fontSize, option);
@@ -119,7 +119,7 @@ public interface IFont {
      * Simulates the {@link IFont#drawSeperated} and return the extent drawn.
      * @return A {@link Extent} describing the drawn area
      */
-    default Extent drawSeperated_Sim(String str, double limit, FontOption option) {
+    default Extent drawSeperated_Sim(String str, float limit, FontOption option) {
         List<String> lines = Fragmentor.toMultiline(str, provider(option), limit);
         return new Extent(lines.size(), lines.size() == 1 ? getTextWidth(lines.get(0), option) : limit
             , lines.size() * option.fontSize);
@@ -128,12 +128,12 @@ public interface IFont {
     default IFontSizeProvider provider(FontOption option) {
         return new IFontSizeProvider() {
             @Override
-            public double getCharWidth(int chr) {
+            public float getCharWidth(int chr) {
                 return IFont.this.getCharWidth(chr, option);
             }
 
             @Override
-            public double getTextWidth(String str) {
+            public float getTextWidth(String str) {
                 return IFont.this.getTextWidth(str, option);
             }
         };

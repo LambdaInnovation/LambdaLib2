@@ -6,7 +6,7 @@
 */
 package cn.lambdalib2.cgui.component;
 
-import cn.lambdalib2.util.ColorUtils;
+import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.HudUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -22,7 +22,7 @@ public class Outline extends Component {
     public float lineWidth = 2;
 
     public Outline() {
-        this(ColorUtils.white());
+        this(Colors.white());
     }
 
     public Outline(Color _color) {
@@ -31,7 +31,7 @@ public class Outline extends Component {
         color = _color;
         
         listen(FrameEvent.class, (w, e) -> {
-            ColorUtils.bindToGL(color);
+            Colors.bindToGL(color);
             HudUtils.drawRectOutline(0, 0, w.transform.width, w.transform.height, lineWidth);
             GL11.glColor4f(1, 1, 1, 1);
         });

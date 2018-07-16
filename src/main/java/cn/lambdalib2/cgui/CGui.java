@@ -38,10 +38,10 @@ public class CGui extends WidgetContainer {
 
     static final double DRAG_TIME_TOLE = 0.1;
 
-    private double width, height; //Only useful when calculating 'CENTER' align preference
+    private float width, height; //Only useful when calculating 'CENTER' align preference
     
     //Absolute mouse position.
-    private double mouseX, mouseY;
+    private float mouseX, mouseY;
     
     Widget focus; //last input focus
     
@@ -49,13 +49,13 @@ public class CGui extends WidgetContainer {
     
     private double lastStartTime, lastDragTime;
     private Widget draggingNode;
-    private double xOffset, yOffset;
+    private float xOffset, yOffset;
 
     private boolean debug;
 
     public CGui() {}
     
-    public CGui(double width, double height) {
+    public CGui(float width, float height) {
         this.width = width;
         this.height = height;
     }
@@ -68,7 +68,7 @@ public class CGui extends WidgetContainer {
      * @param w new width
      * @param h new height
      */
-    public void resize(double w, double h) {
+    public void resize(float w, float h) {
         boolean diff = width != w || height != h;
         
         this.width = w;
@@ -81,8 +81,8 @@ public class CGui extends WidgetContainer {
         }
     }
 
-    public double getWidth() { return width; }
-    public double getHeight() { return height; }
+    public float getWidth() { return width; }
+    public float getHeight() { return height; }
 
     public void setDebug() {
         debug = true;
@@ -91,7 +91,7 @@ public class CGui extends WidgetContainer {
     //---Event callback---
     
     /**
-     * Simplified version of {@link #draw(double mx, double my)} callback.
+     * Simplified version of {@link #draw(float mx, float my)} callback.
      */
     public void draw() {
         draw(-1, -1);
@@ -100,7 +100,7 @@ public class CGui extends WidgetContainer {
     /**
      * Go down the hierarchy tree and draw each widget node. Should be called each rendering frame.
      */
-    public void draw(double mx, double my) {
+    public void draw(float mx, float my) {
         frameUpdate();
         updateMouse(mx, my);
         
@@ -163,7 +163,7 @@ public class CGui extends WidgetContainer {
     }
 
     private void postMouseEv(Widget target, GuiEventBus bus, int mx, int my, int bid, boolean local) {
-        double x = mx, y = my;
+        float x = mx, y = my;
         if (local) {
             x = (mx - target.x) / target.scale;
             y = (my - target.y) / target.scale;
@@ -231,7 +231,7 @@ public class CGui extends WidgetContainer {
     }
     
     //---Helper Methods---
-    public Widget getTopWidget(double x, double y) {
+    public Widget getTopWidget(float x, float y) {
         return gtnTraverse(x, y, null, this);
     }
     
@@ -248,12 +248,12 @@ public class CGui extends WidgetContainer {
     /**
      * Inverse calculation. Move this widget to the ABSOLUTE window position (x0, y0).
      */
-    public void moveWidgetToAbsPos(Widget widget, double x0, double y0) {
+    public void moveWidgetToAbsPos(Widget widget, float x0, float y0) {
         Transform transform = widget.transform;
 
-        double tx, ty;
-        double tw, th;
-        double parentScale;
+        float tx, ty;
+        float tw, th;
+        float parentScale;
         if(widget.isWidgetParent()) {
             Widget p = widget.getWidgetParent();
             tx = p.x;
@@ -286,7 +286,15 @@ public class CGui extends WidgetContainer {
     public Widget getFocus() {
         return focus;
     }
-    
+
+    public float getMouseX() {
+        return mouseX;
+    }
+
+    public float getMouseY() {
+        return mouseY;
+    }
+
     //---Key Handling
     
     //---Internal Processing
@@ -297,9 +305,9 @@ public class CGui extends WidgetContainer {
         widget.gui = this;
         Transform transform = widget.transform;
         
-        double tx, ty;
-        double tw, th;
-        double parentScale;
+        float tx, ty;
+        float tw, th;
+        float parentScale;
         if(widget.isWidgetParent()) {
             Widget p = widget.getWidgetParent();
             tx = p.x;
@@ -371,12 +379,12 @@ public class CGui extends WidgetContainer {
         }
     }
     
-    private void updateMouse(double mx, double my) {
+    private void updateMouse(float mx, float my) {
         this.mouseX = mx;
         this.mouseY = my;
     }
     
-    private void drawTraverse(double mx, double my, Widget cur, WidgetContainer set, Widget top) {
+    private void drawTraverse(float mx, float my, Widget cur, WidgetContainer set, Widget top) {
         try {
             if(cur != null && cur.isVisible()) {
                 GL11.glPushMatrix();
@@ -404,7 +412,7 @@ public class CGui extends WidgetContainer {
         }
     }
     
-    protected Widget gtnTraverse(double x, double y, Widget node, WidgetContainer set) {
+    protected Widget gtnTraverse(float x, float y, Widget node, WidgetContainer set) {
         Widget res = null;
         boolean checkSub = node == null || node.isVisible();
         if(node != null && node.isVisible()

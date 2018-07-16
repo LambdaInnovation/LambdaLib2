@@ -12,9 +12,9 @@ package cn.lambdalib2.cgui.event;
  */
 public class LeftClickEvent implements GuiEvent {
     
-    public final double x, y;
+    public final float x, y;
     
-    public LeftClickEvent(double _x, double _y) {
+    public LeftClickEvent(float _x, float _y) {
         x = _x;
         y = _y;
     }
