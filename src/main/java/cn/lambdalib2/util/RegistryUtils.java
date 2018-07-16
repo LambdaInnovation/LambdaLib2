@@ -1,9 +1,3 @@
-/**
- * Copyright (c) Lambda Innovation, 2013-2016
- * This file is part of LambdaLib modding library.
- * https://github.com/LambdaInnovation/LambdaLib
- * Licensed under MIT, see project root for more information.
- */
 package cn.lambdalib2.util;
 
 import com.google.common.base.Throwables;
@@ -16,8 +10,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-//import cn.lambdalib2.util.deprecated.TypeHelper;
 
 public class RegistryUtils {
 
