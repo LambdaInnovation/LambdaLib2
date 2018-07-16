@@ -43,7 +43,7 @@ public class RegistryUtils {
             f.setAccessible(true);
             return f;
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -71,7 +71,7 @@ public class RegistryUtils {
             m.setAccessible(true);
             return m;
         } catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -86,11 +86,6 @@ public class RegistryUtils {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface CopyIgnore {
     }
 
 }

@@ -28,7 +28,7 @@ public class RecipeRegistry {
     /**
      * This should only be visited for debug purpose.
      */
-    public final Map<String, Object> nameMapping = new HashMap();
+    private final Map<String, Object> nameMapping = new HashMap<>();
 
     public RecipeRegistry() {
         ModContainer mc = Loader.instance().activeModContainer();

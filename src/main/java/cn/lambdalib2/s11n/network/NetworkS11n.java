@@ -693,7 +693,7 @@ public class NetworkS11n {
             ctor.setAccessible(true);
             return ctor.newInstance();
         } catch (Exception ex) {
-            throw Throwables.propagate(ex);
+            throw new RuntimeException(ex);
         }
     }
 

@@ -210,7 +210,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
                 }
             } catch (IllegalAccessException |
                     InstantiationException ex) {
-                Throwables.propagate(ex);
+                throw new RuntimeException(ex);
             }
         }
         constructed.values().forEach(part -> {
@@ -245,7 +245,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
             }
         } catch (IllegalAccessException |
                 InstantiationException ex) {
-            Throwables.propagate(ex);
+            throw new RuntimeException(ex);
         }
     }
 

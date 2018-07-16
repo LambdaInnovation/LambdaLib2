@@ -214,7 +214,7 @@ public class NBTS11n {
                             to.setTag(id, from.getTag(id));
                         }
                     } catch (IllegalAccessException e) {
-                        Throwables.propagate(e);
+                        throw new RuntimeException(e);
                     }
                 }
             };
@@ -465,7 +465,7 @@ public class NBTS11n {
             Class type = Class.forName(klass);
             return readBase(tag.getTag("d"), type);
         } catch (ClassNotFoundException ex) {
-            throw Throwables.propagate(ex);
+            throw new RuntimeException(ex);
         }
     }
 
@@ -478,7 +478,7 @@ public class NBTS11n {
             ctor.setAccessible(true);
             return ctor.newInstance();
         } catch (Exception ex) {
-            throw Throwables.propagate(ex);
+            throw new RuntimeException(ex);
         }
     }
 
