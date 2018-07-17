@@ -2,8 +2,8 @@ package cn.lambdalib2.s11n.xml;
 
 import cn.lambdalib2.s11n.SerializationHelper;
 import cn.lambdalib2.util.Debug;
-import cn.lambdalib2.util.client.font.Fonts;
-import cn.lambdalib2.util.client.font.IFont;
+import cn.lambdalib2.render.font.Fonts;
+import cn.lambdalib2.render.font.IFont;
 import net.minecraft.util.ResourceLocation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 public enum DOMS11n {
     instance;

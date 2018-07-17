@@ -1,4 +1,4 @@
-package cn.lambdalib2.util.datapart;
+package cn.lambdalib2.datapart;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -11,7 +11,7 @@ import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static cn.lambdalib2.util.datapart.CapDataPartHandler.DATA_PART_CAPABILITY;
+import static cn.lambdalib2.datapart.CapDataPartHandler.DATA_PART_CAPABILITY;
 
 /**
  * Created by Paindar on 17/10/20.

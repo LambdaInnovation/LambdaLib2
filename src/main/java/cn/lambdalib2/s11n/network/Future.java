@@ -5,7 +5,7 @@ import cn.lambdalib2.s11n.network.NetworkMessage.Listener;
 import cn.lambdalib2.s11n.network.NetworkMessage.NullablePar;
 import cn.lambdalib2.s11n.network.NetworkS11n.ContextException;
 import cn.lambdalib2.s11n.network.NetworkS11n.NetS11nAdaptor;
-import cn.lambdalib2.util.SideHelper;
+import cn.lambdalib2.util.SideUtils;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.common.MinecraftForge;
@@ -40,7 +40,7 @@ enum FutureManager {
         Future<T> fut = new Future<>();
         fut.increm = ctx.increm;
         fut.callback = callback;
-        fut.creator = SideHelper.getThePlayer(); // null if in server, thePlayer if in client
+        fut.creator = SideUtils.getThePlayer(); // null if in server, thePlayer if in client
 
         ctx.waitingFutures.put(ctx.increm, fut);
 
@@ -48,11 +48,11 @@ enum FutureManager {
     }
 
     <T> void sendResult(Future<T> fut, T value) {
-        if (fut.getSide() == SideHelper.getRuntimeSide()) {
+        if (fut.getSide() == SideUtils.getRuntimeSide()) {
             throw new IllegalStateException("Trying to sendResult in creation side of Future");
         }
 
-        if (SideHelper.isClient()) {
+        if (SideUtils.isClient()) {
             NetworkMessage.sendToServer(instance, MSG_RESULT, fut.increm, value);
         } else {
             NetworkMessage.sendTo(fut.creator, instance, MSG_RESULT, fut.increm, value);

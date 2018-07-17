@@ -2,9 +2,9 @@ package cn.lambdalib2.cgui;
 
 import cn.lambdalib2.cgui.component.Transform;
 import cn.lambdalib2.cgui.event.FrameEvent;
-import cn.lambdalib2.util.client.font.IFont;
-import cn.lambdalib2.util.client.font.IFont.FontOption;
-import cn.lambdalib2.util.client.font.TrueTypeFont;
+import cn.lambdalib2.render.font.IFont;
+import cn.lambdalib2.render.font.IFont.FontOption;
+import cn.lambdalib2.render.font.TrueTypeFont;
 import com.google.common.base.Joiner;
 import org.lwjgl.input.Keyboard;
 

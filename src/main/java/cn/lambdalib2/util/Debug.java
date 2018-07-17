@@ -65,5 +65,9 @@ public class Debug {
         logger.warn(msg);
     }
 
+    public static void warnFormat(String msg, Object ...pars) {
+        warn(String.format(msg, pars));
+    }
+
     private Debug() {}
 }

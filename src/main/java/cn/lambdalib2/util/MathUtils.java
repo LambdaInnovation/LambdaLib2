@@ -93,30 +93,13 @@ public class MathUtils {
         return val;
     }
     
-    public static double distanceSq(double[] vec1, double[] vec2) {
-        if(vec1.length != vec2.length) {
-            throw new RuntimeException("Inconsistent length");
-        }
-        
-        double ret = 0.0;
-        for(int i = 0; i < vec1.length; ++i) {
-            double d = vec2[i] - vec1[i];
-            ret += d * d;
-        }
-        
-        return ret;
-    }
-    
     public static double distance(double x0, double y0, double z0, double x1, double y1, double z1) {
         return Math.sqrt(distanceSq(x0, y0, z0, x1, y1, z1));
     }
     
     public static double distanceSq(double x0, double y0, double z0, double x1, double y1, double z1) {
-        return distanceSq(new double[] { x0, y0, z0 }, new double[] { x1, y1, z1 });
-    }
-    
-    public static double distance(double[] vec1, double[] vec2) {
-        return Math.sqrt(distanceSq(vec1, vec2));
+        double d1 = (x1 - x0), d2 = (y1 - y0), d3 = (z1 - z0);
+        return d1 * d1 + d2 * d2 + d3 * d3;
     }
     
     public static Vec3d multiply(Vec3d vec, double factor) {

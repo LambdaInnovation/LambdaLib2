@@ -9,8 +9,8 @@ import cn.lambdalib2.cgui.event.FrameEvent;
 import cn.lambdalib2.cgui.event.GuiEvent;
 import cn.lambdalib2.cgui.event.LeftClickEvent;
 import cn.lambdalib2.util.Colors;
-import cn.lambdalib2.util.client.font.IFont.FontAlign;
-import cn.lambdalib2.util.client.font.IFont.FontOption;
+import cn.lambdalib2.render.font.IFont.FontAlign;
+import cn.lambdalib2.render.font.IFont.FontOption;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Color;
 

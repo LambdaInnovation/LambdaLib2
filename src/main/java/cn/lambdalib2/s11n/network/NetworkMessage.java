@@ -10,7 +10,7 @@ import cn.lambdalib2.LambdaLib2;
 import cn.lambdalib2.s11n.network.NetworkS11n.ContextException;
 import cn.lambdalib2.s11n.network.NetworkS11n.NetS11nAdaptor;
 import cn.lambdalib2.util.ReflectionUtils;
-import cn.lambdalib2.util.SideHelper;
+import cn.lambdalib2.util.SideUtils;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -399,7 +399,7 @@ public class NetworkMessage {
 
         @Override
         public void onMessage(String channel, Object... params) {
-            Side side = SideHelper.getRuntimeSide();
+            Side side = SideUtils.getRuntimeSide();
             ChannelID id = id(type, channel, side);
 
             for (INetworkListener listener : cache.getUnchecked(id)) {

@@ -6,7 +6,7 @@
 */
 package cn.lambdalib2.s11n;
 
-import cn.lambdalib2.util.client.font.IFont;
+import cn.lambdalib2.render.font.IFont;
 import net.minecraft.util.ResourceLocation;
 
 import java.lang.reflect.Field;

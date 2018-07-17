@@ -16,10 +16,9 @@ import java.io.IOException;
 import cn.lambdalib2.cgui.*;
 import cn.lambdalib2.s11n.SerializeIncluded;
 import cn.lambdalib2.util.GameTimer;
-import cn.lambdalib2.util.client.font.Fonts;
-import cn.lambdalib2.util.client.font.IFont;
-import cn.lambdalib2.util.client.font.IFont.FontOption;
-import cn.lambdalib2.util.client.font.TrueTypeFont;
+import cn.lambdalib2.render.font.Fonts;
+import cn.lambdalib2.render.font.IFont;
+import cn.lambdalib2.render.font.IFont.FontOption;
 import cn.lambdalib2.cgui.component.Transform.HeightAlign;
 import net.minecraft.util.text.translation.I18n;
 import org.apache.commons.lang3.StringUtils;
@@ -32,8 +31,6 @@ import cn.lambdalib2.cgui.event.KeyEvent;
 import cn.lambdalib2.cgui.event.LeftClickEvent;
 import net.minecraft.util.ChatAllowedCharacters;
 import org.lwjgl.util.vector.Vector2f;
-
-import javax.vecmath.Vector2d;
 
 /**
  * Textbox displays text on the widget area, it might also be edited. TextBox is designed to handle single-line texts.

@@ -11,9 +11,9 @@ import java.util.Iterator;
 import cn.lambdalib2.LambdaLib2;
 import cn.lambdalib2.util.GameTimer;
 import cn.lambdalib2.util.HudUtils;
-import cn.lambdalib2.util.client.font.IFont;
-import cn.lambdalib2.util.client.font.IFont.FontOption;
-import cn.lambdalib2.util.client.font.TrueTypeFont;
+import cn.lambdalib2.render.font.IFont;
+import cn.lambdalib2.render.font.IFont.FontOption;
+import cn.lambdalib2.render.font.TrueTypeFont;
 import org.lwjgl.opengl.GL11;
 
 import cn.lambdalib2.cgui.component.Transform;

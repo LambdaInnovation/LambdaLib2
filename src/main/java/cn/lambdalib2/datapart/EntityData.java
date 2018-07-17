@@ -1,13 +1,12 @@
-package cn.lambdalib2.util.datapart;
+package cn.lambdalib2.datapart;
 
 import cn.lambdalib2.registry.StateEventCallback;
 import cn.lambdalib2.s11n.network.NetworkS11n;
 import cn.lambdalib2.s11n.network.NetworkS11n.ContextException;
 import cn.lambdalib2.s11n.network.NetworkS11n.NetS11nAdaptor;
 import cn.lambdalib2.s11n.network.RegNetS11nAdapter;
-import cn.lambdalib2.util.SideHelper;
+import cn.lambdalib2.util.SideUtils;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import net.minecraft.nbt.NBTBase;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
@@ -192,7 +191,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
             }
         }
         for(RegData data:regList){
-            final Side runtimeSide = SideHelper.getRuntimeSide();
+            final Side runtimeSide = SideUtils.getRuntimeSide();
             if(!data.sides.contains(runtimeSide))
                 continue;
             try {
@@ -202,7 +201,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
 
                 instance.wake();
 
-                if (!SideHelper.isClient() && instance.needNBTStorage) {
+                if (!SideUtils.isClient() && instance.needNBTStorage) {
                     String id = _partNBTID(instance);
                     if (tag.hasKey(id)) {
                         instance.fromNBT(tag.getCompoundTag(id));
@@ -227,7 +226,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
     }
 
     private void _constructPart(RegData data) {
-        final Side runtimeSide = SideHelper.getRuntimeSide();
+        final Side runtimeSide = SideUtils.getRuntimeSide();
         Preconditions.checkState(data.sides.contains(runtimeSide));
         try {
             DataPart instance = data.type.newInstance();
@@ -236,7 +235,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
 
             instance.wake();
 
-            if (!SideHelper.isClient() && instance.needNBTStorage) {
+            if (!SideUtils.isClient() && instance.needNBTStorage) {
                 NBTTagCompound tag = getEntity().getEntityData().getCompoundTag(ID);
                 String id = _partNBTID(instance);
                 if (tag.hasKey(id)) {
@@ -251,7 +250,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
 
     private static Stream<RegData> _allApplicable(Entity ent) {
         Class<? extends Entity> type = ent.getClass();
-        final Side runtimeSide = SideHelper.getRuntimeSide();
+        final Side runtimeSide = SideUtils.getRuntimeSide();
         return regList.stream().filter(data -> data.sides.contains(runtimeSide) && data.pred.test(type));
     }
 

@@ -8,7 +8,7 @@ import cn.lambdalib2.cgui.component.TextBox.ConfirmInputEvent;
 import cn.lambdalib2.cgui.event.GuiEvent;
 import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.Debug;
-import cn.lambdalib2.util.client.font.IFont.FontOption;
+import cn.lambdalib2.render.font.IFont.FontOption;
 import org.lwjgl.util.Color;
 
 public class ObjectEditors {

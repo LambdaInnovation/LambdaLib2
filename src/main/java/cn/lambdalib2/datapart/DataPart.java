@@ -1,10 +1,10 @@
-package cn.lambdalib2.util.datapart;
+package cn.lambdalib2.datapart;
 
 import cn.lambdalib2.s11n.network.TargetPoints;
 import cn.lambdalib2.s11n.network.NetworkMessage;
 import cn.lambdalib2.s11n.network.NetworkMessage.Listener;
 import cn.lambdalib2.s11n.network.NetworkS11n;
-import cn.lambdalib2.util.SideHelper;
+import cn.lambdalib2.util.SideUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
@@ -212,7 +212,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
     void callTick() {
         if (isClient() && clientNeedSync && !syncInit) {
             syncInit = true;
-            NetworkMessage.sendToServer(this, "itn_query_init", SideHelper.getThePlayer());
+            NetworkMessage.sendToServer(this, "itn_query_init", SideUtils.getThePlayer());
         }
         if (needTick) {
             tick();

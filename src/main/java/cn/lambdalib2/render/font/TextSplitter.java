@@ -4,7 +4,7 @@
 * https://github.com/LambdaInnovation/LambdaLib
 * Licensed under MIT, see project root for more information.
 */
-package cn.lambdalib2.util.client.font;
+package cn.lambdalib2.render.font;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -12,11 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A helper to 'fragmentize' string to draw in multi-line in a sane way.
- * Currently isn't perfecct, but is viable.
+ * A helper to 'fragmenting' string to draw in multi-line in a sane way.
+ * Currently isn't perfect, but is viable.
  * @author WeAthFolD
  */
-public class Fragmentor {
+public class TextSplitter {
 
     private static final String puncts = ",.<>?;:'\"[]{}【】：；“‘《》，。？";
 
@@ -32,8 +32,8 @@ public class Fragmentor {
         float getTextWidth(String str);
     }
 
-    public static List<String> toMultiline(String str, IFontSizeProvider font, float local_x, float limit) {
-        Fragmentor frag = new Fragmentor(str);
+    public static List<String> split(String str, IFontSizeProvider font, float local_x, float limit) {
+        TextSplitter frag = new TextSplitter(str);
         List<String> ret = new ArrayList<>();
 
         StringBuilder builder = new StringBuilder();
@@ -86,10 +86,10 @@ public class Fragmentor {
     }
 
     /**
-     * Converts a string with linesep to a list of string, based on the display property of the given font.
+     * Converts a string with line separator to a list of string, based on the display property of the given font.
      */
-    public static List<String> toMultiline(String str, IFontSizeProvider font, float limit) {
-        return toMultiline(str, font, 0, limit);
+    public static List<String> split(String str, IFontSizeProvider font, float limit) {
+        return split(str, font, 0, limit);
     }
 
     public static boolean isPunct(char ch) {
@@ -109,7 +109,7 @@ public class Fragmentor {
     final String str;
     int index = 0;
 
-    public Fragmentor(String _str) {
+    public TextSplitter(String _str) {
         str = _str;
     }
 
@@ -132,7 +132,7 @@ public class Fragmentor {
         return index < str.length();
     }
 
-    TokenType getType(char ch) {
+    private TokenType getType(char ch) {
         if (isPunct(ch)) {
             return TokenType.PUNCT;
         } else if (Character.isWhitespace(ch)) {

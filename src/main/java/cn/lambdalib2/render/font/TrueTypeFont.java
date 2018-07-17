@@ -1,4 +1,4 @@
-package cn.lambdalib2.util.client.font;
+package cn.lambdalib2.render.font;
 
 import cn.lambdalib2.util.Colors;
 import net.minecraft.util.math.MathHelper;

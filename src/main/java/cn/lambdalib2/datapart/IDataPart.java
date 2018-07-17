@@ -1,4 +1,4 @@
-package cn.lambdalib2.util.datapart;
+package cn.lambdalib2.datapart;
 
 import net.minecraft.nbt.NBTTagCompound;
 

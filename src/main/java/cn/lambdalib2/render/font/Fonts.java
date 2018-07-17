@@ -1,4 +1,4 @@
-package cn.lambdalib2.util.client.font;
+package cn.lambdalib2.render.font;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;

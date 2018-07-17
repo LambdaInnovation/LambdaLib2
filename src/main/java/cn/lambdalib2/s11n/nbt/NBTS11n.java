@@ -3,9 +3,8 @@ package cn.lambdalib2.s11n.nbt;
 import cn.lambdalib2.LambdaLib2;
 import cn.lambdalib2.s11n.SerializationHelper;
 import cn.lambdalib2.s11n.SerializeDynamic;
-import cn.lambdalib2.util.RegistryUtils;
+import cn.lambdalib2.util.ReflectionUtils;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import net.minecraft.nbt.*;
 
 import java.lang.reflect.Array;
@@ -192,7 +191,7 @@ public class NBTS11n {
                 Field tagMapField;
 
                 {
-                    tagMapField = RegistryUtils.getObfField(NBTTagCompound.class, "tagMap", "field_74784_a");
+                    tagMapField = ReflectionUtils.getObfField(NBTTagCompound.class, "tagMap", "field_74784_a");
                     tagMapField.setAccessible(true);
                 }
 

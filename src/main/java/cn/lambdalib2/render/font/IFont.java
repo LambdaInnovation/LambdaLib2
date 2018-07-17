@@ -4,10 +4,10 @@
 * https://github.com/LambdaInnovation/LambdaLib
 * Licensed under MIT, see project root for more information.
 */
-package cn.lambdalib2.util.client.font;
+package cn.lambdalib2.render.font;
 
 import cn.lambdalib2.util.Colors;
-import cn.lambdalib2.util.client.font.Fragmentor.IFontSizeProvider;
+import cn.lambdalib2.render.font.TextSplitter.IFontSizeProvider;
 import cn.lambdalib2.s11n.SerializeType;
 import org.lwjgl.util.Color;
 
@@ -109,7 +109,7 @@ public interface IFont {
      * Draws a line-seperated string at the given position.
      */
     default void drawSeperated(String str, final float x, float y, float limit, FontOption option) {
-        List<String> lines = Fragmentor.toMultiline(str, provider(option), limit);
+        List<String> lines = TextSplitter.split(str, provider(option), limit);
         for (int i = 0; i < lines.size(); ++i) {
             draw(lines.get(i), x, y + i * option.fontSize, option);
         }
@@ -120,7 +120,7 @@ public interface IFont {
      * @return A {@link Extent} describing the drawn area
      */
     default Extent drawSeperated_Sim(String str, float limit, FontOption option) {
-        List<String> lines = Fragmentor.toMultiline(str, provider(option), limit);
+        List<String> lines = TextSplitter.split(str, provider(option), limit);
         return new Extent(lines.size(), lines.size() == 1 ? getTextWidth(lines.get(0), option) : limit
             , lines.size() * option.fontSize);
     }

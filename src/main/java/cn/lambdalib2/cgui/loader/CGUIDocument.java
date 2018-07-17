@@ -6,9 +6,8 @@ import cn.lambdalib2.cgui.component.Component;
 import cn.lambdalib2.cgui.component.Transform;
 import cn.lambdalib2.s11n.xml.DOMS11n;
 import cn.lambdalib2.util.Debug;
-import cn.lambdalib2.util.RegistryUtils;
+import cn.lambdalib2.util.ResourceUtils;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,7 +46,7 @@ public enum CGUIDocument {
      * Reads a CGUI Document from given ResourceLocation.
      */
     public static WidgetContainer read(ResourceLocation location) {
-        return read(RegistryUtils.getResourceStream(location));
+        return read(ResourceUtils.getResourceStream(location));
     }
 
     /**

@@ -4,7 +4,7 @@
  * https://github.com/LambdaInnovation/LambdaLib
  * Licensed under MIT, see project root for more information.
  */
-package cn.lambdalib2.util.datapart;
+package cn.lambdalib2.datapart;
 
 import cn.lambdalib2.s11n.nbt.NBTS11n;
 import net.minecraft.entity.player.EntityPlayer;

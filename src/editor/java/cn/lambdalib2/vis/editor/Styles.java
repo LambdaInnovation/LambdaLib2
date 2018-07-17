@@ -4,9 +4,9 @@ import cn.lambdalib2.cgui.Widget;
 import cn.lambdalib2.cgui.component.TextBox;
 import cn.lambdalib2.cgui.component.Tint;
 import cn.lambdalib2.util.Colors;
-import cn.lambdalib2.util.client.font.IFont.FontAlign;
-import cn.lambdalib2.util.client.font.IFont.FontOption;
-import cn.lambdalib2.util.client.font.TrueTypeFont;
+import cn.lambdalib2.render.font.IFont.FontAlign;
+import cn.lambdalib2.render.font.IFont.FontOption;
+import cn.lambdalib2.render.font.TrueTypeFont;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.util.Color;
 

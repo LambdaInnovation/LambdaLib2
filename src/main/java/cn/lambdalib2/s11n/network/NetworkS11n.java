@@ -10,9 +10,8 @@ import cn.lambdalib2.registry.StateEventCallback;
 import cn.lambdalib2.s11n.SerializationHelper;
 import cn.lambdalib2.s11n.SerializeDynamic;
 import cn.lambdalib2.s11n.SerializeNullable;
-import cn.lambdalib2.util.SideHelper;
+import cn.lambdalib2.util.SideUtils;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -292,7 +291,7 @@ public class NetworkS11n {
 
             @Override
             public Entity read(ByteBuf buf) {
-                World wrld = SideHelper.getWorld(buf.readShort());
+                World wrld = SideUtils.getWorld(buf.readShort());
                 if (wrld == null) {
                     throw new ContextException("Invalid world");
                 } else {
@@ -313,7 +312,7 @@ public class NetworkS11n {
 
             @Override
             public World read(ByteBuf buf) throws ContextException {
-                World wrld = SideHelper.getWorld(buf.readShort());
+                World wrld = SideUtils.getWorld(buf.readShort());
                 if (wrld == null) {
                     throw new ContextException("invalid world");
                 } else {
