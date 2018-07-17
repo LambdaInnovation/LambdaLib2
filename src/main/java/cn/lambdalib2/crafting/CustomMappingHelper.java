@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 
 import cn.lambdalib2.LambdaLib2;
+import cn.lambdalib2.util.Debug;
 
 public class CustomMappingHelper {
 
@@ -25,7 +26,7 @@ public class CustomMappingHelper {
                 }
             }
         } catch (Exception e) {
-            LambdaLib2.log.error("An error occured analyzing recipe custom mapping");
+            Debug.error("An error occured analyzing recipe custom mapping");
             e.printStackTrace();
         }
     }

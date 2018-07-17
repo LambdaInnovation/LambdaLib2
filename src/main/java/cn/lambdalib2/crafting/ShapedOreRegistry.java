@@ -1,5 +1,6 @@
 package cn.lambdalib2.crafting;
 
+import cn.lambdalib2.util.Debug;
 import com.google.common.base.Joiner;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -29,18 +30,20 @@ public class ShapedOreRegistry implements IRecipeRegistry {
         int index = 0;
         int _i = height;
         for (int y = 0; y < height; ++y) {
-            String spec = "";
-            for (int x = 0; x < width; ++x, ++index)
+            StringBuilder spec = new StringBuilder();
+            for (int x = 0; x < width; ++x, ++index) {
                 if (input[index] != null) {
-                    spec += (char) (index + 'A');
-                    recipe[_i++] = Character.valueOf((char) (index + 'A'));
+                    spec.append((char) (index + 'A'));
+                    recipe[_i++] = (char) (index + 'A');
                     recipe[_i++] = input[index];
-                } else
-                    spec += ' ';
-            recipe[y] = spec;
+                } else {
+                    spec.append(' ');
+                }
+            }
+            recipe[y] = spec.toString();
         }
 
-        debug("[ShapedOre] " +
+        Debug.log("[ShapedOre] " +
                 RecipeRegistry.reprStack(output) + "[" + mirrored + "]" +
                 Joiner.on(',').join(recipe));
         GameRegistry.addShapedRecipe(new ResourceLocation(registry.PREFIX + ':' + UUID.randomUUID()),

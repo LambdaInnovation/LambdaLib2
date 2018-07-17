@@ -1,5 +1,6 @@
 package cn.lambdalib2.crafting;
 
+import cn.lambdalib2.util.Debug;
 import com.google.common.base.Joiner;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -43,7 +44,7 @@ public class ShapelessOreRegistry implements IRecipeRegistry {
         GameRegistry.addShapelessRecipe(new ResourceLocation(registry.PREFIX + ':' + UUID.randomUUID()),
                 new ResourceLocation(registry.PREFIX), output, ing);
 
-        debug("[ShapelessOre] " +
+        Debug.log("[ShapelessOre] " +
                 RecipeRegistry.reprStack(output) + " => " +
                 Joiner.on(',').join(input));
     }

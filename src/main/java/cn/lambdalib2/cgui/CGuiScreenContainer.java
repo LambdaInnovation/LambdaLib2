@@ -95,7 +95,7 @@ public class CGuiScreenContainer extends GuiContainer {
         // Don't delegate key event if current editing TextBox. Surely dirty hack, find a better route later
         TextBox temp;
         return (gui.focus == null ||
-                (temp = TextBox.get(gui.focus)) == null ||
+                (temp = gui.focus.getComponent(TextBox.class)) == null ||
                 !temp.canEdit);
     }
 

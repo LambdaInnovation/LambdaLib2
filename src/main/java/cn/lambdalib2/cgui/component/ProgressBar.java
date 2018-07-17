@@ -105,10 +105,5 @@ public class ProgressBar extends Component {
         this.dir = dir;
         return this;
     }
-    
-    public static ProgressBar get(Widget w) {
-        return w.getComponent("ProgressBar");
-    }
 
-    
 }

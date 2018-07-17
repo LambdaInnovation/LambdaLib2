@@ -45,11 +45,7 @@ public class ElementList extends Component {
         }
         updateList();
     }
-    
-    public static ElementList get(Widget w) {
-        return w.getComponent("ElementList");
-    }
-    
+
     public int getProgress() {
         return progress;
     }

@@ -4,6 +4,7 @@ import cn.lambdalib2.s11n.network.TargetPoints;
 import cn.lambdalib2.s11n.network.NetworkMessage;
 import cn.lambdalib2.s11n.network.NetworkMessage.Listener;
 import cn.lambdalib2.s11n.network.NetworkS11n;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.SideUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -14,8 +15,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import static cn.lambdalib2.LambdaLib2.log;
-
 
 /**
  * A tickable data-storage entity attached to EntityLivingBase.
@@ -90,10 +89,10 @@ public abstract class DataPart<T extends EntityLivingBase> {
     private void __syncClient() {
         T ent = getEntity();
         if (!(ent instanceof EntityPlayer)) {
-            log.warn("Trying to call sync() in client for non-EntityPlayers in" + this +
+            Debug.warn("Trying to call sync() in client for non-EntityPlayers in" + this +
                     ". This usually doesn't make sense.");
         } else if (!(ent.equals(Minecraft.getMinecraft().player))) {
-            log.warn("Trying to sync non-local player data to server D  ataPart in " + this +
+            Debug.warn("Trying to sync non-local player data to server D  ataPart in " + this +
                     ". This usually doesn't make sense.");
         }
 
@@ -175,7 +174,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
     }
 
     protected void debug(Object message) {
-        log.debug(message);
+        Debug.log(message.toString());
     }
 
     /**
@@ -186,10 +185,10 @@ public abstract class DataPart<T extends EntityLivingBase> {
         T ent = getEntity();
         if (isClient()) {
             if (!(ent instanceof EntityPlayer)) {
-                log.warn("Trying to send message in client for non-EntityPlayers in" + this +
+                Debug.warn("Trying to send message in client for non-EntityPlayers in" + this +
                         ". This usually doesn't make sense.");
             } else if (!(ent.equals(Minecraft.getMinecraft().player))) {
-                log.warn("Trying to send message from non-local player data to server DataPart in " + this +
+                Debug.warn("Trying to send message from non-local player data to server DataPart in " + this +
                         ". This usually doesn't make sense.");
             }
 

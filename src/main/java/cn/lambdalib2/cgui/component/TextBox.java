@@ -304,9 +304,5 @@ public class TextBox extends Component {
         StringSelection ss = new StringSelection(content);
         cb.setContents(ss, ss);
     }
-    
-    public static TextBox get(Widget w) {
-        return w.getComponent("TextBox");
-    }
 
 }

@@ -1,6 +1,7 @@
 package cn.lambdalib2.util;
 
 import cn.lambdalib2.LambdaLib2;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Objects;
@@ -11,7 +12,7 @@ import java.util.Objects;
  */
 public class Debug {
 
-    private static Logger logger = Objects.requireNonNull(LambdaLib2.log);
+    private static Logger logger = getOrCreateLogger();
 
     public static void assert2(boolean expr) {
         assert2(expr, "Assersion failed");
@@ -41,6 +42,14 @@ public class Debug {
         return Objects.requireNonNull(obj, message);
     }
 
+    public static void debug(String msg) {
+        logger.debug(msg);
+    }
+
+    public static void debugFormat(String format, Object ...pars) {
+        debug(String.format(format, pars));
+    }
+
     public static void log(String msg) {
         logger.info(msg);
     }
@@ -49,11 +58,11 @@ public class Debug {
         log(String.format(format, params));
     }
 
-    public static void error(Exception ex) {
+    public static void error(Throwable ex) {
         logger.error(ex);
     }
 
-    public static void error(String msg, Exception ex) {
+    public static void error(String msg, Throwable ex) {
         logger.error(msg, ex);
     }
 
@@ -67,6 +76,14 @@ public class Debug {
 
     public static void warnFormat(String msg, Object ...pars) {
         warn(String.format(msg, pars));
+    }
+
+    private static Logger getOrCreateLogger() {
+        Logger res = LambdaLib2.getLogger();
+        if (res == null) {
+            res = LogManager.getLogger("LL2_DEBUG");
+        }
+        return res;
     }
 
     private Debug() {}

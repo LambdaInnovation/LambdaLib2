@@ -102,8 +102,6 @@ public class VisEditor extends CGuiScreen  {
         }
     }
 
-    private static final Logger log = LambdaLib2.log;
-
     private Widget menuContainer, menuHover;
 
     private MenuBar menuBar;
@@ -272,7 +270,7 @@ public class VisEditor extends CGuiScreen  {
         @SubscribeEvent
         public void onKey(KeyInputEvent event) {
             if (Keyboard.getEventKey() == Keyboard.KEY_L) {
-                log.info("Starting vis editor");
+                Debug.log("Starting vis editor");
                 Minecraft mc = Minecraft.getMinecraft();
                 if (mc.currentScreen == null) {
                     mc.displayGuiScreen(new VisEditor());

@@ -5,6 +5,7 @@ import cn.lambdalib2.s11n.network.NetworkS11n;
 import cn.lambdalib2.s11n.network.NetworkS11n.ContextException;
 import cn.lambdalib2.s11n.network.NetworkS11n.NetS11nAdaptor;
 import cn.lambdalib2.s11n.network.RegNetS11nAdapter;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.SideUtils;
 import com.google.common.base.Preconditions;
 import net.minecraft.nbt.NBTBase;
@@ -21,7 +22,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import static cn.lambdalib2.LambdaLib2.log;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -97,7 +97,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
         Preconditions.checkState(bothSideList.size() < Byte.MAX_VALUE);
         IntStream.range(0, bothSideList.size()).forEach(i -> bothSideList.get(i).networkID = (byte) i);
 
-        log.debug("EntityData initialized. Network participants: " +
+        Debug.log("EntityData initialized. Network participants: " +
                 bothSideList.stream().map(x -> x.type).collect(Collectors.toList()));
     }
 
@@ -165,7 +165,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
             });
         }
         if(tag_.hasKey(ID))
-            log.warn("Find existed log:"+ID+" when storage NBTTag in EntityData:172.");
+            Debug.warn("Find existed log:"+ID+" when storage NBTTag in EntityData:172.");
         tag_.setTag(ID,tag);
     }
 
@@ -186,7 +186,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
 
             }
             catch (ClassNotFoundException e) {
-                log.warn(key);
+                Debug.warn(key);
                 e.printStackTrace();
             }
         }

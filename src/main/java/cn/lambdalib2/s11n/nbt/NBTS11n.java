@@ -3,6 +3,7 @@ package cn.lambdalib2.s11n.nbt;
 import cn.lambdalib2.LambdaLib2;
 import cn.lambdalib2.s11n.SerializationHelper;
 import cn.lambdalib2.s11n.SerializeDynamic;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ReflectionUtils;
 import com.google.common.base.Preconditions;
 import net.minecraft.nbt.*;
@@ -328,7 +329,7 @@ public class NBTS11n {
                         }
                     }
                 } catch (IllegalAccessException | IllegalArgumentException ex) {
-                    LambdaLib2.log.error("Error writing field " + f + " in object " + obj);
+                    Debug.error("Error writing field " + f + " in object " + obj);
                 }
             }
         }

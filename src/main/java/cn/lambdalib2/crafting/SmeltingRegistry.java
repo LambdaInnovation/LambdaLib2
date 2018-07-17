@@ -1,5 +1,6 @@
 package cn.lambdalib2.crafting;
 
+import cn.lambdalib2.util.Debug;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -35,7 +36,7 @@ public class SmeltingRegistry implements IRecipeRegistry {
             else if (in instanceof Item)
                 GameRegistry.addSmelting((Item) in, output, experience);
 
-            debug("[Smelting] " +
+            Debug.log("[Smelting] " +
                     in + " => " + RecipeRegistry.reprStack(output));
         }
     }

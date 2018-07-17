@@ -26,10 +26,6 @@ public class Tint extends Component {
     public boolean affectTexture = false;
 
     public double zLevel = 0.0;
-    
-    public static Tint get(Widget w) {
-        return w.getComponent("Tint");
-    }
 
     public Tint() {
         this(Colors.fromFloat(1, 1, 1, 0.6f), Colors.fromFloat(1, 1, 1, 1));

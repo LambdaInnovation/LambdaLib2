@@ -28,10 +28,14 @@ public class LambdaLib2
      */
     public static final boolean DEBUG = VERSION.startsWith("@");
 
-    public static Logger log;
-
     public static final SimpleNetworkWrapper channel = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
     public static Configuration config;
+
+    private static Logger log;
+
+    public static Logger getLogger() {
+        return log;
+    }
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -54,4 +58,5 @@ public class LambdaLib2
     public void initClient(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(new DebugDraw());
     }
+
 }

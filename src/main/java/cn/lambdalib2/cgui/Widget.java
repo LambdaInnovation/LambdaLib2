@@ -185,17 +185,6 @@ public class Widget extends WidgetContainer {
     }
     
     //Component handling
-    /**
-     * Java generic type erasure makes this unsafe, so use at your own risk.
-     * @return the component with the name specified, or null if no such component.
-     */
-    public <T extends Component> T getComponent(String name) {
-        for (Component c : components) {
-            if (c.name.equals(name))
-                return (T) c;
-        }
-        return null;
-    }
 
     /**
      * @return The first component that is of the given type, or null if no such component.

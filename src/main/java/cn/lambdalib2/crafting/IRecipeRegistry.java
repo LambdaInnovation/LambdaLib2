@@ -1,6 +1,5 @@
 package cn.lambdalib2.crafting;
 
-import cn.lambdalib2.LambdaLib2;
 import net.minecraft.item.ItemStack;
 
 /**
@@ -26,11 +25,5 @@ public interface IRecipeRegistry {
      *            The experience get when uses the recipe. 0 if not specified.
      */
     void register(String type, ItemStack output, Object[] input, int width, int height, float experience);
-
-    default void debug(Object msg) {
-        if(LambdaLib2.DEBUG) {
-            LambdaLib2.log.info(msg);
-        }
-    }
 
 }

@@ -9,6 +9,7 @@ package cn.lambdalib2.cgui;
 import java.util.Iterator;
 
 import cn.lambdalib2.LambdaLib2;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.GameTimer;
 import cn.lambdalib2.util.HudUtils;
 import cn.lambdalib2.render.font.IFont;
@@ -216,7 +217,7 @@ public class CGui extends WidgetContainer {
         if(node == focus) {
             return;
         }
-        LambdaLib2.log.info("GainFocus " + node);
+        Debug.log("GainFocus " + node);
         if(focus != null) {
             removeFocus(node);
         }
@@ -399,7 +400,7 @@ public class CGui extends WidgetContainer {
                 GL11.glPopMatrix();
             }
         } catch(Exception e) {
-            LambdaLib2.log.error("Error occured handling widget draw. instance class: " + cur.getClass().getName() + ", name: " + cur.getName());
+            Debug.error("Error occured handling widget draw. instance class: " + cur.getClass().getName() + ", name: " + cur.getName());
             e.printStackTrace();
         }
         

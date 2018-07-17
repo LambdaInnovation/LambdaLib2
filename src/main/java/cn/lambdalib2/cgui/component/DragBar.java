@@ -56,10 +56,6 @@ public class DragBar extends Component {
         });
     }
 
-    public static DragBar get(Widget w) {
-        return w.getComponent("DragBar");
-    }
-
     public float getProgress() {
         float ret;
         if (axis == Axis.X) {

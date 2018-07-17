@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.lambdalib2.LambdaLib2;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ResourceUtils;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -145,7 +146,7 @@ public class RecipeRegistry {
             parser = new RecipeParser(file);
             addRecipe(parser);
         } catch (Throwable e) {
-            LambdaLib2.log.error("Failed to load recipes from file: " + file, e);
+            Debug.error("Failed to load recipes from file: " + file, e);
         } finally {
             parser.close();
         }
@@ -155,7 +156,7 @@ public class RecipeRegistry {
         try {
             addRecipeFromString(IOUtils.toString(ResourceUtils.getResourceStream(src), "UTF-8"));
         } catch (Throwable e) {
-            LambdaLib2.log.error("Failed to load recipes from file: " + src, e);
+            Debug.error("Failed to load recipes from file: " + src, e);
             e.printStackTrace();
         }
     }
@@ -173,7 +174,7 @@ public class RecipeRegistry {
             parser = new RecipeParser(recipes);
             addRecipe(parser);
         } catch (Throwable e) {
-            LambdaLib2.log.error("Failed to load recipes from String: " + recipes, e);
+            Debug.error("Failed to load recipes from String: " + recipes, e);
         } finally {
             parser.close();
         }
@@ -195,15 +196,15 @@ public class RecipeRegistry {
                     registry.register(type, getOutputObject(parser.getOutput()), input, parser.getWidth(),
                             parser.getHeight(), parser.getExperience());
                 } else
-                    LambdaLib2.log.error(
+                    Debug.error(
                             "Failed to register a recipe because the type \"" + type + "\" doesn't have its registry");
             } catch (Exception e) {
-                LambdaLib2.log.error("Failed processing one recipe element", e);
+                Debug.error("Failed processing one recipe element", e);
             }
         }
     }
 
-    private HashMap<String, IRecipeRegistry> map = new HashMap<String, IRecipeRegistry>();
+    private HashMap<String, IRecipeRegistry> map = new HashMap<>();
 
     /**
      * Preserved for debug usage.

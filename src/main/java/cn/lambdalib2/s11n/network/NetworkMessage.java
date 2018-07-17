@@ -9,6 +9,7 @@ package cn.lambdalib2.s11n.network;
 import cn.lambdalib2.LambdaLib2;
 import cn.lambdalib2.s11n.network.NetworkS11n.ContextException;
 import cn.lambdalib2.s11n.network.NetworkS11n.NetS11nAdaptor;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ReflectionUtils;
 import cn.lambdalib2.util.SideUtils;
 import com.google.common.cache.CacheBuilder;
@@ -154,9 +155,9 @@ public class NetworkMessage {
             try {
                 m.invoke(instance, paramsArg);
             } catch (IllegalArgumentException e) {
-                LambdaLib2.log.error("Illegal argument for event listener " + m, e);
+                Debug.error("Illegal argument for event listener " + m, e);
             } catch (Exception e) {
-                LambdaLib2.log.fatal("Error during network message.", e);
+                Debug.error("Error during network message.", e);
             }
         }
     }
@@ -366,7 +367,7 @@ public class NetworkMessage {
                 // LambdaLib.log.info("Received message " + message.channel + " on " + message.instance);
                 processMessage(message.instance, message.channel, message.params);
             } else {
-                LambdaLib2.log.info("Ignored network message " + message.instance + ", " + message.channel);
+                Debug.log("Ignored network message " + message.instance + ", " + message.channel);
             }
             return null;
         }
