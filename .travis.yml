@@ -7,10 +7,11 @@ before_install:
  - chmod +x gradlew
  - export GRADLE_USER_HOME=$HOME/.cache/.gradle
 
-
+notifications:
+  email: false
   
 script:
- - ./gradlew clean build
+ - ./gradlew clean upload
 
 install:
 - true
