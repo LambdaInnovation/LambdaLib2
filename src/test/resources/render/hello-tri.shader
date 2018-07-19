@@ -9,11 +9,9 @@ Settings {
 }
 
 Vertex {
-#version 330 core
+attribute vec3 aPosition;
 
-in vec3 aPosition;
-
-out vec3 vPosition;
+varying vec3 vPosition;
 
 void main() {
     gl_Position = vec4(aPosition, 1);
@@ -22,13 +20,9 @@ void main() {
 }
 
 Fragment {
-#version 330 core
-
-in vec3 vPosition;
-
-out vec4 fragColor;
+varying vec3 vPosition;
 
 void main() {
-    fragColor = vec4(vPosition.xy * 2, 0.5, 1);
+    gl_FragColor = vec4(vPosition.xy * 2, 0.5, 1);
 }
 }
