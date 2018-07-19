@@ -1,0 +1,24 @@
+language: java
+
+jdk:
+  - oraclejdk8
+
+before_install:
+ - chmod +x gradlew
+ - export GRADLE_USER_HOME=$HOME/.cache/.gradle
+
+notifications:
+  email: false
+  
+script:
+ - ./gradlew clean upload
+
+install:
+- true
+
+cache:
+  directories:
+   - .autoconf
+   - $HOME/.cache/.gradle
+   - $HOME/.m2
+
