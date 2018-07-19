@@ -1,16 +1,16 @@
 package cn.lambdalib2.registry.impl;
 
+import cn.lambdalib2.registry.RegistryCallback;
+import cn.lambdalib2.registry.RegistryMod;
+import cn.lambdalib2.registry.StateEventCallback;
+import cn.lambdalib2.util.Debug;
+import cn.lambdalib2.util.ReflectionUtils;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.discovery.ASMDataTable;
-import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
-import net.minecraftforge.fml.common.discovery.asm.ModAnnotation.EnumHolder;
 import net.minecraftforge.fml.common.event.FMLStateEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.objectweb.asm.Type;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -26,74 +26,22 @@ public enum RegistryManager {
         public HashMap<Class<? extends FMLStateEvent>, List<Method>> loadCallbacks;
     }
 
-    Map<String, ModContext> registryMods;
-
-    Set<ASMDataTable.ASMData> rawStateEventCallbacks;
-
-    Set<ASMDataTable.ASMData> rawRegistryCallbacks;
+    private Map<String, ModContext> registryMods;
 
     private final List<Method>
             itemRegistryCallbacks = new ArrayList<>(),
             blockRegistryCallbacks = new ArrayList<>();
 
-    boolean initialized = false;
+    private boolean initialized = false;
 
-    public void readASMData(ASMDataTable table) {
-        Set<String> removedClasses = new HashSet<>();
-        Set<ASMData> removedMethods = new HashSet<>();
-        { // Get removed classes
-            String startSide = FMLCommonHandler.instance().getSide().toString();
-            Set<ASMDataTable.ASMData> sideData = table.getAll("net.minecraftforge.fml.relauncher.SideOnly");
-            for (ASMDataTable.ASMData asmData: sideData) {
-                if (Objects.equals(asmData.getClassName(), asmData.getObjectName())) { // Is a class
-                    EnumHolder enumHolder = (EnumHolder) asmData.getAnnotationInfo().get("value");
-                    if (!Objects.equals(enumHolder.getValue(), startSide)) {
-                        removedClasses.add(asmData.getClassName());
-                    }
-                }
-                if (asmData.getObjectName().contains("(")) { // Is a method
-                    removedMethods.add(asmData);
-                }
-            }
-        }
-
-        rawStateEventCallbacks = new HashSet<>();
-        {
-            Set<ASMData> loadCallbacks = table.getAll("cn.lambdalib2.registry.StateEventCallback");
-            rawStateEventCallbacks.addAll(
-                    loadCallbacks.stream()
-                            .filter(it -> !removedClasses.contains(it.getClassName()))
-                            .filter(it -> removedMethods.stream().noneMatch(m -> isClassObjectEqual(it, m)))
-                            .collect(Collectors.toList()));
-        }
-
-        rawRegistryCallbacks = table.getAll("cn.lambdalib2.registry.RegistryCallback")
-                .stream()
-                .filter(it -> !removedClasses.contains(it.getClassName()))
-                .filter(it -> removedMethods.stream().noneMatch(m -> isClassObjectEqual(it, m)))
-                .collect(Collectors.toSet());
-
-        registryMods = table.getAll("cn.lambdalib2.registry.RegistryMod")
-                .stream()
-                .filter(it -> !removedClasses.contains(it.getClassName()))
-                .collect(Collectors.toMap(ASMData::getClassName, this::createModContext));
-
-        RegistryTransformer.setRegistryMods(registryMods.keySet());
-    }
-
-    private boolean isClassObjectEqual(ASMData lhs, ASMData rhs) {
-        return (lhs.getObjectName().equals(rhs.getObjectName())) &&
-                (lhs.getClassName().equals(rhs.getClassName()));
-    }
-
-    private String getPackageName(String className) {
-        int idx = className.lastIndexOf('.');
-        return className.substring(0, idx);
-    }
-
-    private ModContext createModContext(ASMData data) {
+    private ModContext createModContext(Class<?> type) {
         ModContext ctx = new ModContext();
-        ctx.packageRoot = (String) data.getAnnotationInfo().getOrDefault("rootPackage", getPackageName(data.getClassName()));
+        RegistryMod anno = type.getAnnotation(RegistryMod.class);
+        Debug.assertNotNull(anno);
+        ctx.packageRoot = anno.rootPackage();
+        if (ctx.packageRoot.isEmpty()) {
+            ctx.packageRoot = type.getPackage().getName();
+        }
         ctx.loadCallbacks = new HashMap<>();
         return ctx;
     }
@@ -115,95 +63,64 @@ public enum RegistryManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void checkInit() {
         if (!initialized) {
             HashMap<Method, Integer> priorityMap = new HashMap<>();
 
-            for (ASMData data : rawStateEventCallbacks) {
-                ModContext mod = findMod(data.getClassName());
-                try {
-                    if (mod != null) {
-                        Class<?> klass = Class.forName(data.getClassName());
+            registryMods = ReflectionUtils.getClasses(RegistryMod.class)
+                .stream()
+                .collect(Collectors.toMap(Class::getCanonicalName, this::createModContext));
 
-                        String fullDesc = data.getObjectName();
-                        int idx = fullDesc.indexOf('(');
-                        String methodName = fullDesc.substring(0, idx);
-                        String desc = fullDesc.substring(idx);
-
-                        Type[] rawArgs = Type.getArgumentTypes(desc);
-                        Class[] args = new Class[rawArgs.length];
-                        for (int i = 0; i < rawArgs.length; ++i) {
-                            args[i] = Class.forName(rawArgs[i].getClassName());
-                        }
-
-                        Method method = klass.getDeclaredMethod(methodName, args);
-                        if (!Modifier.isStatic(method.getModifiers())) {
-                            throw new IllegalArgumentException("StateEventCallback method" + method + " must be static.");
-                        }
-                        if (args.length != 1) {
-                            throw new IllegalArgumentException("StateEventCallback method" + method + " requires exactly 1 argument.");
-                        }
-
-                        Class<?> eventType = args[0];
-                        if (!FMLStateEvent.class.isAssignableFrom(eventType)) {
-                            throw new IllegalArgumentException("StateEventCallback method" + method + " 's first argument type must inherit FMLStateEvent");
-                        }
-
-                        if (!mod.loadCallbacks.containsKey(eventType)) {
-                            mod.loadCallbacks.put((Class<? extends FMLStateEvent>) eventType, new ArrayList<>());
-                        }
-
-                        mod.loadCallbacks.get(eventType).add(method);
-                        priorityMap.put(method, (int) data.getAnnotationInfo().getOrDefault("priority", 0));
-
-                    } else {
-                        throw new IllegalStateException("StateEventCallback " + data.getObjectName() + " doesn't have mod that registers it");
-                    }
-                } catch (ClassNotFoundException|NoSuchMethodException e) {
-                    throw new RuntimeException(e);
+            // Process all state event callbacks
+            List<Method> allStateEventCallbacks = ReflectionUtils.getMethods(StateEventCallback.class);
+            allStateEventCallbacks.forEach(method -> {
+                if (!Modifier.isStatic(method.getModifiers())) {
+                    throw new IllegalArgumentException("StateEventCallback method" + method + " must be static.");
                 }
-            }
-
-            for (ASMData data : rawRegistryCallbacks) {
-                try {
-                    Class<?> klass = Class.forName(data.getClassName());
-
-                    String fullDesc = data.getObjectName();
-                    int idx = fullDesc.indexOf('(');
-                    String methodName = fullDesc.substring(0, idx);
-                    String desc = fullDesc.substring(idx);
-
-                    Type[] rawArgs = Type.getArgumentTypes(desc);
-                    Class[] args = new Class[rawArgs.length];
-                    for (int i = 0; i < rawArgs.length; ++i) {
-                        args[i] = Class.forName(rawArgs[i].getClassName());
-                    }
-
-                    Method method = klass.getDeclaredMethod(methodName, args);
-                    if (!Modifier.isStatic(method.getModifiers())) {
-                        throw new IllegalArgumentException("RegistryCallback method " + method + " must be static.");
-                    }
-                    if (args.length != 1) {
-                        throw new IllegalArgumentException("RegistryCallback method " + method + " requires exactly 1 argument.");
-                    }
-
-                    String parTypeName = method.getGenericParameterTypes()[0].getTypeName();
-                    if (parTypeName.contains("Item")) {
-                        itemRegistryCallbacks.add(method);
-                    } else if (parTypeName.contains("Block")) {
-                        blockRegistryCallbacks.add(method);
-                    } else {
-                        throw new IllegalStateException("Invalid Registry Callback " + method);
-                    }
-
-                    priorityMap.put(method, (int) data.getAnnotationInfo().getOrDefault("priority", 0));
-
-                } catch (NoSuchMethodException|ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+                if (method.getParameterCount() != 1) {
+                    throw new IllegalArgumentException("StateEventCallback method" + method + " requires exactly 1 argument.");
                 }
-            }
 
-            rawRegistryCallbacks.clear();
+                Class<? extends FMLStateEvent> eventType = ((Class<? extends FMLStateEvent>) method.getParameterTypes()[0]);
+                if (!FMLStateEvent.class.isAssignableFrom(eventType)) {
+                    throw new IllegalArgumentException("StateEventCallback method" + method + " 's first argument type must inherit FMLStateEvent");
+                }
+
+                ModContext mod = findMod(method.getDeclaringClass().getCanonicalName());
+                Debug.assertNotNull(mod, method + " doesn't have associated mod");
+                if (!mod.loadCallbacks.containsKey(eventType)) {
+                    mod.loadCallbacks.put(eventType, new ArrayList<>());
+                }
+
+                mod.loadCallbacks.get(eventType).add(method);
+
+                StateEventCallback anno = method.getAnnotation(StateEventCallback.class);
+                priorityMap.put(method, anno.priority());
+            });
+
+            // Process all registry callbacks
+            List<Method> registryCallbacks = ReflectionUtils.getMethods(RegistryCallback.class);
+            registryCallbacks.forEach(method -> {
+                if (!Modifier.isStatic(method.getModifiers())) {
+                    throw new IllegalArgumentException("RegistryCallback method " + method + " must be static.");
+                }
+                if (method.getParameterCount() != 1) {
+                    throw new IllegalArgumentException("RegistryCallback method " + method + " requires exactly 1 argument.");
+                }
+
+                String parTypeName = method.getGenericParameterTypes()[0].getTypeName();
+                if (parTypeName.contains("Item")) {
+                    itemRegistryCallbacks.add(method);
+                } else if (parTypeName.contains("Block")) {
+                    blockRegistryCallbacks.add(method);
+                } else {
+                    throw new IllegalStateException("Invalid Registry Callback " + method);
+                }
+
+                RegistryCallback anno = method.getAnnotation(RegistryCallback.class);
+                priorityMap.put(method, anno.priority());
+            });
 
             Comparator<Method> priorityCmp = (lhs, rhs) -> {
                 int lp = priorityMap.get(lhs);
@@ -220,8 +137,6 @@ public enum RegistryManager {
 
             itemRegistryCallbacks.sort(priorityCmp);
             blockRegistryCallbacks.sort(priorityCmp);
-
-            rawStateEventCallbacks.clear();
 
             registerEventHandler();
 

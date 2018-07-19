@@ -12,7 +12,7 @@ import java.util.Set;
 public class RegistryTransformer implements IClassTransformer {
     static final Set<String> registryMods = new HashSet<>();
 
-    static void setRegistryMods(Collection<String> mods) {
+    public static void setRegistryMods(Collection<String> mods) {
         registryMods.addAll(mods);
     }
 

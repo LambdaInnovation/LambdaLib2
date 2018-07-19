@@ -1,17 +1,48 @@
 package cn.lambdalib2.util;
 
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.discovery.ASMDataTable;
+import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
+import net.minecraftforge.fml.common.discovery.asm.ModAnnotation.EnumHolder;
+import org.objectweb.asm.Type;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ReflectionUtils {
+
+    private static Set<String> removedClasses = new HashSet<>();
+    private static Set<ASMData> removedMethods = new HashSet<ASMData>();
+
+    private static ASMDataTable table;
+
+    public static void _init(ASMDataTable _table) {
+        table = _table;
+
+        String startSide = FMLCommonHandler.instance().getSide().toString();
+        Set<ASMDataTable.ASMData> sideData = table.getAll("net.minecraftforge.fml.relauncher.SideOnly");
+        for (ASMDataTable.ASMData asmData: sideData) {
+            if (Objects.equals(asmData.getClassName(), asmData.getObjectName())) { // Is a class
+                EnumHolder enumHolder = (EnumHolder) asmData.getAnnotationInfo().get("value");
+                if (!Objects.equals(enumHolder.getValue(), startSide)) {
+                    removedClasses.add(asmData.getClassName());
+                }
+            }
+            if (asmData.getObjectName().contains("(")) { // Is a method
+                removedMethods.add(asmData);
+            }
+        }
+    }
 
     /**
      * Get all the methods for a class, including those that are private or protected in parent class.
      * All the methods are made accessible.
      */
-    public static List<Method> getAllAccessibleMethods(Class cls) {
+    public static List<Method> getAccessibleMethods(Class cls) {
         List<Method> ret = new ArrayList<>();
 
         while (cls != null) {
@@ -43,20 +74,6 @@ public class ReflectionUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T getObfFieldInstance(Class cl, Object instance, String normName, String obfName) {
-        Field f = getObfField(cl, normName, obfName);
-        try {
-            return (T) f.get(instance);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static <T> T getFieldInstance(Class cl, Object instance, String name) {
-        return getObfFieldInstance(cl, instance, name, name);
-    }
-
     /**
      * Get a class field (both in workspace and in builds) by its deobf name and obf name.
      */
@@ -75,6 +92,82 @@ public class ReflectionUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static List<Method> getMethods(Class<? extends Annotation> annoClass)  {
+        return getMethods(annoClass, true);
+    }
+
+    /**
+     * Get all methods in all classes with given annotation.
+     * @param removeSideOnly if false, will CRASH when there are SideOnly methods using this annotation.
+     *                       usually used to enforce that they are not being removed.
+     */
+    public static List<Method> getMethods(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
+        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName(), removeSideOnly);
+        return objects.stream()
+            .map(data -> {
+                try {
+                    Class<?> type = Class.forName(data.getClassName());
+
+                    String fullDesc = data.getObjectName();
+                    int idx = fullDesc.indexOf('(');
+                    String methodName = fullDesc.substring(0, idx);
+                    String desc = fullDesc.substring(idx);
+
+                    Type[] rawArgs = Type.getArgumentTypes(desc);
+                    Class[] args = new Class[rawArgs.length];
+                    for (int i = 0; i < rawArgs.length; ++i) {
+                        args[i] = Class.forName(rawArgs[i].getClassName());
+                    }
+
+                    Method method = type.getDeclaredMethod(methodName, args);
+                    return method;
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .collect(Collectors.toList());
+    }
+
+    public static List<Class> getClasses(Class<? extends Annotation> annoClass) {
+        return getClasses(annoClass, true);
+    }
+
+    /**
+     * Get all classes with given annotation.
+     * @param removeSideOnly if false, will CRASH when there are SideOnly classes using this annotation.
+     *                       usually used to enforce that they are not being removed.
+     */
+    public static List<Class> getClasses(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
+        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName(), removeSideOnly);
+        return objects.stream()
+            .map(ASMData::getClassName)
+            .distinct()
+            .map(it -> {
+                try {
+                    return Class.forName(it);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .collect(Collectors.toList());
+    }
+
+    public static List<ASMData> getRawObjects(String annoName, boolean removeSideOnly) {
+        Stream<ASMData> stream = table.getAll(annoName).stream();
+        if (removeSideOnly) {
+            stream = stream.filter(it -> !removedClasses.contains(it.getClassName()))
+                .filter(it -> removedMethods.stream().noneMatch(m -> isClassObjectEqual(it, m)));
+        }
+        return stream.collect(Collectors.toList());
+    }
+
+    private static boolean isClassObjectEqual(ASMData lhs, ASMData rhs) {
+        return (lhs.getObjectName().equals(rhs.getObjectName())) &&
+            (lhs.getClassName().equals(rhs.getClassName()));
     }
 
 }

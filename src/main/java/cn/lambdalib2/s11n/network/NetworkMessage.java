@@ -196,7 +196,7 @@ public class NetworkMessage {
     }
 
     private static void buildCache(ChannelID cid, List<INetworkListener> out) {
-        out.addAll(ReflectionUtils.getAllAccessibleMethods(cid.c)
+        out.addAll(ReflectionUtils.getAccessibleMethods(cid.c)
                 .stream()
                 .filter(m -> matches(cid, m))
                 .map(NetworkMessage::methodListener)

@@ -5,9 +5,9 @@ import cn.lambdalib2.cgui.Widget;
 import cn.lambdalib2.cgui.component.DrawTexture;
 import cn.lambdalib2.cgui.component.TextBox;
 import cn.lambdalib2.registry.StateEventCallback;
-import cn.lambdalib2.util.ColorUtils;
 import cn.lambdalib2.render.font.IFont.FontAlign;
 import cn.lambdalib2.render.font.IFont.FontOption;
+import cn.lambdalib2.util.Colors;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -44,16 +44,16 @@ public class TestCgui {
     private TestCgui() {
         Widget root = new Widget(0, 0, 100, 100).centered()
             .addComponent(new DrawTexture()
-                    .setColor(ColorUtils.white())
+                    .setColor(Colors.white())
                     .setTex(null));
 
         root.addWidget(new Widget(0, 0, 200, 100).centered()
-                .addComponent(new TextBox(new FontOption(10, FontAlign.CENTER, ColorUtils.fromRGBA32(0x1A44CEFF))).allowEdit()
+                .addComponent(new TextBox(new FontOption(10, FontAlign.CENTER, Colors.fromRGBA32(0x1A44CEFF))).allowEdit()
                         .setContent("Hello World!"))
                 .addComponent(new DrawTexture()));
 
         root.addWidget(new Widget(0, 100, 50, 50).centered()
-            .addComponent(new DrawTexture(DrawTexture.MISSING).setUVRect(0, 0, 500, 500).setColor(ColorUtils.white())));
+            .addComponent(new DrawTexture(DrawTexture.MISSING).setUVRect(0, 0, 500, 500).setColor(Colors.white())));
 
         screen.getGui().addWidget(root);
     }
