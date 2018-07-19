@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-@RegistryMod
+@RegistryMod(resourceDomain = "ll2test")
 @Mod(modid = "ll2test", version="0.1")
 public class TestMod {
 

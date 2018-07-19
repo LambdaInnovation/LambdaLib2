@@ -132,7 +132,7 @@ public class ReflectionUtils {
             .collect(Collectors.toList());
     }
 
-    public static List<Class> getClasses(Class<? extends Annotation> annoClass) {
+    public static List<Class<?>> getClasses(Class<? extends Annotation> annoClass) {
         return getClasses(annoClass, true);
     }
 
@@ -141,7 +141,7 @@ public class ReflectionUtils {
      * @param removeSideOnly if false, will CRASH when there are SideOnly classes using this annotation.
      *                       usually used to enforce that they are not being removed.
      */
-    public static List<Class> getClasses(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
+    public static List<Class<?>> getClasses(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
         List<ASMData> objects = getRawObjects(annoClass.getCanonicalName(), removeSideOnly);
         return objects.stream()
             .map(ASMData::getClassName)

@@ -21,9 +21,11 @@ import java.util.stream.Collectors;
 public enum RegistryManager {
     INSTANCE;
 
-    class ModContext {
+    public class ModContext {
         public String packageRoot;
-        public HashMap<Class<? extends FMLStateEvent>, List<Method>> loadCallbacks;
+        public Object modObject;
+
+        HashMap<Class<? extends FMLStateEvent>, List<Method>> loadCallbacks;
     }
 
     private Map<String, ModContext> registryMods;
@@ -33,6 +35,21 @@ public enum RegistryManager {
             blockRegistryCallbacks = new ArrayList<>();
 
     private boolean initialized = false;
+
+    private Object activeMod;
+
+    public Object getActiveMod() {
+        return Debug.assertNotNull(activeMod, "No mod is currently being loaded");
+    }
+
+    public ModContext findMod(String classPath) {
+        for (Entry<String, ModContext> entry : registryMods.entrySet()) {
+            if (classPath.startsWith(entry.getValue().packageRoot)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
 
     private ModContext createModContext(Class<?> type) {
         ModContext ctx = new ModContext();
@@ -46,12 +63,16 @@ public enum RegistryManager {
         return ctx;
     }
 
-    private void onStateEvent(String mod, FMLStateEvent event) {
+    private void onStateEvent(Object mod, FMLStateEvent event) {
         checkInit();
 
-        ModContext ctx = registryMods.get(mod);
+        ModContext ctx = registryMods.get(mod.getClass().getCanonicalName());
+        if (ctx.modObject == null)
+            ctx.modObject = mod;
+
         List<Method> methods = ctx.loadCallbacks.get(event.getClass());
         if (methods != null) {
+            activeMod = mod;
             for (Method m : methods) {
                 try {
                     m.setAccessible(true);
@@ -60,6 +81,7 @@ public enum RegistryManager {
                     throw new RuntimeException("Error when calling StateEventCallback " + m);
                 }
             }
+            activeMod = null;
         }
     }
 
@@ -148,14 +170,6 @@ public enum RegistryManager {
         MinecraftForge.EVENT_BUS.register(new EventHandler());
     }
 
-    ModContext findMod(String path) {
-        for (Entry<String, ModContext> entry : registryMods.entrySet()) {
-            if (path.startsWith(entry.getValue().packageRoot)) {
-                return entry.getValue();
-            }
-        }
-        return null;
-    }
 
     class EventHandler {
         @SubscribeEvent
@@ -180,7 +194,7 @@ public enum RegistryManager {
         }
     }
 
-    public static void asm_RegistrationEvent(String mod, FMLStateEvent event) {
+    public static void asm_RegistrationEvent(Object mod, FMLStateEvent event) {
         INSTANCE.onStateEvent(mod, event);
     }
 }

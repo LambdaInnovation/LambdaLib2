@@ -16,7 +16,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
 
-@RegistryMod
+@RegistryMod(resourceDomain = "lambdalib2")
 @Mod(modid = LambdaLib2.MODID, version = LambdaLib2.VERSION)
 public class LambdaLib2
 {
