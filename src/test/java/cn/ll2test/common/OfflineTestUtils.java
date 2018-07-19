@@ -9,7 +9,7 @@ public class OfflineTestUtils {
 
     public static void hackNatives() {
         String paths = System.getProperty("java.library.path");
-        String nativesDir = "C:/Users/WeAth/.gradle/caches/minecraft/net/minecraft/natives/1.12.2";
+        String nativesDir = new File(System.getProperty("user.home"), ".gradle/caches/minecraft/net/minecraft/natives/1.12.2").getAbsolutePath();
         if (Strings.isNullOrEmpty(paths)) {
             paths = nativesDir;
         } else {
@@ -21,11 +21,8 @@ public class OfflineTestUtils {
         try {
             Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
             sysPathsField.setAccessible(true);
-            sysPathsField.set((Object)null, (Object)null);
-        } catch (Throwable var3) {
-            ;
-        }
-
+            sysPathsField.set(null, null);
+        } catch (Throwable ignored) {}
     }
 
 }

@@ -5,16 +5,15 @@ import cn.lambdalib2.render.RenderMaterial;
 import cn.lambdalib2.render.RenderPass;
 import cn.lambdalib2.render.ShaderScript;
 import cn.ll2test.common.OfflineTestUtils;
+import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.vector.Vector3f;
-import scala.actors.threadpool.Arrays;
 
 import java.util.ArrayList;
 
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.*;
 
 public class PassTriangleTest {
 
@@ -22,7 +21,9 @@ public class PassTriangleTest {
         OfflineTestUtils.hackNatives();
 
         Display.setDisplayMode(new DisplayMode(800, 600));
-        Display.create();
+        Display.create(new PixelFormat(), new ContextAttribs(2, 1));
+
+        System.out.println("OpenGL version: " + glGetString(GL_VERSION));
 
         RenderPass pass = new RenderPass();
         ShaderScript script = ShaderScript.loadFromResource("/render/hello-tri.shader");
