@@ -45,9 +45,9 @@ public enum DOMS11n {
 
         addSerializer((obj) -> obj.getClass().isEnum(), (obj, node) -> addText(node, obj.toString()));
 
-        addSerializer(obj -> obj instanceof IFont, (obj, node) -> {
-            Fonts.getName((IFont) obj);
-        });
+        addSerializerType((obj, node) -> {
+            addText(node, Fonts.getName((IFont) obj));
+        }, IFont.class);
 
         // Literal value parsings
         addDeserializerStr(char.class, str -> str.charAt(0));

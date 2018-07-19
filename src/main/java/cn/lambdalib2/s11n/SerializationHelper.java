@@ -1,13 +1,6 @@
-/**
-* Copyright (c) Lambda Innovation, 2013-2016
-* This file is part of LambdaLib modding library.
-* https://github.com/LambdaInnovation/LambdaLib
-* Licensed under MIT, see project root for more information.
-*/
 package cn.lambdalib2.s11n;
 
 import cn.lambdalib2.s11n.SerializeStrategy.ExposeStrategy;
-import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -30,7 +23,7 @@ public class SerializationHelper {
                 .maximumSize(500)
                 .build(new CacheLoader<Class, List<Field>>() {
                     @Override
-                    public List<Field> load(Class key) throws Exception {
+                    public List<Field> load(Class key) {
                         return buildExposedFields(key);
                     }
                 });
@@ -41,7 +34,7 @@ public class SerializationHelper {
         serializeTypes.add(type);
     }
 
-    public boolean isS11nType(Class type) {
+    public boolean isS11nType(Class<?> type) {
         return type.isEnum() ||
                 type.isAnnotationPresent(SerializeType.class) ||
                 serializeTypes.contains(type) ||
@@ -107,10 +100,7 @@ public class SerializationHelper {
                         }
                     }
                 })
-                .map(f -> {
-                    f.setAccessible(true);
-                    return f;
-                })
+                .peek(f -> f.setAccessible(true))
                 .collect(Collectors.toList());
     }
 
