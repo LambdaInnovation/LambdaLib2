@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
+import static org.lwjgl.opengl.GL11.glTexCoord2d;
 import static org.lwjgl.opengl.GL11.glVertex3d;
 
 /**
@@ -51,6 +52,11 @@ public class RenderUtils {
     public static void glVertexAndUV(Vec3d vertex, double u, double v) {
         GL11.glTexCoord2d(u, v);
         glVertex3d(vertex.x, vertex.y, vertex.z);
+    }
+
+    public static void glVertexAndUV(double x, double y, double z, double u, double v) {
+        glTexCoord2d(u, v);
+        glVertex3d(x, y, z);
     }
     
     public static void glVertex(Vec3d vertex) {

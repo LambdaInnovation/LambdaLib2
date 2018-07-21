@@ -56,7 +56,7 @@ public class TrueTypeFont implements IFont {
             "SimHei", "微软雅黑", "黑体",
             "Consolas", "Monospace", "Arial");
 
-    static TrueTypeFont withFallback(int style, int size, String... fallbackNames){
+    public static TrueTypeFont withFallback(int style, int size, String... fallbackNames){
         Font[] allfonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
         List<Font> used=new ArrayList<>();
         for (String c : fallbackNames) {
@@ -71,9 +71,8 @@ public class TrueTypeFont implements IFont {
     }
 
     private static Color BACKGRND_COLOR = new Color(255, 255, 255, 0);
-
-    private final Font font;
     private final int TEXTURE_SZ_LIMIT = Math.min(2048, GL11.glGetInteger(GL_MAX_TEXTURE_SIZE));
+
     private final int charSize;
     private final float maxPerCol;
     private final float maxStep;
@@ -85,6 +84,8 @@ public class TrueTypeFont implements IFont {
 
     @SuppressWarnings("unchecked")
     private List<Vertex>[] batchInfoCache = new List[8];
+
+    public final Font font;
 
     public TrueTypeFont(Font font){
         this.font=font;

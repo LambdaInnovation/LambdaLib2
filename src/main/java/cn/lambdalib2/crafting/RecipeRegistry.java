@@ -180,6 +180,10 @@ public class RecipeRegistry {
         }
     }
 
+    public Map<String, Object> getNameMappingForDebug() {
+        return nameMapping;
+    }
+
     private void addRecipe(RecipeParser parser) {
         while (parser.parseNext()) {
             try {
