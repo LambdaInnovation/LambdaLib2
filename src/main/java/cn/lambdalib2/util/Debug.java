@@ -14,6 +14,10 @@ public class Debug {
 
     private static Logger logger = getOrCreateLogger();
 
+    public static RuntimeException TODO() {
+        throw new RuntimeException("TODO: Not implemented!");
+    }
+
     public static void assert2(boolean expr) {
         assert2(expr, "Assersion failed");
     }

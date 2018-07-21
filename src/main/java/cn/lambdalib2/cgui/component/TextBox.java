@@ -13,7 +13,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
-import cn.lambdalib2.cgui.*;
 import cn.lambdalib2.s11n.SerializeIncluded;
 import cn.lambdalib2.util.GameTimer;
 import cn.lambdalib2.render.font.Fonts;
