@@ -156,6 +156,23 @@ public class ReflectionUtils {
             .collect(Collectors.toList());
     }
 
+    public static List<Field> getFields(Class<? extends Annotation> annoClass) {
+        return getFields(annoClass, true);
+    }
+
+    public static List<Field> getFields(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
+        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName(), removeSideOnly);
+        return objects.stream()
+            .map(it -> {
+                try {
+                    return Class.forName(it.getClassName()).getField(it.getObjectName());
+                } catch (ClassNotFoundException|NoSuchFieldException ex) {
+                    throw new RuntimeException(ex);
+                }
+            })
+            .collect(Collectors.toList());
+    }
+
     public static List<ASMData> getRawObjects(String annoName, boolean removeSideOnly) {
         Stream<ASMData> stream = table.getAll(annoName).stream();
         if (removeSideOnly) {
