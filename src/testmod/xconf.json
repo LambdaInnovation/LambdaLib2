@@ -1,0 +1,7 @@
+{
+    "srcDir": "java",
+    "resourcesDir": "resources",
+    "itemsDataDir": "conf/items",
+    "domain": "ll2test",
+    "itemClassPath": "cn.ll2test.AllItems"
+}

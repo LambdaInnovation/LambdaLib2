@@ -1,0 +1,33 @@
+
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.2.51"
+}
+
+apply plugin: 'idea'
+
+idea {
+    module {
+        downloadSources = true
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.apache.velocity:velocity-engine-core:2.0"
+    compile "com.google.code.gson:gson:2.8.5"
+    compile "com.github.salomonbrys.kotson:kotson:2.5.0"
+}
+
+ext.mainClassName = "MainKt"
+
+jar {
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

@@ -6,6 +6,9 @@ bin
 .classpath
 .project
 
+# packages
+*.jar
+
 # idea
 out
 *.ipr
