@@ -8,6 +8,7 @@ bin
 
 # packages
 *.jar
+!gradle-wrapper.jar
 
 # idea
 out
