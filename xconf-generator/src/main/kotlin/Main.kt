@@ -1,4 +1,5 @@
 import com.github.salomonbrys.kotson.fromJson
+import com.github.salomonbrys.kotson.jsonObject
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.apache.velocity.VelocityContext
@@ -32,6 +33,8 @@ object Main {
 
     val velocityEngine = VelocityEngine()
 
+    val jsonMark = "__xconfgen" to true
+
     init {
         velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath")
         velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader::class.java.name)
@@ -61,6 +64,16 @@ object Main {
         println("\nItem list: \n${items.joinToString(separator = "\n")}\n")
 
         val srcDir = File(rootDir, config.srcDir)
+        val resDir = File(rootDir, config.resourcesDir)
+
+        println("Writing item models...")
+        for (item in items) {
+            val modelJsonPath = File(resDir, "assets/${config.domain}/models/item/${item.id}.json")
+            val modelJson = jsonObject(jsonMark, "parent" to "item/generated", "textures" to jsonObject("layer0" to "${config.domain}:${item.id}"))
+
+            modelJsonPath.parentFile.mkdirs()
+            modelJsonPath.writeText(modelJson.toString())
+        }
 
         println("Writing item class...")
         run {
