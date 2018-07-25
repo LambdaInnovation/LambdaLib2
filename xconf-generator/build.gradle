@@ -21,7 +21,7 @@ dependencies {
     compile "com.github.salomonbrys.kotson:kotson:2.5.0"
 }
 
-ext.mainClassName = "MainKt"
+ext.mainClassName = "Main"
 
 jar {
     manifest {

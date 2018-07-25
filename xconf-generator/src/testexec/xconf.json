@@ -1,0 +1,7 @@
+{
+  "srcDir": "src/main/java",
+  "resourcesDir": "src/main/resources",
+  "domain": "academy",
+  "itemsDataDir": "src/raw/items",
+  "itemsClassPath": "cn.academy.ACItems"
+}
