@@ -17,15 +17,24 @@ object Main {
     data class ImportConfig(
         val srcDir: String,
         val resourcesDir: String,
-        val itemsDataDir: String,
         val domain: String,
-        val itemsClassPath: String
+
+        val itemsDataDir: String,
+        val itemsClassPath: String,
+
+        val blocksDataDir: String,
+        val blocksClassPath: String
     ) {
         fun getItemsPackageName() = itemsClassPath.substringBeforeLast('.')
         fun getItemsClassName() = itemsClassPath.substringAfterLast('.')
+
+        fun getBlocksPackageName() = blocksClassPath.substringBeforeLast('.')
+        fun getBlocksClassName() = blocksClassPath.substringAfterLast('.')
     }
 
     data class ItemMetadata(val id: String, val baseClass: String, val ctorArgs: String)
+
+    data class BlockMetadata(val id: String, val baseClass: String, val ctorArgs: String)
 
     val gson = Gson()
 
@@ -43,6 +52,9 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        println("LambdaLib2.xconf by WeAthFolD, version 0.1")
+        println()
+
         val rootDir = if (args.isEmpty()) "" else args.first()
         println("Root dir: ${File(rootDir).absolutePath}")
 
@@ -53,23 +65,56 @@ object Main {
         }
 
         val config = gson.fromJson<ImportConfig>(configFile.readText())
-        println("Your config is: $config")
+        println("config is: $config")
+
+
+        val srcDir = File(rootDir, config.srcDir)
+        val resDir = File(rootDir, config.resourcesDir)
+        val assetsRootDir = File(resDir, "assets/${config.domain}")
+
+        println()
+        println("Cleaning up...")
+        arrayOf(
+            File(assetsRootDir, "models/item"),
+            File(assetsRootDir, "models/block"),
+            File(assetsRootDir, "blockstates")
+        )
+        .filter { it.isDirectory }
+        .flatMap { it.listFiles().toList() }
+        .filter {
+            val res: JsonObject = gson.fromJson(it.readText())
+            res.has(jsonMark.first)
+        }
+        .forEach {
+            println(it.path)
+            it.delete()
+        }
 
         val items = File(rootDir, config.itemsDataDir).listFiles().map {
             val id = it.nameWithoutExtension
             val json = gson.fromJson<JsonObject>(it.readText())
-            ItemMetadata(id, json["baseClass"].asString, json["ctorArgs"].asString ?: "")
+            ItemMetadata(id, json["baseClass"].asString!!, json["ctorArgs"].asString ?: "")
         }
+        println("\nItem list: \n${items.joinToString(separator = "\n")}")
+        println()
 
-        println("\nItem list: \n${items.joinToString(separator = "\n")}\n")
-
-        val srcDir = File(rootDir, config.srcDir)
-        val resDir = File(rootDir, config.resourcesDir)
+        val blocks = File(rootDir, config.blocksDataDir).listFiles().map {
+            val id = it.nameWithoutExtension
+            val json = gson.fromJson<JsonObject>(it.readText())
+            BlockMetadata(id, json["baseClass"].asString!!, json["ctorArgs"].asString ?: "")
+        }
+        val blocksWithItemBlock = blocks
+        println("Block list: \n${blocks.joinToString(separator = "\n")}")
+        println()
 
         println("Writing item models...")
         for (item in items) {
-            val modelJsonPath = File(resDir, "assets/${config.domain}/models/item/${item.id}.json")
-            val modelJson = jsonObject(jsonMark, "parent" to "item/generated", "textures" to jsonObject("layer0" to "${config.domain}:${item.id}"))
+            val modelJsonPath = File(assetsRootDir, "models/item/${item.id}.json")
+            val modelJson = jsonObject(
+                jsonMark,
+                "parent" to "item/generated",
+                "textures" to jsonObject("layer0" to "${config.domain}:items/${item.id}")
+            )
 
             modelJsonPath.parentFile.mkdirs()
             modelJsonPath.writeText(modelJson.toString())
@@ -86,6 +131,50 @@ object Main {
                 "items" to items
             ))
             itemClassFile.writeText(s)
+        }
+
+
+        println("Writing block models...")
+        for (block in blocks) {
+            val modelJsonPath = File(assetsRootDir, "models/block/${block.id}.json")
+            val modelJson = jsonObject(
+                jsonMark,
+                "parent" to "block/cube_all",
+                "textures" to jsonObject(
+                    "all" to "${config.domain}:blocks/${block.id}"
+                )
+            )
+            modelJsonPath.parentFile.mkdirs()
+            modelJsonPath.writeText(modelJson.toString())
+        }
+
+        println("Writing blockstates...")
+        for (block in blocks) {
+            val jsonPath = File(assetsRootDir, "blockstates/${block.id}.json")
+            val json = jsonObject(
+                jsonMark,
+                "variants" to jsonObject(
+                    "normal" to jsonObject(
+                        "model" to "${config.domain}:${block.id}"
+                    )
+                )
+            )
+            jsonPath.parentFile.mkdirs()
+            jsonPath.writeText(json.toString())
+        }
+
+        println("Writing blocks class...")
+        run {
+            val blocksClassFile = File(srcDir, config.blocksClassPath.replace('.', '/') + ".java")
+            blocksClassFile.parentFile.mkdirs()
+
+            val s = renderTemplate("blockClassTemplate.java", mapOf(
+                "date" to dateFormat.format(Date()),
+                "config" to config,
+                "blocks" to blocks,
+                "blocksWithItemBlock" to blocksWithItemBlock
+            ))
+            blocksClassFile.writeText(s)
         }
     }
 

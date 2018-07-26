@@ -1,4 +1,4 @@
 {
-  "baseClass": "cn.academy.block.TestBlock",
+  "baseClass": "cn.academy.item.TestItem",
   "ctorArgs": "123, 456"
 }

@@ -3,5 +3,7 @@
   "resourcesDir": "src/main/resources",
   "domain": "academy",
   "itemsDataDir": "src/raw/items",
-  "itemsClassPath": "cn.academy.ACItems"
+  "itemsClassPath": "cn.academy.ACItems",
+  "blocksDataDir": "src/raw/blocks",
+  "blocksClassPath": "cn.academy.ACBlocks"
 }
