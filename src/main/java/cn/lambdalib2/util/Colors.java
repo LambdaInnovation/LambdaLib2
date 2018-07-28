@@ -48,6 +48,11 @@ public final class Colors {
         glColor4ub(color.getRedByte(), color.getGreenByte(), color.getBlueByte(), color.getAlphaByte());
     }
 
+    public static Color monoize(Color color) {
+        int x = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+        return new Color(x, x, x, color.getAlpha());
+    }
+
     private Colors() {}
 
 }
