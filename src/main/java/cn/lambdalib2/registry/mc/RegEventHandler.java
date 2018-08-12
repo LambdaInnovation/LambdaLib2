@@ -6,11 +6,8 @@
 */
 package cn.lambdalib2.registry.mc;
 
-//import cn.lambdalib.annoreg.base.RegistrationInstance;
-//import cn.lambdalib.annoreg.core.LoadStage;
-//import cn.lambdalib.annoreg.core.RegistryTypeDecl;
-//import cpw.mods.fml.common.FMLCommonHandler;
 import cn.lambdalib2.registry.StateEventCallback;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ReflectionUtils;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -31,51 +28,21 @@ import java.util.List;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface RegEventHandler {
-
-    public enum Bus {
-        FML,
-        Forge,
-    }
-
-    Bus[] value() default {Bus.FML, Bus.Forge};
 }
-
-
 
 class RegEventHandlerImpl {
 
     @StateEventCallback
-    @SuppressWarnings("unchecked")
     private static void init(FMLInitializationEvent ev) {
-        ReflectionUtils.getRawObjects(RegEventHandler.class.getCanonicalName(), true).forEach(it -> {
+        ReflectionUtils.getFields(RegEventHandler.class).forEach(field -> {
             try {
-                Class<?> clz = Class.forName(it.getClassName(), true, Loader.instance().getModClassLoader());
-//                RegEventHandler anno = clz.getAnnotation(RegEventHandler.class);
-                List<ModAnnotation.EnumHolder> tholder = (List) it.getAnnotationInfo().get("value");
-                Field field = clz.getDeclaredField(it.getObjectName());
                 Object obj = field.get(null);
-                System.out.println(obj);
-                for (ModAnnotation.EnumHolder bus : tholder) {
-                    register(obj, RegEventHandler.Bus.valueOf(bus.getValue()));
-                }
-
+                Debug.assertNotNull(obj);
+                MinecraftForge.EVENT_BUS.register(obj);
             } catch (Exception e) {
-                System.out.println(e.getStackTrace());
                 throw new RuntimeException(e);
             }
         });
     }
 
-    private static void register(Object obj, RegEventHandler.Bus bus) throws Exception {
-            switch (bus) {
-            case FML:
-                FMLCommonHandler.instance().bus().register(obj);
-                break;
-            case Forge:
-                MinecraftForge.EVENT_BUS.register(obj);
-                break;
-            default:
-            }
-    }
-    
 }
