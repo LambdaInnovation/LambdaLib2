@@ -207,7 +207,7 @@ public class ControlOverrider {
 
     @SideOnly(Side.CLIENT)
     public enum Events {
-        @RegEventHandler(RegEventHandler.Bus.Forge)
+        @RegEventHandler
         instance_;
 
         @SubscribeEvent

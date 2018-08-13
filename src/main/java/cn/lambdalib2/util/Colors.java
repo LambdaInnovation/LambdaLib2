@@ -6,14 +6,6 @@ import static org.lwjgl.opengl.GL11.glColor4ub;
 
 public final class Colors {
 
-    public static float i2f(int color) {
-        return color / 255.0f;
-    }
-
-    public static int f2i(float color) {
-        return (int) (color * 255.0f);
-    }
-
     public static Color white() {
         return new Color(255, 255, 255, 255);
     }
