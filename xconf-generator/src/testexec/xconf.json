@@ -2,6 +2,7 @@
   "srcDir": "src/main/java",
   "resourcesDir": "src/main/resources",
   "domain": "academy",
+  "locPrefix": "ac_",
   "itemsDataDir": "src/raw/items",
   "itemsClassPath": "cn.academy.ACItems",
   "blocksDataDir": "src/raw/blocks",

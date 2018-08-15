@@ -17,6 +17,7 @@ object Main {
     data class ImportConfig(
         val srcDir: String,
         val resourcesDir: String,
+        val locPrefix: String,
         val domain: String,
 
         val itemsDataDir: String,

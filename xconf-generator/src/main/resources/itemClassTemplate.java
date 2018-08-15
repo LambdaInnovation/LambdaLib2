@@ -23,7 +23,7 @@ public class $config.itemsClassName {
     private static void registerItems(RegistryEvent.Register<Item> event) {
     #foreach ($item in $items)
         #set($id = $item.id)
-        ${id}.setRegistryName("$config.domain:$id");
+        ${id}.setRegistryName("${config.locPrefix}$id");
         ${id}.setUnlocalizedName("$config.domain:$id");
         event.getRegistry().register($id);
     #end

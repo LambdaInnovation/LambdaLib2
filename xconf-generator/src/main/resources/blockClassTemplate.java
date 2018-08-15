@@ -30,7 +30,7 @@ public class $config.blocksClassName {
     private static void registerBlocks(RegistryEvent.Register<Block> event) {
     #foreach ($block in $blocks)
         #set($id = $block.id)
-        ${id}.setRegistryName("$config.domain:$id");
+        ${id}.setRegistryName("${config.locPrefix}$id");
         ${id}.setUnlocalizedName("$config.domain:$id");
         event.getRegistry().register($id);
     #end
