@@ -187,4 +187,8 @@ public class VecUtils {
     private static Vec3d _vec(double x, double y, double z) {
         return new Vec3d(x, y, z);
     }
+
+    public static Vec3d lookingPos(Entity e, double range){
+        return add(e.getPositionVector(), multiply(e.getLookVec(), range));
+    }
 }
