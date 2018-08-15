@@ -6,6 +6,10 @@ bin
 .classpath
 .project
 
+# packages
+*.jar
+!gradle-wrapper.jar
+
 # idea
 out
 *.ipr
