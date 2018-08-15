@@ -13,6 +13,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
+import cn.lambdalib2.cgui.Widget;
 import cn.lambdalib2.s11n.SerializeIncluded;
 import cn.lambdalib2.util.GameTimer;
 import cn.lambdalib2.render.font.Fonts;
@@ -302,6 +303,10 @@ public class TextBox extends Component {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringSelection ss = new StringSelection(content);
         cb.setContents(ss, ss);
+    }
+
+    public static TextBox get(Widget w) {
+        return w.getComponent(TextBox.class);
     }
 
 }

@@ -106,4 +106,8 @@ public class ProgressBar extends Component {
         return this;
     }
 
+    public static ProgressBar get(Widget w) {
+        return w.getComponent(ProgressBar.class);
+    }
+
 }

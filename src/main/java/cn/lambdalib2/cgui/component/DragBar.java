@@ -85,4 +85,8 @@ public class DragBar extends Component {
         return this;
     }
 
+    public static DragBar get(Widget w) {
+        return w.getComponent(DragBar.class);
+    }
+
 }
