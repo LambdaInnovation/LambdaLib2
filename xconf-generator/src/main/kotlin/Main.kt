@@ -94,7 +94,7 @@ object Main {
         val items = File(rootDir, config.itemsDataDir).listFiles().map {
             val id = it.nameWithoutExtension
             val json = gson.fromJson<JsonObject>(it.readText())
-            ItemMetadata(id, json["baseClass"].asString!!, json["ctorArgs"].asString ?: "")
+            ItemMetadata(id, json["baseClass"]?.asString ?: "net.minecraft.item.Item", json["ctorArgs"]?.asString ?: "")
         }
         println("\nItem list: \n${items.joinToString(separator = "\n")}")
         println()
@@ -102,7 +102,7 @@ object Main {
         val blocks = File(rootDir, config.blocksDataDir).listFiles().map {
             val id = it.nameWithoutExtension
             val json = gson.fromJson<JsonObject>(it.readText())
-            BlockMetadata(id, json["baseClass"].asString!!, json["ctorArgs"].asString ?: "")
+            BlockMetadata(id, json["baseClass"]?.asString ?: "net.minecraft.block.Block", json["ctorArgs"]?.asString ?: "")
         }
         val blocksWithItemBlock = blocks
         println("Block list: \n${blocks.joinToString(separator = "\n")}")
