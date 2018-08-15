@@ -33,7 +33,7 @@ object Main {
         fun getBlocksClassName() = blocksClassPath.substringAfterLast('.')
     }
 
-    data class ItemMetadata(val id: String, val baseClass: String, val ctorArgs: String)
+    data class ItemMetadata(val id: String, val baseClass: String, val ctorArgs: String, val maxStackSize: Int?, val maxDamage: Int?)
 
     data class BlockMetadata(val id: String, val baseClass: String, val ctorArgs: String)
 
@@ -94,7 +94,13 @@ object Main {
         val items = File(rootDir, config.itemsDataDir).listFiles().map {
             val id = it.nameWithoutExtension
             val json = gson.fromJson<JsonObject>(it.readText())
-            ItemMetadata(id, json["baseClass"]?.asString ?: "net.minecraft.item.Item", json["ctorArgs"]?.asString ?: "")
+            ItemMetadata(
+                id,
+                json["baseClass"]?.asString ?: "net.minecraft.item.Item",
+                json["ctorArgs"]?.asString ?: "",
+                json["maxStackSize"]?.asInt,
+                json["maxDamage"]?.asInt
+            )
         }
         println("\nItem list: \n${items.joinToString(separator = "\n")}")
         println()
