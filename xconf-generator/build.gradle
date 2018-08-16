@@ -21,6 +21,7 @@ dependencies {
     compile "com.google.code.gson:gson:2.8.5"
     compile "com.github.salomonbrys.kotson:kotson:2.5.0"
     compile "org.slf4j:slf4j-simple:1.7.25"
+    compile "com.typesafe:config:1.3.3"
 }
 
 ext.mainClassName = "Main"

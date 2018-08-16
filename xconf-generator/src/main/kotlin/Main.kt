@@ -5,6 +5,8 @@ import com.github.salomonbrys.kotson.toMap
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigObject
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import org.apache.velocity.app.VelocityEngine
@@ -94,29 +96,31 @@ object Main {
             it.delete()
         }
 
-        val items = gson.fromJson<JsonObject>(File(rootDir, config.itemsDataFile).readText())
-            .toMap()
+        val items = ConfigFactory.parseFile(File(rootDir, config.itemsDataFile))
+            .root()
+            .entries
             .map { (id, elem) ->
-                val json = elem.asJsonObject!!
+                val obj = (elem as ConfigObject).toConfig()
                 ItemMetadata(
                     id,
-                    json["baseClass"]?.asString ?: "net.minecraft.item.Item",
-                    json["ctorArgs"]?.asString ?: "",
-                    json["maxStackSize"]?.asInt,
-                    json["maxDamage"]?.asInt
+                    obj.getStringOrDefault("baseClass", "net.minecraft.item.Item"),
+                    obj.getStringOrDefault("ctorArgs", ""),
+                    obj.getIntOrNull("maxStackSize"),
+                    obj.getIntOrNull("maxDamage")
                 )
             }
         println("\nItem list: \n${items.joinToString(separator = "\n")}")
         println()
 
-        val blocks = gson.fromJson<JsonObject>(File(rootDir, config.blocksDataFile).readText())
-            .toMap()
+        val blocks = ConfigFactory.parseFile(File(rootDir, config.blocksDataFile))
+            .root()
+            .entries
             .map { (id, elem) ->
-                val json = elem.asJsonObject!!
+                val obj = (elem as ConfigObject).toConfig()
                 BlockMetadata(
                     id,
-                    json["baseClass"]?.asString ?: "net.minecraft.block.Block",
-                    json["ctorArgs"]?.asString ?: ""
+                    obj.getStringOrDefault("baseClass", "net.minecraft.block.Block"),
+                    obj.getStringOrDefault("ctorArgs", "")
                 )
             }
 

@@ -3,8 +3,8 @@
   "resourcesDir": "src/main/resources",
   "domain": "academy",
   "locPrefix": "ac_",
-  "itemsDataFile": "src/raw/items.json",
+  "itemsDataFile": "src/raw/items.conf",
   "itemsClassPath": "cn.academy.ACItems",
-  "blocksDataFile": "src/raw/blocks.json",
+  "blocksDataFile": "src/raw/blocks.conf",
   "blocksClassPath": "cn.academy.ACBlocks"
 }
