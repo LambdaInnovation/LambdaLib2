@@ -41,8 +41,8 @@ public class $config.itemsClassName {
         #if ($item.maxDamage)
         ${id}.setMaxDamage($item.maxDamage);
         #end
-        #if($block.init)
-        #foreach($stmt in $block.init)
+        #if($item.init)
+        #foreach($stmt in $item.init)
         ${id}.$stmt;
         #end
         #end

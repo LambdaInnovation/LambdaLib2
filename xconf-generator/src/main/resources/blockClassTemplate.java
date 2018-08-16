@@ -39,8 +39,8 @@ public class $config.blocksClassName {
     private static void registerBlocks(RegistryEvent.Register<Block> event) {
     #foreach ($block in $blocks)
         #set($id = $block.id)
-        ${id}.setRegistryName("${config.locPrefix}$id");
-        ${id}.setUnlocalizedName("$config.domain:$id");
+        ${id}.setRegistryName("$config.domain:$id");
+        ${id}.setUnlocalizedName("${config.locPrefix}$id");
     #if($block.init)
     #foreach($stmt in $block.init)
         ${id}.$stmt;
@@ -55,7 +55,7 @@ public class $config.blocksClassName {
     #foreach ($block in $blocksWithItemBlock)
         #set($id = "item_$block.id")
         ${id}.setRegistryName("$config.domain:$block.id");
-        ${id}.setUnlocalizedName("$config.domain:$block.id");
+        ${id}.setUnlocalizedName("${config.locPrefix}$block.id");
         event.getRegistry().register($id);
     #end
 
