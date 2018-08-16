@@ -1,0 +1,6 @@
+{
+  "test_block": {
+    "baseClass": "cn.academy.block.TestBlock",
+    "ctorArgs": "Material.ROCK"
+  }
+}

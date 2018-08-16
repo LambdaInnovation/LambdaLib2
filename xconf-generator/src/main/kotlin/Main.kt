@@ -1,6 +1,9 @@
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.jsonObject
+import com.github.salomonbrys.kotson.toJson
+import com.github.salomonbrys.kotson.toMap
 import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
@@ -20,10 +23,10 @@ object Main {
         val locPrefix: String,
         val domain: String,
 
-        val itemsDataDir: String,
+        val itemsDataFile: String,
         val itemsClassPath: String,
 
-        val blocksDataDir: String,
+        val blocksDataFile: String,
         val blocksClassPath: String
     ) {
         fun getItemsPackageName() = itemsClassPath.substringBeforeLast('.')
@@ -91,25 +94,32 @@ object Main {
             it.delete()
         }
 
-        val items = File(rootDir, config.itemsDataDir).listFiles().map {
-            val id = it.nameWithoutExtension
-            val json = gson.fromJson<JsonObject>(it.readText())
-            ItemMetadata(
-                id,
-                json["baseClass"]?.asString ?: "net.minecraft.item.Item",
-                json["ctorArgs"]?.asString ?: "",
-                json["maxStackSize"]?.asInt,
-                json["maxDamage"]?.asInt
-            )
-        }
+        val items = gson.fromJson<JsonObject>(File(rootDir, config.itemsDataFile).readText())
+            .toMap()
+            .map { (id, elem) ->
+                val json = elem.asJsonObject!!
+                ItemMetadata(
+                    id,
+                    json["baseClass"]?.asString ?: "net.minecraft.item.Item",
+                    json["ctorArgs"]?.asString ?: "",
+                    json["maxStackSize"]?.asInt,
+                    json["maxDamage"]?.asInt
+                )
+            }
         println("\nItem list: \n${items.joinToString(separator = "\n")}")
         println()
 
-        val blocks = File(rootDir, config.blocksDataDir).listFiles().map {
-            val id = it.nameWithoutExtension
-            val json = gson.fromJson<JsonObject>(it.readText())
-            BlockMetadata(id, json["baseClass"]?.asString ?: "net.minecraft.block.Block", json["ctorArgs"]?.asString ?: "")
-        }
+        val blocks = gson.fromJson<JsonObject>(File(rootDir, config.blocksDataFile).readText())
+            .toMap()
+            .map { (id, elem) ->
+                val json = elem.asJsonObject!!
+                BlockMetadata(
+                    id,
+                    json["baseClass"]?.asString ?: "net.minecraft.block.Block",
+                    json["ctorArgs"]?.asString ?: ""
+                )
+            }
+
         val blocksWithItemBlock = blocks
         println("Block list: \n${blocks.joinToString(separator = "\n")}")
         println()

@@ -16,6 +16,7 @@ repositories {
 }
 
 dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib"
     compile "org.apache.velocity:velocity-engine-core:2.0"
     compile "com.google.code.gson:gson:2.8.5"
     compile "com.github.salomonbrys.kotson:kotson:2.5.0"
