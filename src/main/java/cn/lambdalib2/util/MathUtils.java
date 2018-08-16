@@ -102,10 +102,6 @@ public class MathUtils {
         return d1 * d1 + d2 * d2 + d3 * d3;
     }
     
-    public static Vec3d multiply(Vec3d vec, double factor) {
-        return new Vec3d(vec.x * factor, vec.y * factor, vec.z * factor);
-    }
-    
     public static double length(double dx, double dy, double dz) {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
