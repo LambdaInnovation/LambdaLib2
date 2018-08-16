@@ -18,6 +18,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Main {
+    data class AdditionalImports(
+        val all: Array<String>,
+        val item: Array<String>,
+        val block: Array<String>
+    )
 
     data class ImportConfig(
         val srcDir: String,
@@ -29,7 +34,9 @@ object Main {
         val itemsClassPath: String,
 
         val blocksDataFile: String,
-        val blocksClassPath: String
+        val blocksClassPath: String,
+
+        val additionalImports: AdditionalImports
     ) {
         fun getItemsPackageName() = itemsClassPath.substringBeforeLast('.')
         fun getItemsClassName() = itemsClassPath.substringAfterLast('.')
