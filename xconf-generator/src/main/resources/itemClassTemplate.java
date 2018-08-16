@@ -41,6 +41,11 @@ public class $config.itemsClassName {
         #if ($item.maxDamage)
         ${id}.setMaxDamage($item.maxDamage);
         #end
+        #if($block.init)
+        #foreach($stmt in $block.init)
+        ${id}.$stmt;
+        #end
+        #end
         event.getRegistry().register($id);
     #end
 

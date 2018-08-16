@@ -1,14 +1,10 @@
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.jsonObject
-import com.github.salomonbrys.kotson.toJson
-import com.github.salomonbrys.kotson.toMap
 import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigObject
 import org.apache.velocity.VelocityContext
-import org.apache.velocity.app.Velocity
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
@@ -45,9 +41,21 @@ object Main {
         fun getBlocksClassName() = blocksClassPath.substringAfterLast('.')
     }
 
-    data class ItemMetadata(val id: String, val baseClass: String, val ctorArgs: String, val maxStackSize: Int?, val maxDamage: Int?)
+    data class ItemMetadata(
+        val id: String,
+        val baseClass: String,
+        val ctorArgs: String,
+        val maxStackSize: Int?,
+        val maxDamage: Int?,
+        val init: Array<String>?
+    )
 
-    data class BlockMetadata(val id: String, val baseClass: String, val ctorArgs: String)
+    data class BlockMetadata(
+        val id: String,
+        val baseClass: String,
+        val ctorArgs: String,
+        val init: Array<String>?
+    )
 
     val gson = Gson()
 
@@ -113,7 +121,8 @@ object Main {
                     obj.getStringOrDefault("baseClass", "net.minecraft.item.Item"),
                     obj.getStringOrDefault("ctorArgs", ""),
                     obj.getIntOrNull("maxStackSize"),
-                    obj.getIntOrNull("maxDamage")
+                    obj.getIntOrNull("maxDamage"),
+                    obj.getStrArrOrNull("init")
                 )
             }
         println("\nItem list: \n${items.joinToString(separator = "\n")}")
@@ -127,7 +136,8 @@ object Main {
                 BlockMetadata(
                     id,
                     obj.getStringOrDefault("baseClass", "net.minecraft.block.Block"),
-                    obj.getStringOrDefault("ctorArgs", "")
+                    obj.getStringOrDefault("ctorArgs", ""),
+                    obj.getStrArrOrNull("init")
                 )
             }
 

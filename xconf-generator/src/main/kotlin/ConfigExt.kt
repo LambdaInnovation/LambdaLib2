@@ -8,3 +8,6 @@ fun Config.getStringOrNull(path: String): String? =
 
 fun Config.getStringOrDefault(path: String, default: String) =
     getStringOrNull(path) ?: default
+
+fun Config.getStrArrOrNull(path: String) =
+    if (!this.hasPath(path)) null else this.getStringList(path).toTypedArray()
