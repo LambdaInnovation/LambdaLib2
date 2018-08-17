@@ -1,9 +1,3 @@
-/**
-* Copyright (c) Lambda Innovation, 2013-2016
-* This file is part of LambdaLib modding library.
-* https://github.com/LambdaInnovation/LambdaLib
-* Licensed under MIT, see project root for more information.
-*/
 package cn.lambdalib2.cgui.component;
 
 import java.awt.*;
@@ -12,6 +6,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import net.minecraft.client.resources.I18n;
 
 import cn.lambdalib2.cgui.Widget;
 import cn.lambdalib2.s11n.SerializeIncluded;
@@ -20,7 +15,6 @@ import cn.lambdalib2.render.font.Fonts;
 import cn.lambdalib2.render.font.IFont;
 import cn.lambdalib2.render.font.IFont.FontOption;
 import cn.lambdalib2.cgui.component.Transform.HeightAlign;
-import net.minecraft.util.text.translation.I18n;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -274,7 +268,7 @@ public class TextBox extends Component {
     private String processedContent() {
         String ret = content;
         if (shouldLocalize()) {
-            ret = I18n.translateToLocal(ret);
+            ret = I18n.format(ret);
         }
         if (doesEcho) {
             ret = StringUtils.repeat(echoChar, ret.length());

@@ -10,13 +10,14 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.Random;
 
 public class StackUtils {
 
-    public static void dropItems(World world, int x, int y, int z,
+    public static void dropItems(World world, BlockPos pos,
                                  IInventory inv) {
         Random rand = new Random();
 
@@ -27,8 +28,8 @@ public class StackUtils {
                 float ry = rand.nextFloat() * 0.8F + 0.1F;
                 float rz = rand.nextFloat() * 0.8F + 0.1F;
 
-                EntityItem entityItem = new EntityItem(world, x + rx, y + ry, z
-                        + rz, stack.copy());
+                EntityItem entityItem = new EntityItem(world,
+                    pos.getX() + rx, pos.getY() + ry, pos.getZ() + rz, stack.copy());
 
                 if (stack.hasTagCompound()) {
                     entityItem.getItem().setTagCompound(
