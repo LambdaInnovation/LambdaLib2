@@ -207,4 +207,12 @@ public class VecUtils {
         e.motionY = motion.y;
         e.motionZ = motion.z;
     }
+
+    public static double getYaw(Vec3d v){
+        return -(Math.atan2(v.x, v.z) * 180.0D / 3.141592653589793D);
+    }
+
+    public static double getPitch(Vec3d v){
+        return -(Math.atan2(v.y, Math.sqrt(v.x * v.x + v.z * v.z)) * 180.0D / 3.141592653589793D);//TODO ???
+    }
 }
