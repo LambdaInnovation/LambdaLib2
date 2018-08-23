@@ -7,6 +7,8 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,6 +29,7 @@ public @interface RegEntityRender {
 
 class RegEntityRenderImpl {
 
+    @SideOnly(Side.CLIENT)
     @StateEventCallback
     @SuppressWarnings("unchecked")
     private static void init(FMLInitializationEvent ev) {
