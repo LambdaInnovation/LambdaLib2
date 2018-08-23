@@ -20,7 +20,7 @@ public @interface RegEntityRenderFactory {
     public Class<? extends Entity> value();
 }
 
-class RegEntityRenderImpl {
+class RegEntityRenderFactoryImpl {
 
     @SideOnly(Side.CLIENT)
     @StateEventCallback
