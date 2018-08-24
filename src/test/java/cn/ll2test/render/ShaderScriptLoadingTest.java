@@ -20,7 +20,7 @@ public class ShaderScriptLoadingTest {
         Display.setDisplayMode(new DisplayMode(800, 600));
         Display.create();
 
-        ShaderScript script = ShaderScript.loadFromResource("/render/test.shader");
+        ShaderScript script = ShaderScript.loadFromResource("/render/test.glsl");
 
         out.println("Shader compilation successful");
 

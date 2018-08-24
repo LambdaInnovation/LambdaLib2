@@ -26,7 +26,7 @@ public class FreeLookTest {
         Texture2D tex = Texture2D.loadFromResource("/texture/crate.png",
                 new TextureImportSettings(TextureImportSettings.FilterMode.Blinear, TextureImportSettings.WrapMode.Clamp));
 
-        ShaderScript shader = ShaderScript.loadFromResource("/render/free-look.shader");
+        ShaderScript shader = ShaderScript.loadFromResource("/render/free-look.glsl");
         RenderMaterial mat = new RenderMaterial(shader);
         Matrix4f projMatrix = TransformUtils.perspective(60, 800.0f / 600, 0.1f, 1000f);
         Matrix4f mvpMatrix = new Matrix4f();

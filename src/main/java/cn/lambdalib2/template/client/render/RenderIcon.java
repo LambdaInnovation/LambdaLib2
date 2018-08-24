@@ -1,6 +1,6 @@
 package cn.lambdalib2.template.client.render;
 
-import cn.academy.client.render.util.Tessellator;
+import cn.lambdalib2.render.legacy.Tessellator;
 import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.RenderUtils;
 import cn.lambdalib2.util.ViewOptimize;

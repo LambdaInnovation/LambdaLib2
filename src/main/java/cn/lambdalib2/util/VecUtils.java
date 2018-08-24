@@ -21,6 +21,10 @@ public class VecUtils {
     public static Vec3d random() {
         return _vec(-1 + 2 * rand.nextDouble(), -1 + 2 * rand.nextDouble(), -1 + 2 * rand.nextDouble());
     }
+
+    public static Vec3d toDirVector(Entity ent) {
+        return toDirVector(ent.rotationYaw, ent.rotationPitch);
+    }
     
     /**
      * Convert the yaw and pitch angle to the looking direction vector

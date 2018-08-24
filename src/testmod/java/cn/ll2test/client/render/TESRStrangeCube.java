@@ -24,7 +24,7 @@ public class TESRStrangeCube extends TileEntitySpecialRenderer<TileEntityStrange
     }
 
     private void initResources() {
-        shader = ShaderScript.loadFromResource("/assets/ll2test/shader/strange_cube.shader");
+        shader = ShaderScript.loadFromResource("/assets/ll2test/shader/strange_cube.glsl");
         material = new RenderMaterial(shader);
         mesh = createCubeMesh();
 

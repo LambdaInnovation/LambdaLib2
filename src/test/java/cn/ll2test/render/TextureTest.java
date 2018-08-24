@@ -22,7 +22,7 @@ public class TextureTest {
 
         RenderPass pass = new RenderPass();
 
-        ShaderScript script = ShaderScript.loadFromResource("/render/test-texture.shader");
+        ShaderScript script = ShaderScript.loadFromResource("/render/test-texture.glsl");
         RenderMaterial mat = new RenderMaterial(script);
 
         Texture2D texture = Texture2D.loadFromResource("/texture/ew.png",
