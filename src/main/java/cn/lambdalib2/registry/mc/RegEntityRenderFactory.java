@@ -30,7 +30,7 @@ class RegEntityRenderFactoryImpl {
             try {
                 IRenderFactory<?> instance = (IRenderFactory<?>) field.get(null);
                 RegEntityRenderFactory anno = field.getAnnotation(RegEntityRenderFactory.class);
-                RenderingRegistry.registerEntityRenderingHandler((Class) anno.getClass(), instance);
+                RenderingRegistry.registerEntityRenderingHandler((Class) anno.getClass(), (IRenderFactory) instance);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
