@@ -1,5 +1,8 @@
 package cn.lambdalib2.render;
 
+import cn.lambdalib2.util.ResourceUtils;
+import net.minecraft.util.ResourceLocation;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -11,6 +14,10 @@ import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class Texture2D {
+
+    public static Texture2D load(ResourceLocation loc, TextureImportSettings settings) {
+        return loadFromStream(ResourceUtils.getResourceStream(loc), settings);
+    }
 
     public static Texture2D loadFromResource(String path, TextureImportSettings settings) {
         try {
