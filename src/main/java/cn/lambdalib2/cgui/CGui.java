@@ -431,6 +431,10 @@ public class CGui extends WidgetContainer {
         eventBus.listen(clazz, handler, 0);
     }
 
+    public <T extends GuiEvent> void unlisten(Class<? extends T> clazz, IGuiEventHandler<T> handler) {
+        eventBus.unlisten(clazz, handler);
+    }
+
     public void postEvent(GuiEvent event) {
         eventBus.postEvent(null, event);
     }
