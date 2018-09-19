@@ -26,8 +26,9 @@ class RegTileEntityImpl {
         ReflectionUtils.getClasses(RegTileEntity.class)
             .forEach(type -> {
                 Object mod = RegistryContext.getModForPackage(type.getCanonicalName());
+                RegistryMod anno = mod.getClass().getAnnotation(RegistryMod.class);
                 GameRegistry.registerTileEntity(
-                    ((Class<? extends TileEntity>) type), type.getSimpleName()
+                    ((Class<? extends TileEntity>) type), new ResourceLocation(anno.resourceDomain(), type.getSimpleName())
                 );
             });
     }

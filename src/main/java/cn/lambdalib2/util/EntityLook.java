@@ -11,6 +11,10 @@ public class EntityLook {
 
     public EntityLook() {}
 
+    public EntityLook(Entity e) {
+        this(e.rotationYaw, e.rotationPitch);
+    }
+
     public EntityLook(Vec3d v) {
         yaw = -MathUtils.toDegrees((float) Math.atan2(v.x, v.z));
         pitch = -MathUtils.toDegrees((float) Math.atan2(v.y, Math.sqrt(v.x * v.x + v.z * v.z)));
