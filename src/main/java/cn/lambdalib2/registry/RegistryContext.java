@@ -21,4 +21,5 @@ public class RegistryContext {
             "No mod handling class " + classPath + " found.");
         return Debug.assertNotNull(ctx.modObject, "Mod hasn't be constructed! Use this method only AFTER preInit stage.");
     }
+
 }
