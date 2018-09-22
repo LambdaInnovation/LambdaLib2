@@ -9,6 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -39,6 +40,10 @@ class RegEntityImpl {
         List<Class<?>> types = ReflectionUtils.getClasses(RegEntity.class);
         types.sort(Comparator.comparing(Class::getCanonicalName)); // Sort by entity name, ensuring order
         types.forEach(type -> {
+            if (type.getAnnotation(SideOnly.class) != null) {
+                Debug.error("SideOnly entity " + type + " need not to be registered");
+                return;
+            }
             RegEntity anno = type.getAnnotation(RegEntity.class);
             Object mod = RegistryContext.getModForPackage(type.getCanonicalName());
             String domain = mod.getClass().getAnnotation(RegistryMod.class).resourceDomain();

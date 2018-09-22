@@ -81,7 +81,7 @@ public class TickScheduler {
         }
 
         // Scala support
-        public ScheduleCreator run(Function0<?> _task) {
+        public ScheduleCreator run2(Function0<?> _task) {
             return run(new Runnable() {
                 @Override
                 public void run() {

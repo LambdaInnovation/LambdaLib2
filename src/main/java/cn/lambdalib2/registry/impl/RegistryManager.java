@@ -78,7 +78,7 @@ public enum RegistryManager {
                     m.setAccessible(true);
                     m.invoke(null, event);
                 } catch (Exception ex) {
-                    throw new RuntimeException("Error when calling StateEventCallback " + m);
+                    throw new RuntimeException("Error when calling StateEventCallback@" + event.getClass() + " " + m, ex);
                 }
             }
             activeMod = null;
@@ -174,11 +174,13 @@ public enum RegistryManager {
     class EventHandler {
         @SubscribeEvent
         public void onRegisterBlocks(RegistryEvent.Register<Block> event) {
+            Debug.log("LL2: Executing " + blockRegistryCallbacks.size() + " block registry callbacks...");
             invokeCallback(blockRegistryCallbacks, event);
         }
 
         @SubscribeEvent
         public void onRegisterItems(RegistryEvent.Register<Item> event) {
+            Debug.log("LL2: Executing " + itemRegistryCallbacks.size() + " item registry callbacks...");
             invokeCallback(itemRegistryCallbacks, event);
         }
 

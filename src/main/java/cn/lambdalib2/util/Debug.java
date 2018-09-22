@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Generic debug utils.
@@ -38,12 +39,25 @@ public class Debug {
         }
     }
 
+    public static void require(boolean expr, Supplier<String> lazyMessage) {
+        if (!expr) {
+            throw new RuntimeException("Requirement failed: " + lazyMessage.get());
+        }
+    }
+
     public static <T> T assertNotNull(T obj) {
         return assertNotNull(obj, "Object is null");
     }
 
     public static <T> T assertNotNull(T obj, String message) {
         return Objects.requireNonNull(obj, message);
+    }
+
+    public static <T> T assertNotNull(T obj, Supplier<String> lazyMessage) {
+        if (obj == null) {
+            throw new RuntimeException(lazyMessage.get());
+        }
+        return obj;
     }
 
     public static void debug(String msg) {
