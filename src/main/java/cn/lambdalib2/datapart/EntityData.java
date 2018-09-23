@@ -105,8 +105,14 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
 
     private Ent entity;
 
-    public void initEntity(Ent entity){
+    public void initEntity(Ent entity) {
+        Debug.assertNotNull(entity);
+        Debug.assert2(this.entity == null);
         this.entity=entity;
+
+        for (DataPart dp : constructed.values()) {
+            dp.wake();
+        }
     }
 
     /**
@@ -199,7 +205,6 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
                 instance.entityData = this;
                 constructed.put(data.type, instance);
 
-                instance.wake();
 
                 if (!SideUtils.isClient() && instance.needNBTStorage) {
                     String id = _partNBTID(instance);
