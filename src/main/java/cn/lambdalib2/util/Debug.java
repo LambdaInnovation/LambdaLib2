@@ -22,6 +22,12 @@ public class Debug {
     public static void assert2(boolean expr) {
         assert2(expr, "Assersion failed");
     }
+    
+    public static void assert2(boolean expr, Supplier<String> lazyMessage) {
+        if (!expr) {
+            throw new RuntimeException("Assertion failed: " + lazyMessage.get());
+        }
+    }
 
     public static void assert2(boolean expr, String message) {
         if (!expr) {

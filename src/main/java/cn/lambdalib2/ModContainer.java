@@ -62,8 +62,6 @@ public class ModContainer extends DummyModContainer {
                 .distinct()
                 .collect(Collectors.toList())
         );
-
-        NetworkS11n.readASMData(data);
     }
 
 }

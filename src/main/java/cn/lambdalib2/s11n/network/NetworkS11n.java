@@ -10,6 +10,8 @@ import cn.lambdalib2.registry.StateEventCallback;
 import cn.lambdalib2.s11n.SerializationHelper;
 import cn.lambdalib2.s11n.SerializeDynamic;
 import cn.lambdalib2.s11n.SerializeNullable;
+import cn.lambdalib2.util.Debug;
+import cn.lambdalib2.util.ReflectionUtils;
 import cn.lambdalib2.util.SideUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -48,8 +50,8 @@ public class NetworkS11n {
     private static Map<Class<?>, NetS11nAdaptor> adaptors = new HashMap<>();
     private static Map<Class, Supplier> suppliers = new HashMap<>();
     private static Map<Class, List<Field>> fieldCache = new HashMap<>();
-    private static Set<ASMDataTable.ASMData> rawRegNetS11nAdapters;
-    private static Set<ASMDataTable.ASMData> rawNetworkS11nTypes;
+
+    private static byte MAGIC = 0x47;
 
     // default s11n types
     static {
@@ -155,6 +157,7 @@ public class NetworkS11n {
         addDirect(ByteBuf.class, new NetS11nAdaptor<ByteBuf>() {
             @Override
             public void write(ByteBuf buf, ByteBuf obj) {
+                buf.capacity(buf.capacity() + Math.max(obj.readableBytes() - buf.writableBytes(), 0));
                 obj.readBytes(buf, obj.readableBytes());
             }
 
@@ -401,37 +404,21 @@ public class NetworkS11n {
         suppliers.put(type, supplier);
     }
 
-    public static void readASMData(ASMDataTable table) {
-        rawRegNetS11nAdapters = table.getAll("cn.lambdalib2.s11n.network.RegNetS11nAdapter");
-        rawNetworkS11nTypes = table.getAll("cn.lambdalib2.s11n.network.NetworkS11nType");
-    }
-
     @StateEventCallback
     private static void preInit(FMLPreInitializationEvent event) {
         registerAll();
     }
 
     private static void registerAll() {
-        rawRegNetS11nAdapters.forEach(it -> {
+        ReflectionUtils.getClasses(NetworkS11nType.class).forEach(NetworkS11n::register);
+        ReflectionUtils.getFields(RegNetS11nAdapter.class).forEach(field -> {
             try {
-                Class<?> clz = Class.forName(it.getClassName(), true, Loader.instance().getModClassLoader());
-                Field field = clz.getDeclaredField(it.getObjectName());
-                NetS11nAdaptor adaptor = (NetS11nAdaptor) field.get(null);
-                Objects.requireNonNull(adaptor);
-                String regClassName = ((org.objectweb.asm.Type) it.getAnnotationInfo().get("value")).getClassName();
-                Class<?> regClz = Class.forName(regClassName, true, Loader.instance().getModClassLoader());
-                NetworkS11n.addDirect(regClz, adaptor);
-            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        rawNetworkS11nTypes.forEach(it -> {
-            try {
-                Class<?> clz = Class.forName(it.getClassName(), true, Loader.instance().getModClassLoader());
-                NetworkS11n.register(clz);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                RegNetS11nAdapter anno = field.getAnnotation(RegNetS11nAdapter.class);
+                NetS11nAdaptor adaptor = ((NetS11nAdaptor) field.get(null));
+                Debug.assertNotNull(adaptor);
+                addDirect(anno.value(), adaptor);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
             }
         });
     }
@@ -444,7 +431,7 @@ public class NetworkS11n {
     public static void register(Class<?> type) {
         if (!serTypes.contains(type)) {
             serTypes.add(type);
-            serTypes.sort((lhs, rhs) -> lhs.getName().compareTo(rhs.getName()));
+            serTypes.sort(Comparator.comparing(Class::getName));
             serHelper.regS11nType(type);
         }
 
@@ -454,6 +441,7 @@ public class NetworkS11n {
     }
 
     private static void writeTypeIndex(ByteBuf buf, Class type) {
+        buf.writeByte(MAGIC);
         if (type.isArray()) {
             buf.writeShort(IDX_ARRAY);
             writeTypeIndex(buf, type.getComponentType());
@@ -467,6 +455,7 @@ public class NetworkS11n {
     }
 
     private static Class readTypeIndex(ByteBuf buf) {
+        Debug.assert2(buf.readByte() == MAGIC, buf::toString);
         short idx = buf.readShort();
         if (idx == IDX_NULL) {
             return null;
@@ -502,6 +491,8 @@ public class NetworkS11n {
             writeTypeIndex(buf, type);
             serializeWithHint(buf, obj, type);
         }
+
+//        Debug.log("Serialize " + (obj == null ? "null" : obj.getClass()) + "/" + buf.writerIndex());
     }
 
     /**
@@ -533,6 +524,8 @@ public class NetworkS11n {
         } else { // Serialize recursive types
             serializeRecursively(buf, obj, type);
         }
+
+//        Debug.log("SerializeWithHint " + obj.getClass() + "/" + buf.readableBytes());
     }
 
     public static <T> void serializeRecursively(ByteBuf buf, T obj, Class<? super T> type) {
@@ -580,6 +573,7 @@ public class NetworkS11n {
      * @throws RuntimeException if deserialization failed non-trivially.
      */
     public static <T, U extends T> T deserializeWithHint(ByteBuf buf, Class<U> type) {
+//        Debug.log("DeserializeWithHint " + type + "/" + buf.writerIndex());
         NetS11nAdaptor<? super U> adaptor = (NetS11nAdaptor) _adaptor(type);
         // System.out.println("adaptor " + type + " is " + adaptor);
         if (adaptor != null) {

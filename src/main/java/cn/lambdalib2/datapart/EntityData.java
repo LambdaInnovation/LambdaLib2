@@ -45,6 +45,8 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
     @SuppressWarnings("unchecked")
     public static <T extends EntityLivingBase> void
     register(Class<? extends DataPart<T>> type) {
+        Debug.assert2(!init);
+
         RegData add = new RegData();
         RegDataPart anno = type.getAnnotation(RegDataPart.class);
         if(anno == null){
@@ -74,12 +76,12 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
      */
     @SuppressWarnings("unchecked")
     public static <T extends EntityLivingBase> EntityData<T> get(T entity) {
-        Objects.requireNonNull(entity);
-
         if (!init) {
             init = true;
             init();
         }
+
+        Objects.requireNonNull(entity);
 
         IDataPart ret =  entity.getCapability(getCapability(),null);
         if (ret == null || !(ret instanceof EntityData)) {
@@ -185,6 +187,7 @@ public final class EntityData<Ent extends EntityLivingBase> implements IDataPart
             if(key.isEmpty())
                 continue;
             try {
+                // !!! FIXME 不应该在这里register
                 Class type = Class.forName(key);
                 if(!regList.contains(type)){
                     register(type);

@@ -13,6 +13,8 @@ Settings {
 }
 
 Vertex {
+#version 330 core
+
 uniform mat4 uMVP;
 
 in vec3 aPosition;
@@ -24,6 +26,8 @@ void main() {
 }
 
 Fragment {
+#version 330 core
+
 uniform vec4 uColor;
 
 out vec4 fragColor;

@@ -81,6 +81,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
         if (isClient()) {
             __syncClient();
         } else {
+            Debug.log("Send sync " + this);
             sendMessage("itn_sync", __genSyncBuffer());
         }
     }
@@ -92,7 +93,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
             Debug.warn("Trying to call sync() in client for non-EntityPlayers in" + this +
                     ". This usually doesn't make sense.");
         } else if (!(ent.equals(Minecraft.getMinecraft().player))) {
-            Debug.warn("Trying to sync non-local player data to server D  ataPart in " + this +
+            Debug.warn("Trying to sync non-local player data to server DataPart in " + this +
                     ". This usually doesn't make sense.");
         }
 
@@ -100,7 +101,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
     }
 
     private ByteBuf __genSyncBuffer() {
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = Unpooled.buffer(512);
         NetworkS11n.serializeRecursively(buf, this, (Class) getClass());
         return buf;
     }
@@ -225,6 +226,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
 
     @Listener(channel="itn_sync", side={Side.CLIENT, Side.SERVER})
     private void onSync(ByteBuf buf) {
+        Debug.log("Sync on " + this);
         NetworkS11n.deserializeRecursivelyInto(buf, this, getClass());
         onSynchronized();
     }
