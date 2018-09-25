@@ -19,7 +19,7 @@ public class RegistryTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String name, String transformedName, byte[] bytes) {
         if (registryMods.contains(name)) {
-            System.out.println(name + "is registry mod");
+            System.out.println("[LL2] Find registry mod: " + name);
             ClassWriter cw = new ClassWriter(Opcodes.ASM5);
             ClassReader cr = new ClassReader(bytes);
             ClassVisitor cv =  new RegistryModTransformer(cw, name);

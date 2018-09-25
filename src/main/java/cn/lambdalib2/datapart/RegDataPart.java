@@ -1,18 +1,18 @@
-/**
-* Copyright (c) Lambda Innovation, 2013-2016
-* This file is part of LambdaLib modding library.
-* https://github.com/LambdaInnovation/LambdaLib
-* Licensed under MIT, see project root for more information.
-*/
 package cn.lambdalib2.datapart;
 
 
+import cn.lambdalib2.registry.StateEventCallback;
+import cn.lambdalib2.util.ReflectionUtils;
+import net.minecraft.entity.Entity;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.EnumSet;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -21,16 +21,29 @@ public @interface RegDataPart {
     /**
      * @return The type that this DataPart applies on. Also applies for all subclasses.
      */
-    Class value();
+    Class<? extends Entity> value();
 
     /**
      * @return At what sides this DataPart should be constructed
      */
     Side[] side() default { Side.CLIENT, Side.SERVER };
 
-    /**
-     * @return Whether this DataPart should be lazily constructed.
-     */
-    boolean lazy() default false;
-    
+}
+
+class RegDataPartImpl {
+
+    @SuppressWarnings("unchecked")
+    @StateEventCallback
+    private static void init(FMLInitializationEvent ev) {
+        ReflectionUtils.getClasses(RegDataPart.class).forEach(type -> {
+            RegDataPart anno = type.getAnnotation(RegDataPart.class);
+            Class<? extends Entity> regType = anno.value();
+            EntityData.register(
+                (Class) type,
+                EnumSet.copyOf(Arrays.asList(anno.side())),
+                regType::isAssignableFrom
+            );
+        });
+    }
+
 }
