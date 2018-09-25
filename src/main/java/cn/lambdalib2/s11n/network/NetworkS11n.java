@@ -16,6 +16,7 @@ import cn.lambdalib2.util.SideUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
@@ -267,7 +268,7 @@ public class NetworkS11n {
             @Override
             public BitSet read(ByteBuf buf) {
                 int readBytes = buf.readByte();
-                byte[] bytes = buf.readBytes(readBytes).array();
+                byte[] bytes = ByteBufUtil.getBytes(buf.readBytes(readBytes));
                 return BitSet.valueOf(bytes);
             }
         });
