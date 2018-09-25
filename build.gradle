@@ -108,7 +108,7 @@ artifacts {
 uploadArchives {
     repositories {
         maven {
-            url "http://139.199.206.70:8081/nexus/content/repositories/thirdparty"
+            url "http://git.project-gearbox.net:9010/content/groups/public/"
             credentials {
                 username usr
                 password pswd
