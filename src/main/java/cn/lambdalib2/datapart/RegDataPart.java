@@ -1,10 +1,11 @@
 package cn.lambdalib2.datapart;
 
-
 import cn.lambdalib2.registry.StateEventCallback;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ReflectionUtils;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.lang.annotation.ElementType;
@@ -34,7 +35,7 @@ class RegDataPartImpl {
 
     @SuppressWarnings("unchecked")
     @StateEventCallback
-    private static void init(FMLInitializationEvent ev) {
+    private static void init(FMLPreInitializationEvent ev) {
         ReflectionUtils.getClasses(RegDataPart.class).forEach(type -> {
             RegDataPart anno = type.getAnnotation(RegDataPart.class);
             Class<? extends Entity> regType = anno.value();
@@ -44,6 +45,7 @@ class RegDataPartImpl {
                 regType::isAssignableFrom
             );
         });
+        EntityData.bakeOnPostInit();
     }
 
 }

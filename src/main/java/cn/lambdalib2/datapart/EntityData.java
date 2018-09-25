@@ -77,8 +77,12 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
         return need;
     }
 
-    @StateEventCallback
-    private static void bakeOnPostInit(FMLPostInitializationEvent ev) {
+
+    //@StateEventCallback
+    //Why do so?
+    //There is a class loaded in init stage, which will call Entity.get, and it will crash the game.
+    //So I have to do before have a better way.
+    static void bakeOnPostInit() {
         bothSideList.sort(Comparator.comparing(lhs -> lhs.type.getName()));
         Preconditions.checkState(bothSideList.size() < Byte.MAX_VALUE);
         IntStream.range(0, bothSideList.size()).forEach(i -> bothSideList.get(i).networkID = (byte) i);
