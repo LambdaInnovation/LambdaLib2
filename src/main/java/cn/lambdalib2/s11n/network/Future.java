@@ -113,7 +113,7 @@ public class Future<T> {
         return FutureManager.instance.create(callback);
     }
 
-    public static <T> Future<T> create(Function1<T, ?> callback) {
+    public static <T> Future<T> create2(Function1<T, ?> callback) {
         return create(new Consumer<T>() {
             @Override
             public void accept(T t) {

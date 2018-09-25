@@ -9,6 +9,7 @@ package cn.lambdalib2.cgui;
 import java.util.Iterator;
 
 import cn.lambdalib2.LambdaLib2;
+import cn.lambdalib2.cgui.event.*;
 import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.GameTimer;
 import cn.lambdalib2.util.HudUtils;
@@ -18,19 +19,6 @@ import cn.lambdalib2.render.font.TrueTypeFont;
 import org.lwjgl.opengl.GL11;
 
 import cn.lambdalib2.cgui.component.Transform;
-import cn.lambdalib2.cgui.event.AddWidgetEvent;
-import cn.lambdalib2.cgui.event.DragEvent;
-import cn.lambdalib2.cgui.event.DragStopEvent;
-import cn.lambdalib2.cgui.event.FrameEvent;
-import cn.lambdalib2.cgui.event.GainFocusEvent;
-import cn.lambdalib2.cgui.event.GuiEvent;
-import cn.lambdalib2.cgui.event.GuiEventBus;
-import cn.lambdalib2.cgui.event.KeyEvent;
-import cn.lambdalib2.cgui.event.LeftClickEvent;
-import cn.lambdalib2.cgui.event.LostFocusEvent;
-import cn.lambdalib2.cgui.event.MouseClickEvent;
-import cn.lambdalib2.cgui.event.RefreshEvent;
-import cn.lambdalib2.cgui.event.RightClickEvent;
 
 /**
  * @author WeathFolD
@@ -438,7 +426,18 @@ public class CGui extends WidgetContainer {
         w.gui = this;
         updateWidget(w);
     }
-    
+
+    public <T extends GuiEvent> void listen(Class<? extends T> clazz, IGuiEventHandler<T> handler) {
+        eventBus.listen(clazz, handler, 0);
+    }
+
+    public <T extends GuiEvent> void unlisten(Class<? extends T> clazz, IGuiEventHandler<T> handler) {
+        eventBus.unlisten(clazz, handler);
+    }
+
+    public void postEvent(GuiEvent event) {
+        eventBus.postEvent(null, event);
+    }
     /**
      * Event bus delegator, will post every widget inside this CGui. <br>
      * Note that this might impact peformance when used incorectlly.

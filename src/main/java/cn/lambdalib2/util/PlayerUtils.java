@@ -70,9 +70,9 @@ public class PlayerUtils {
      * @param message Message
      * @param pars Message parameters
      */
-    public static void sendChat(ICommandSender ics, String message, String... pars) {
+    public static void sendChat(ICommandSender ics, String message, Object... pars) {
 //        ics.addChatMessage(new ChatComponentTranslation(message, (Object[]) pars));
-        ics.sendMessage(new TextComponentTranslation(message, (Object[]) pars));
+        ics.sendMessage(new TextComponentTranslation(message, pars));
     }
 
     

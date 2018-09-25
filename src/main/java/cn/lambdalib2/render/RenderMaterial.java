@@ -35,7 +35,7 @@ public class RenderMaterial {
 
     /**
      * Create a duplicate of given material.
-     * @param src Material to be copied
+     * @param src LegacyMaterial to be copied
      */
     public RenderMaterial(RenderMaterial src) {
         this(src.shader);
@@ -43,6 +43,10 @@ public class RenderMaterial {
 
     public int getDrawOrder() {
         return 0;
+    }
+
+    public ShaderScript getShader() {
+        return shader;
     }
 
     public void setFloat(String name, float value) {
@@ -72,6 +76,15 @@ public class RenderMaterial {
         } else {
             System.out.println("WARN: Invalid texture name " + name);
         }
+    }
+
+    /**
+     * Bind current shader program to this material's program,
+     *  and apply all the material's properties.
+     */
+    public void apply() {
+        glUseProgram(shader.getProgramID());
+        updateUniformsOnCurrentProgram();
     }
 
     private void setObj(String name, Object value) {

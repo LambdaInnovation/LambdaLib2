@@ -9,7 +9,7 @@ import cn.lambdalib2.util.SideUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -17,11 +17,11 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- * A tickable data-storage entity attached to EntityLivingBase.
+ * A tickable data-storage entity attached to Entity.
  * see {@link EntityData} for access methods.
  * @author WeAthFolD
  */
-public abstract class DataPart<T extends EntityLivingBase> {
+public abstract class DataPart<T extends Entity> {
 
     EntityData<T> entityData;
     private boolean syncInit = false;
@@ -29,7 +29,6 @@ public abstract class DataPart<T extends EntityLivingBase> {
     boolean needNBTStorage = false;
     boolean needTick = false;
     boolean clientNeedSync = false;
-    boolean clearOnDeath = false;
     double serverSyncRange = 10.0;
 
     // Behaviour
@@ -63,13 +62,6 @@ public abstract class DataPart<T extends EntityLivingBase> {
         serverSyncRange = range;
     }
 
-    /**
-     * Make this DataPart to be disposed when entity is dead. Useful for EntityPlayer only (others don't revive!)
-     */
-    protected final void setClearOnDeath() {
-        clearOnDeath = true;
-    }
-
     //
 
     /**
@@ -81,6 +73,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
         if (isClient()) {
             __syncClient();
         } else {
+//            Debug.log("Send sync " + this);
             sendMessage("itn_sync", __genSyncBuffer());
         }
     }
@@ -92,7 +85,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
             Debug.warn("Trying to call sync() in client for non-EntityPlayers in" + this +
                     ". This usually doesn't make sense.");
         } else if (!(ent.equals(Minecraft.getMinecraft().player))) {
-            Debug.warn("Trying to sync non-local player data to server D  ataPart in " + this +
+            Debug.warn("Trying to sync non-local player data to server DataPart in " + this +
                     ". This usually doesn't make sense.");
         }
 
@@ -100,7 +93,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
     }
 
     private ByteBuf __genSyncBuffer() {
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = Unpooled.buffer(512);
         NetworkS11n.serializeRecursively(buf, this, (Class) getClass());
         return buf;
     }
@@ -131,6 +124,11 @@ public abstract class DataPart<T extends EntityLivingBase> {
      * Loads the DataPart. Called when the DataPart is being loaded at SERVER.
      */
     public void fromNBT(NBTTagCompound tag) {}
+
+    /**
+     * Get called when player that this part is attached on is dead.
+     */
+    public void onPlayerDead() {}
 
     //
 
@@ -225,6 +223,7 @@ public abstract class DataPart<T extends EntityLivingBase> {
 
     @Listener(channel="itn_sync", side={Side.CLIENT, Side.SERVER})
     private void onSync(ByteBuf buf) {
+//        Debug.log("Sync on " + this);
         NetworkS11n.deserializeRecursivelyInto(buf, this, getClass());
         onSynchronized();
     }

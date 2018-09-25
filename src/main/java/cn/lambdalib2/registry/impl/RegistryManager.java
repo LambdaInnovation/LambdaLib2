@@ -9,6 +9,9 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLStateEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -25,7 +28,16 @@ public enum RegistryManager {
         public String packageRoot;
         public Object modObject;
 
+        private ModContainer _modContainer;
+
         HashMap<Class<? extends FMLStateEvent>, List<Method>> loadCallbacks;
+
+        public ModContainer getModContainer() {
+            if (_modContainer == null)  {
+                _modContainer = Loader.instance().getReversedModObjectList().get(modObject);
+            }
+            return Debug.assertNotNull(_modContainer);
+        }
     }
 
     private Map<String, ModContext> registryMods;
@@ -78,7 +90,7 @@ public enum RegistryManager {
                     m.setAccessible(true);
                     m.invoke(null, event);
                 } catch (Exception ex) {
-                    throw new RuntimeException("Error when calling StateEventCallback " + m);
+                    throw new RuntimeException("Error when calling StateEventCallback@" + event.getClass() + " " + m, ex);
                 }
             }
             activeMod = null;
@@ -174,16 +186,21 @@ public enum RegistryManager {
     class EventHandler {
         @SubscribeEvent
         public void onRegisterBlocks(RegistryEvent.Register<Block> event) {
+            Debug.log("LL2: Executing " + blockRegistryCallbacks.size() + " block registry callbacks...");
             invokeCallback(blockRegistryCallbacks, event);
         }
 
         @SubscribeEvent
         public void onRegisterItems(RegistryEvent.Register<Item> event) {
+            Debug.log("LL2: Executing " + itemRegistryCallbacks.size() + " item registry callbacks...");
             invokeCallback(itemRegistryCallbacks, event);
         }
 
         private void invokeCallback(List<Method> methods, Object arg) {
+            ModContainer oldContainer = Loader.instance().activeModContainer();
             for (Method m : methods) {
+                ModContext ctx = Debug.assertNotNull(findMod(m.getDeclaringClass().getCanonicalName()), () -> "Mod context is null for " + m);
+                Loader.instance().setActiveModContainer(ctx.getModContainer());
                 try {
                     m.setAccessible(true);
                     m.invoke(null, arg);
@@ -191,6 +208,7 @@ public enum RegistryManager {
                     throw new RuntimeException("Error when invoking registry callback " + m, ex);
                 }
             }
+            Loader.instance().setActiveModContainer(oldContainer);
         }
     }
 

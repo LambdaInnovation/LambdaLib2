@@ -1,9 +1,3 @@
-/**
- * Copyright (c) Lambda Innovation, 2013-2016
- * This file is part of LambdaLib modding library.
- * https://github.com/LambdaInnovation/LambdaLib
- * Licensed under MIT, see project root for more information.
- */
 package cn.lambdalib2.util;
 
 import net.minecraft.block.Block;
@@ -11,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -177,7 +172,7 @@ public class WorldUtils {
                         }
                     }
                     if (match) {
-                        ret.add(new BlockPos(world, x, y, z));
+                        ret.add(new BlockPos(x, y, z));
                         if (ret.size() == max)
                             return ret;
                     }

@@ -14,6 +14,7 @@ package cn.lambdalib2.registry.mc.gui;
 
 import cn.lambdalib2.auxgui.AuxGui;
 import cn.lambdalib2.registry.StateEventCallback;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ReflectionUtils;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -24,6 +25,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -48,29 +50,23 @@ class RegAuxGuiImpl {
     @StateEventCallback
     @SuppressWarnings("unchecked")
     private static void init(FMLInitializationEvent ev) {
-//        List<Class<?>> types = ReflectionUtils.getClasses(RegAuxGui.class);
-//
-//        types.forEach(type -> {
-//            AuxGui.register((AuxGui)type);
-//        });
-
-        ReflectionUtils.getRawObjects(RegAuxGui.class.getCanonicalName(), true).forEach(it -> {
+        ReflectionUtils.getFields(RegAuxGui.class).forEach(it -> {
             try {
-                Class<?> clz = Class.forName(it.getClassName(), true, Loader.instance().getModClassLoader());
-                RegAuxGui anno = clz.getAnnotation(RegAuxGui.class);
-                Field field = clz.getDeclaredField(it.getObjectName());
-                AuxGui handlerBase = (AuxGui) field.get(null);
-                //fixme: how to register class here?
-                AuxGui.register(handlerBase);
+                AuxGui instance = (AuxGui) it.get(null);
+                AuxGui.register(instance);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        ReflectionUtils.getClasses(RegAuxGui.class).forEach(type -> {
+            try {
+                Constructor<AuxGui> ctor = (Constructor<AuxGui>) type.getConstructor();
+                AuxGui.register(ctor.newInstance());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
     }
-
-//    @Override
-//    protected void register(AuxGui obj, RegAuxGui anno) throws Exception {
-//        AuxGui.register(obj);
-//    }
 
 }

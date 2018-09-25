@@ -1,6 +1,8 @@
 package cn.lambdalib2.render;
 
+import cn.lambdalib2.util.ResourceUtils;
 import com.google.common.base.Charsets;
+import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.lwjgl.BufferUtils;
@@ -44,6 +46,14 @@ public class ShaderScript {
         return ShaderScriptParser.load(content);
     }
 
+    public static ShaderScript load(ResourceLocation location) {
+        try {
+            return load(IOUtils.toString(ResourceUtils.getResourceStream(location)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static ShaderScript loadFromResource(String path) {
         try {
             return load(IOUtils.toString(ShaderScript.class.getResource(path), Charsets.UTF_8));
@@ -79,6 +89,10 @@ public class ShaderScript {
         return glProgramID;
     }
 
+    public void useProgram() {
+        glUseProgram(glProgramID);
+    }
+
 }
 
 // --- Parsing
@@ -106,6 +120,7 @@ final class ShaderScriptParser {
             tknRightParen = new Token("RIGHT_PAREN", regexRightParen),
             tknEq = new Token("EQ", regexEq),
             tknComma = new Token("COMMA", regexComma);
+
 
     public static ShaderScript load(String content) {
         Lexer mainLexer = new Lexer(content,

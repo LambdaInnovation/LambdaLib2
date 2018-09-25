@@ -253,6 +253,11 @@ public class RenderUtils {
 //        GL11.glEnable(GL11.GL_LIGHTING);
 //        GL11.glDepthFunc(GL11.GL_LEQUAL);
     }
+
+    public static void addVertexLegacy(Vec3d vertex, double u, double v) {
+        GL11.glTexCoord2d(u, v);
+        GL11.glVertex3d(vertex.x, vertex.y, vertex.z);
+    }
     
     /**
      * 直接在物品栏渲染物品icon。确认你已经绑定好贴图。

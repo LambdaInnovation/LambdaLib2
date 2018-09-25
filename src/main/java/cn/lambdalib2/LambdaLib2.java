@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 public class LambdaLib2
 {
     public static final String MODID = "lambdalib2";
-    public static final String VERSION = "@VERSION@";
+    public static final String VERSION = "@LAMBDA_LIB_VERSION@";
 
     /**
      * Whether we are in development (debug) mode.

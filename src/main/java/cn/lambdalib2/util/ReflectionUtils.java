@@ -162,15 +162,19 @@ public class ReflectionUtils {
 
     public static List<Field> getFields(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
         List<ASMData> objects = getRawObjects(annoClass.getCanonicalName(), removeSideOnly);
-        return objects.stream()
+        List<Field> ret = objects.stream()
+            .filter(obj -> !obj.getObjectName().equals(obj.getClassName()))
             .map(it -> {
                 try {
-                    return Class.forName(it.getClassName()).getField(it.getObjectName());
+                    return Class.forName(it.getClassName()).getDeclaredField(it.getObjectName());
                 } catch (ClassNotFoundException|NoSuchFieldException ex) {
                     throw new RuntimeException(ex);
                 }
             })
             .collect(Collectors.toList());
+        for (Field f : ret)
+            f.setAccessible(true);
+        return ret;
     }
 
     public static List<ASMData> getRawObjects(String annoName, boolean removeSideOnly) {

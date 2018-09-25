@@ -1,0 +1,22 @@
+{
+  "srcDir": "src/main/java",
+  "resourcesDir": "src/main/resources",
+  "domain": "academy",
+  "locPrefix": "ac_",
+  "itemsDataFile": "src/raw/items.conf",
+  "itemsClassPath": "cn.academy.ACItems",
+  "blocksDataFile": "src/raw/blocks.conf",
+  "blocksClassPath": "cn.academy.ACBlocks",
+  "additionalImports": {
+    "all": [
+      "test.allpackage"
+    ],
+    "item": [
+      "test.itempackage"
+    ],
+    "block": [
+      "test.blockpackage1",
+      "test.blockpackage2"
+    ]
+  }
+}

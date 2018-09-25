@@ -315,6 +315,7 @@ public class NetworkMessage {
     }
 
     public static class Message implements IMessage {
+        static final byte MAGIC = 0x3c;
 
         boolean valid;
         Object instance;
@@ -336,6 +337,7 @@ public class NetworkMessage {
             NetworkS11n.serialize(buf, instance, false);
             buf.writeByte(params.length);
             for (Object o : params) {
+                buf.writeByte(MAGIC);
                 NetworkS11n.serialize(buf, o, true);
             }
         }
@@ -347,6 +349,8 @@ public class NetworkMessage {
                 instance = NetworkS11n.deserialize(buf);
                 params = new Object[buf.readByte()];
                 for (int i = 0; i < params.length; ++i) {
+                    final int ii = i;
+                    Debug.assert2(buf.readByte() == MAGIC, () -> ("Error during serializing param " + ii));
                     params[i] = NetworkS11n.deserialize(buf);
                 }
                 valid = true;

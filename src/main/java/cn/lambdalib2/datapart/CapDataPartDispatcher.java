@@ -18,8 +18,8 @@ import static cn.lambdalib2.datapart.CapDataPartHandler.DATA_PART_CAPABILITY;
  */
 public class CapDataPartDispatcher implements ICapabilitySerializable<NBTTagCompound>
 {
-    private IDataPart dataPart = new EntityData<>();
-    private static final IStorage<IDataPart> storage = CapDataPartHandler.storage;
+    private IEntityData dataPart = new EntityData<>();
+    private static final IStorage<IEntityData> storage = CapDataPartHandler.storage;
     private final String TAG_ID = "LL_EntityData";
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing)

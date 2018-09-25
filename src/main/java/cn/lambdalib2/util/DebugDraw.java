@@ -7,7 +7,6 @@ import cn.lambdalib2.render.TransformUtils;
 import cn.lambdalib2.render.mc.RenderAllEntityEvent;
 import cn.lambdalib2.render.mc.RenderEventDispatch;
 import cn.lambdalib2.render.primitive.SphereMeshFactory;
-import com.google.common.eventbus.Subscribe;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -82,7 +81,7 @@ public class DebugDraw {
         if (!init) {
             init = true;
 
-            shader = ShaderScript.loadFromResource("/assets/lambdalib2/shader/DebugDraw.shader");
+            shader = ShaderScript.loadFromResource("/assets/lambdalib2/shader/DebugDraw.glsl");
         }
     }
 

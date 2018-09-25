@@ -9,7 +9,7 @@ public class ResourceUtils {
     public static InputStream getResourceStream(ResourceLocation res) {
         try {
             String domain = res.getResourceDomain(), path = res.getResourcePath();
-            return ResourceUtils.class.getResourceAsStream("/assets/" + domain + "/" + path);
+            return Debug.assertNotNull(ResourceUtils.class.getResourceAsStream("/assets/" + domain + "/" + path), () -> "Can't find resource " + res.toString());
         } catch(Exception e) {
             throw new RuntimeException("Invalid resource " + res, e);
         }

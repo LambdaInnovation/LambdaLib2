@@ -26,7 +26,7 @@ public class PassTriangleTest {
         System.out.println("OpenGL version: " + glGetString(GL_VERSION));
 
         RenderPass pass = new RenderPass();
-        ShaderScript script = ShaderScript.loadFromResource("/render/hello-tri.shader");
+        ShaderScript script = ShaderScript.loadFromResource("/render/hello-tri.glsl");
         RenderMaterial mat = new RenderMaterial(script);
 
         Mesh mesh = new Mesh();
