@@ -39,7 +39,7 @@ import java.util.*;
 @SideOnly(Side.CLIENT)
 public class ControlOverrider {
 
-    private static IntHashMap kbMap;
+    private static IntHashMap<Collection<KeyBinding>> kbMap;
     private static KeyModifier activeModifier;
     private static Field pressedField;
     private static Field kbMapField;
@@ -59,6 +59,7 @@ public class ControlOverrider {
             Method getActiveModifier = ReflectionUtils.getObfMethod(KeyModifier.class, "getActiveModifier", "");
             //fixme: maybe wrong here
             activeModifier = (KeyModifier) getActiveModifier.invoke(null);
+            //Init in this stage will cause KeyModifier.None, which means we can only support simple key at one time, maybe.
 
             kbMap = getOriginalKbMap();
 
@@ -150,18 +151,23 @@ public class ControlOverrider {
         }
 
         for (int keyid : keys) {
-            KeyBinding kb = (KeyBinding) kbMap.removeObject(keyid);
-            if (kb != null) {
-                try {
-                    pressedField.set(kb, false);
-                } catch (Exception e) {
-                    e.printStackTrace();
+            Collection<KeyBinding> list = kbMap.removeObject(keyid);
+            if(list==null)
+                continue;
+            for(KeyBinding kb : list)//object KeyBinding
+            {
+                if (kb != null) {
+                    try {
+                        pressedField.set(kb, false);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    //kb.setKeyCode(-1);
+                    activeOverrides.put(keyid, new Override(kb));
+                    log("Override new [" + keyid + "]");
+                } else {
+                    log("Override ignored [" + keyid + "]");
                 }
-                //kb.setKeyCode(-1);
-                activeOverrides.put(keyid, new Override(kb));
-                log("Override new [" + keyid + "]");
-            } else {
-                log("Override ignored [" + keyid + "]");
             }
         }
     }
@@ -172,8 +178,14 @@ public class ControlOverrider {
             int keyid = entry.getKey();
 
             ovr.kb.setKeyCode(keyid);
-            kbMap.addKey(keyid, ovr.kb);
-            log("Override remove [" + keyid + "]");
+            Collection<KeyBinding> collection = kbMap.lookup(keyid);
+            if(collection!=null) {
+                collection.add(ovr.kb);
+                log("Override remove [" + keyid + "]");
+            }
+            else{
+                log("Clear ignore ["+ keyid + "]");
+            }
         });
 
         activeOverrides.clear();
@@ -181,7 +193,10 @@ public class ControlOverrider {
 
     private static void releaseLocks() {
         for (Map.Entry<Integer, Override> ao : activeOverrides.entrySet()) {
-            kbMap.addKey(ao.getKey(), ao.getValue().kb);
+            Collection<KeyBinding> collection = kbMap.lookup(ao.getKey());
+            if(collection!=null) {
+                collection.add(ao.getValue().kb);
+            }
         }
     }
 
@@ -192,7 +207,10 @@ public class ControlOverrider {
             } catch (Exception e) {
                 Throwables.propagate(e);
             }
-            kbMap.removeObject(ao.getKey());
+            Collection<KeyBinding> collection = kbMap.lookup(ao.getKey());
+            if(collection!=null) {
+                collection.remove(ao.getValue().kb);
+            }
         }
     }
 
