@@ -21,7 +21,7 @@ public class BlockSelectors {
         BlockPos pos = new BlockPos(x, y, z);
         IBlockState state = world.getBlockState(pos);
         Block b = state.getBlock();
-        return state.getCollisionBoundingBox(world, pos) != null &&
+        return state.getCollisionBoundingBox(world, pos) != Block.NULL_AABB  &&
                 b.canCollideCheck(state, false);
     },
     

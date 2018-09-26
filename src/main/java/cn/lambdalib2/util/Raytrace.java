@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.block.Block;
@@ -86,7 +83,7 @@ public class Raytrace {
         Entity entity = null;
         AxisAlignedBB boundingBox = WorldUtils.getBoundingBox(vec1, vec2);
         List list = world.getEntitiesInAABBexcluding(null, boundingBox.expand(1.0D, 1.0D, 1.0D),
-                (com.google.common.base.Predicate<? super Entity>) selector);
+                selector::test);
         //TODO Make sure which predicate to be used.
         double d0 = 0.0D;
 
@@ -97,7 +94,7 @@ public class Raytrace {
                 continue;
             
             float f = 0.3F;
-            AxisAlignedBB axisalignedbb = entity1.getCollisionBoundingBox().expand(f, f, f);
+            AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().expand(f, f, f);
             RayTraceResult mob1 = axisalignedbb.calculateIntercept(vec1, vec2);
 
             if (mob1 != null) {
@@ -139,7 +136,7 @@ public class Raytrace {
         int y1 = MathHelper.floor(current.y);
         int z1 = MathHelper.floor(current.z);
         {
-            net.minecraft.util.math.BlockPos pos = new net.minecraft.util.math.BlockPos(x1, y1, z1);
+            BlockPos pos = new BlockPos(x1, y1, z1);
             IBlockState state = world.getBlockState(pos);
             Block block = state.getBlock();
             if (filter.accepts(world, x1, y1, z1, block)) {
@@ -267,12 +264,12 @@ public class Raytrace {
      * The trace will automatically ignore the target entity.
      */
     public static RayTraceResult traceLiving(Entity entity, double dist, Predicate<Entity> pred, IBlockSelector blockSel) {
-        Vec3d v1 = entity.getPositionVector(),
-                v2 = add(entity.getPositionVector(), multiply(entity.getLookVec(), dist));
+        Vec3d v1 = entity.getPositionEyes(1),
+                v2 = add(v1, multiply(entity.getLookVec(), dist));
         
         Predicate<Entity> exclude = EntitySelectors.exclude(entity);
         
-        return perform(entity.getEntityWorld(), v1, v2, pred == null ? exclude : (Predicate<Entity>) exclude.and(pred), blockSel);
+        return perform(entity.getEntityWorld(), v1, v2, pred == null ? exclude : exclude.and(pred), blockSel);
     }
     
 
