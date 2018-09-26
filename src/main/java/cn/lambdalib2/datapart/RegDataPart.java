@@ -45,7 +45,7 @@ class RegDataPartImpl {
                 regType::isAssignableFrom
             );
         });
-        EntityData.bakeOnPostInit();
+        EntityData.bake();
     }
 
 }

@@ -43,7 +43,7 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
      * Register all the DataPart into List. Use @RegDataPart to set properties, otherwise throw @RuntimeException..
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Entity> void register(
+    static <T extends Entity> void register(
         Class<? extends DataPart<T>> type,
         EnumSet<Side> sides,
         Predicate<Class<? extends T>> pred) {
@@ -77,12 +77,7 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
         return need;
     }
 
-
-    //@StateEventCallback
-    //Why do so?
-    //There is a class loaded in init stage, which will call Entity.get, and it will crash the game.
-    //So I have to do before have a better way.
-    static void bakeOnPostInit() {
+    static void bake() {
         bothSideList.sort(Comparator.comparing(lhs -> lhs.type.getName()));
         Preconditions.checkState(bothSideList.size() < Byte.MAX_VALUE);
         IntStream.range(0, bothSideList.size()).forEach(i -> bothSideList.get(i).networkID = (byte) i);
