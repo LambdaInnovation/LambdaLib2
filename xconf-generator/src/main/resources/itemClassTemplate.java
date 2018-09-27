@@ -33,8 +33,11 @@ public class $config.itemsClassName {
     private static void registerItems(RegistryEvent.Register<Item> event) {
     #foreach ($item in $items)
         #set($id = $item.id)
-        ${id}.setRegistryName("${config.locPrefix}$id");
-        ${id}.setUnlocalizedName("$config.domain:$id");
+        ${id}.setRegistryName("$config.domain:$id");
+        ${id}.setUnlocalizedName("${config.locPrefix}$id");
+    #if($item.creativeTab)
+        ${id}.setCreativeTab($item.creativeTab);
+    #end
         #if ($item.maxStackSize)
         ${id}.setMaxStackSize($item.maxStackSize);
         #end

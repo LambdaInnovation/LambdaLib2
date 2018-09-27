@@ -41,6 +41,9 @@ public class $config.blocksClassName {
         #set($id = $block.id)
         ${id}.setRegistryName("$config.domain:$id");
         ${id}.setUnlocalizedName("${config.locPrefix}$id");
+    #if($block.creativeTab)
+        ${id}.setCreativeTab($block.creativeTab);
+    #end
     #if($block.init)
     #foreach($stmt in $block.init)
         ${id}.$stmt;

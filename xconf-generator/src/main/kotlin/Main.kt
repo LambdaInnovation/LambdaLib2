@@ -2,6 +2,7 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.jsonObject
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigObject
 import org.apache.velocity.VelocityContext
@@ -47,6 +48,7 @@ object Main {
         val ctorArgs: String,
         val maxStackSize: Int?,
         val maxDamage: Int?,
+        val creativeTab: String?,
         val init: Array<String>?
     )
 
@@ -54,6 +56,7 @@ object Main {
         val id: String,
         val baseClass: String,
         val ctorArgs: String,
+        val creativeTab: String?,
         val init: Array<String>?
     )
 
@@ -111,32 +114,38 @@ object Main {
             it.delete()
         }
 
-        val items = ConfigFactory.parseFile(File(rootDir, config.itemsDataFile))
+        val rawItems = ConfigFactory.parseFile(File(rootDir, config.itemsDataFile))
+        val itemBase = rawItems.getValue("_base")
+        val items = rawItems
             .root()
-            .entries
+            .filter { !it.key.startsWith("_") }
             .map { (id, elem) ->
-                val obj = (elem as ConfigObject).toConfig()
+                val obj = (elem as ConfigObject).toConfig().withFallback(itemBase)
                 ItemMetadata(
                     id,
                     obj.getStringOrDefault("baseClass", "net.minecraft.item.Item"),
                     obj.getStringOrDefault("ctorArgs", ""),
                     obj.getIntOrNull("maxStackSize"),
                     obj.getIntOrNull("maxDamage"),
+                    obj.getStringOrNull("creativeTab"),
                     obj.getStrArrOrNull("init")
                 )
             }
         println("\nItem list: \n${items.joinToString(separator = "\n")}")
         println()
 
-        val blocks = ConfigFactory.parseFile(File(rootDir, config.blocksDataFile))
+        val rawBlocks = ConfigFactory.parseFile(File(rootDir, config.blocksDataFile))
+        val blockBase = rawBlocks.getValue("_base")
+        val blocks = rawBlocks
             .root()
-            .entries
+            .filter { !it.key.startsWith("_") }
             .map { (id, elem) ->
-                val obj = (elem as ConfigObject).toConfig()
+                val obj = (elem as ConfigObject).toConfig().withFallback(blockBase)
                 BlockMetadata(
                     id,
                     obj.getStringOrDefault("baseClass", "net.minecraft.block.Block"),
                     obj.getStringOrDefault("ctorArgs", ""),
+                    obj.getStringOrNull("creativeTab"),
                     obj.getStrArrOrNull("init")
                 )
             }
