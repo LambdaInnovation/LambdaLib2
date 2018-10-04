@@ -6,12 +6,14 @@
  */
 package cn.lambdalib2.util;
 
+import cn.lambdalib2.s11n.network.NetworkMessage;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializer;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraftforge.fml.relauncher.Side;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -67,7 +69,7 @@ public class EntitySyncer {
             itemStackCreator = (Object s) -> ((ItemStack) s).copy(),
             booleanCreator = (Object b) -> (boolean) b,
             entityCreator = (Object s) -> ((Entity) s);
-
+            booleanCreator = (Object b) -> (boolean) b;
     static {
         put(byteCreator, (byte) 0, Byte.class, byte.class);
         put(shortCreator, (short) 0, Short.class, short.class);
@@ -77,7 +79,6 @@ public class EntitySyncer {
         put(itemStackCreator, (ItemStack) null, ItemStack.class);
         put(booleanCreator, (boolean) false, Boolean.class);
 //        put(ccCreator, (ChunkCoordinates)null, ChunkCoordinates.class);
-        put(entityCreator, entityFetcher, -1, Entity.class);
 
         serializerMap.put(Byte.class, DataSerializers.BYTE);
         serializerMap.put(byte.class, DataSerializers.BYTE);
@@ -251,6 +252,15 @@ public class EntitySyncer {
             DataSerializer<Object> serial = serializerMap.get(typeClazz);
 
             dataParameter = EntityDataManager.createKey(clazz, serial);
+            try
+            {
+                dataManager.get(dataParameter);
+            }
+            catch(NullPointerException npe)
+            {
+                dataManager.register(dataParameter, 0);
+                Debug.log("Entry is missing, try register it.");
+            }
 
             Object val = convert();
             if (val == null)
