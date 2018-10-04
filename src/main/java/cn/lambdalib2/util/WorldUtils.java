@@ -201,7 +201,7 @@ public class WorldUtils {
 
     @SuppressWarnings("unchecked")
     public static List<Entity> getEntities(World world, AxisAlignedBB box, Predicate<Entity> predicate) {
-        return world.getEntitiesInAABBexcluding(null, box, predicate::test);
+        return world.getEntitiesInAABBexcluding(null, box, predicate==null?null:predicate::test);
         //return world.getEntitiesWithinAABBExcludingEntity(null, box);
     }
 

@@ -83,7 +83,7 @@ public class Raytrace {
         Entity entity = null;
         AxisAlignedBB boundingBox = WorldUtils.getBoundingBox(vec1, vec2);
         List list = world.getEntitiesInAABBexcluding(null, boundingBox.expand(1.0D, 1.0D, 1.0D),
-                selector::test);
+                selector==null?null:selector::test);
         //TODO Make sure which predicate to be used.
         double d0 = 0.0D;
 
