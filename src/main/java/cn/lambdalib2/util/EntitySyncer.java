@@ -67,8 +67,6 @@ public class EntitySyncer {
             floatCreator = (Object b) -> (float) b,
             stringCreator = (Object b) -> b.toString(),
             itemStackCreator = (Object s) -> ((ItemStack) s).copy(),
-            booleanCreator = (Object b) -> (boolean) b,
-            entityCreator = (Object s) -> ((Entity) s);
             booleanCreator = (Object b) -> (boolean) b;
     static {
         put(byteCreator, (byte) 0, Byte.class, byte.class);
