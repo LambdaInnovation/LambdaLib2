@@ -56,8 +56,7 @@ public class EntitySyncer {
                 Integer i = (Integer) defaultFetcher.supply(d, dataParameter);
                 if (i == null) return null;
 
-                Entity e = d.entity.world.getEntityByID(i);
-                return e;
+                return d.entity.world.getEntityByID(i);
             };
     private static final Creator
             byteCreator = (Object b) -> (byte) b,
@@ -66,7 +65,8 @@ public class EntitySyncer {
             floatCreator = (Object b) -> (float) b,
             stringCreator = (Object b) -> b.toString(),
             itemStackCreator = (Object s) -> ((ItemStack) s).copy(),
-            booleanCreator = (Object b) -> (boolean) b;
+            booleanCreator = (Object b) -> (boolean) b,
+            entityCreator = (Object s) -> ((Entity) s);
 
     static {
         put(byteCreator, (byte) 0, Byte.class, byte.class);
@@ -77,7 +77,7 @@ public class EntitySyncer {
         put(itemStackCreator, (ItemStack) null, ItemStack.class);
         put(booleanCreator, (boolean) false, Boolean.class);
 //        put(ccCreator, (ChunkCoordinates)null, ChunkCoordinates.class);
-//        put(entityCreator, entityFetcher, -1, Entity.class);
+        put(entityCreator, entityFetcher, -1, Entity.class);
 
         serializerMap.put(Byte.class, DataSerializers.BYTE);
         serializerMap.put(byte.class, DataSerializers.BYTE);
@@ -115,7 +115,7 @@ public class EntitySyncer {
     public EntitySyncer(Entity ent) {
         entity = ent;
         try {
-            dataManager = (EntityDataManager) ReflectionUtils.getObfField(Entity.class, "dataManager", "field_70180_af").get(null);
+            dataManager = (EntityDataManager) ReflectionUtils.getObfField(Entity.class, "dataManager", "field_70180_af").get(entity);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
