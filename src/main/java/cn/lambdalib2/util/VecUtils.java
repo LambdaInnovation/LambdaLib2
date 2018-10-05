@@ -193,7 +193,7 @@ public class VecUtils {
     }
 
     public static Vec3d lookingPos(Entity e, double range){
-        return add(e.getPositionVector(), multiply(e.getLookVec(), range));
+        return add(e.getPositionEyes(1F), multiply(e.getLookVec(), range));
     }
 
     public static Vec3d rotateAroundZ(Vec3d v, float p_72446_1_)
