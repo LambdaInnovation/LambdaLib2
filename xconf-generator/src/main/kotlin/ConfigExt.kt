@@ -1,5 +1,8 @@
 import com.typesafe.config.Config
 
+fun Config.getConfigOrNull(path: String): Config? =
+    if (!this.hasPath(path)) null else this.getConfig(path)
+
 fun Config.getIntOrNull(path: String): Int? =
     if (!this.hasPath(path)) null else this.getInt(path)
 

@@ -1,10 +1,10 @@
-import com.github.salomonbrys.kotson.fromJson
-import com.github.salomonbrys.kotson.jsonObject
+import com.github.salomonbrys.kotson.*
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigObject
+import com.typesafe.config.ConfigRenderOptions
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
@@ -49,7 +49,12 @@ object Main {
         val maxStackSize: Int?,
         val maxDamage: Int?,
         val creativeTab: String?,
-        val init: Array<String>?
+        val init: Array<String>?,
+        val model: Config?
+    )
+
+    data class BlockItemMetadata(
+        val model: Config?
     )
 
     data class BlockMetadata(
@@ -57,7 +62,8 @@ object Main {
         val baseClass: String,
         val ctorArgs: String,
         val creativeTab: String?,
-        val init: Array<String>?
+        val init: Array<String>?,
+        val itemBlock: BlockItemMetadata
     )
 
     val gson = Gson()
@@ -128,7 +134,8 @@ object Main {
                     obj.getIntOrNull("maxStackSize"),
                     obj.getIntOrNull("maxDamage"),
                     obj.getStringOrNull("creativeTab"),
-                    obj.getStrArrOrNull("init")
+                    obj.getStrArrOrNull("init"),
+                    obj.getConfigOrNull("model")
                 )
             }
         println("\nItem list: \n${items.joinToString(separator = "\n")}")
@@ -141,12 +148,14 @@ object Main {
             .filter { !it.key.startsWith("_") }
             .map { (id, elem) ->
                 val obj = (elem as ConfigObject).toConfig().withFallback(blockBase)
+                val item = obj.getConfigOrNull("item") ?: ConfigFactory.empty()
                 BlockMetadata(
                     id,
                     obj.getStringOrDefault("baseClass", "net.minecraft.block.Block"),
                     obj.getStringOrDefault("ctorArgs", ""),
                     obj.getStringOrNull("creativeTab"),
-                    obj.getStrArrOrNull("init")
+                    obj.getStrArrOrNull("init"),
+                    BlockItemMetadata(item.getConfigOrNull("model"))
                 )
             }
 
@@ -157,14 +166,20 @@ object Main {
         println("Writing item models...")
         for (item in items) {
             val modelJsonPath = File(assetsRootDir, "models/item/${item.id}.json")
-            val modelJson = jsonObject(
-                jsonMark,
-                "parent" to "item/generated",
-                "textures" to jsonObject("layer0" to "${config.domain}:items/${item.id}")
-            )
+            val modelJsonStr = if (item.model != null) {
+                val obj: JsonObject = gson.fromJson(item.model.root().render(ConfigRenderOptions.concise()))
+                obj.put(jsonMark)
+                obj
+            } else {
+                jsonObject(
+                    jsonMark,
+                    "parent" to "item/generated",
+                    "textures" to jsonObject("layer0" to "${config.domain}:items/${item.id}")
+                )
+            }.toString()
 
             modelJsonPath.parentFile.mkdirs()
-            modelJsonPath.writeText(modelJson.toString())
+            modelJsonPath.writeText(modelJsonStr)
         }
 
         println("Writing item class...")
@@ -193,6 +208,23 @@ object Main {
             )
             modelJsonPath.parentFile.mkdirs()
             modelJsonPath.writeText(modelJson.toString())
+        }
+
+        println("Writing block item models...")
+        for (block in blocksWithItemBlock) {
+            val modelJsonPath = File(assetsRootDir, "models/item/${block.id}.json")
+            val modelJsonStr = if (block.itemBlock.model != null) {
+                val obj: JsonObject = gson.fromJson(block.itemBlock.model.root().render(ConfigRenderOptions.concise()))
+                obj[jsonMark.first] = jsonMark.second
+                obj.toString()
+            } else {
+                jsonObject(
+                    jsonMark,
+                    "parent" to "${config.domain}:block/${block.id}"
+                ).toString()
+            }
+            modelJsonPath.parentFile.mkdirs()
+            modelJsonPath.writeText(modelJsonStr)
         }
 
         println("Writing blockstates...")

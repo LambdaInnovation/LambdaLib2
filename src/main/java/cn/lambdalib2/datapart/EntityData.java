@@ -82,8 +82,8 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
         Preconditions.checkState(bothSideList.size() < Byte.MAX_VALUE);
         IntStream.range(0, bothSideList.size()).forEach(i -> bothSideList.get(i).networkID = (byte) i);
 
-        Debug.log("EntityData baked post initialization. Network participants: " +
-            bothSideList.stream().map(x -> x.type).collect(Collectors.toList()));
+        Debug.log("EntityData baked, network participants: " +
+            bothSideList.stream().map(x -> x.type.getCanonicalName()).collect(Collectors.toList()));
         
         _baked = true;
     }
