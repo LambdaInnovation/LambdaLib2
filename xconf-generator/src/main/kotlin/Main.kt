@@ -1,10 +1,7 @@
 import com.github.salomonbrys.kotson.*
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigObject
-import com.typesafe.config.ConfigRenderOptions
+import com.typesafe.config.*
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
 import org.apache.velocity.runtime.RuntimeConstants
@@ -50,7 +47,11 @@ object Main {
         val maxDamage: Int?,
         val creativeTab: String?,
         val init: Array<String>?,
-        val model: Config?
+
+        val generateModel: Boolean,
+        val model: Config?,
+        val extModels: Config?,
+        val modelBindings: Map<Int, String>
     )
 
     data class BlockItemMetadata(
@@ -128,14 +129,20 @@ object Main {
             .map { (id, elem) ->
                 val obj = (elem as ConfigObject).toConfig().withFallback(itemBase)
                 ItemMetadata(
-                    id,
-                    obj.getStringOrDefault("baseClass", "net.minecraft.item.Item"),
-                    obj.getStringOrDefault("ctorArgs", ""),
-                    obj.getIntOrNull("maxStackSize"),
-                    obj.getIntOrNull("maxDamage"),
-                    obj.getStringOrNull("creativeTab"),
-                    obj.getStrArrOrNull("init"),
-                    obj.getConfigOrNull("model")
+                    id = id,
+                    baseClass = obj.getStringOrDefault("baseClass", "net.minecraft.item.Item"),
+                    ctorArgs = obj.getStringOrDefault("ctorArgs", ""),
+                    maxStackSize = obj.getIntOrNull("maxStackSize"),
+                    maxDamage = obj.getIntOrNull("maxDamage"),
+                    creativeTab = obj.getStringOrNull("creativeTab"),
+                    init = obj.getStrArrOrNull("init"),
+
+                    generateModel = obj.getBooleanOrDefault("generateModel", true),
+                    model = obj.getConfigOrNull("model"),
+                    extModels = obj.getConfigOrNull("extModels"),
+                    modelBindings = obj.getConfigOrNull("modelBindings")?.root()
+                        ?.map { it.key.toInt() to it.value.unwrapped() as String }?.toMap() ?:
+                        mapOf(0 to "${config.domain}:$id")
                 )
             }
         println("\nItem list: \n${items.joinToString(separator = "\n")}")
@@ -164,7 +171,7 @@ object Main {
         println()
 
         println("Writing item models...")
-        for (item in items) {
+        for (item in items) if (item.generateModel) {
             val modelJsonPath = File(assetsRootDir, "models/item/${item.id}.json")
             val modelJsonStr = if (item.model != null) {
                 val obj: JsonObject = gson.fromJson(item.model.root().render(ConfigRenderOptions.concise()))
@@ -180,6 +187,17 @@ object Main {
 
             modelJsonPath.parentFile.mkdirs()
             modelJsonPath.writeText(modelJsonStr)
+        }
+
+        println("Writing item ext models...")
+        for (item in items) {
+            if (item.extModels != null) {
+                for (m in item.extModels.root()) {
+                    val path = File(assetsRootDir, "models/item/${m.key}.json")
+                    val conf = (m.value as ConfigObject).withValue(jsonMark.first, ConfigValueFactory.fromAnyRef(jsonMark.second))
+                    path.writeText(conf.render(ConfigRenderOptions.concise()))
+                }
+            }
         }
 
         println("Writing item class...")

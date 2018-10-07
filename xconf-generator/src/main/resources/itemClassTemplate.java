@@ -60,7 +60,9 @@ public class $config.itemsClassName {
     @SideOnly(Side.CLIENT)
     private static void registerItemRenderers() {
     #foreach ($item in $items)
-        ModelLoader.setCustomModelResourceLocation($item.id, 0, new ModelResourceLocation(${item.id}.getRegistryName(), "inventory"));
+    #foreach ($pair in $item.modelBindings.entrySet())
+        ModelLoader.setCustomModelResourceLocation($item.id, $pair.key, new ModelResourceLocation("$pair.value", "inventory"));
+    #end
     #end
     }
 
