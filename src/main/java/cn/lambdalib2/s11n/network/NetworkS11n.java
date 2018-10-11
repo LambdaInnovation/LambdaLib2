@@ -483,6 +483,7 @@ public class NetworkS11n {
     public static void serialize(ByteBuf buf, Object obj, boolean nullable) {
         if (obj == null) {
             if (nullable) {
+                buf.writeByte(MAGIC);
                 buf.writeShort(IDX_NULL);
             } else {
                 throw new NullPointerException("Trying to serialize a null object where it's not accepted");
