@@ -1,5 +1,6 @@
 package cn.lambdalib2;
 
+import cn.lambdalib2.multiblock.MsgBlockMulti;
 import cn.lambdalib2.registry.RegistryMod;
 import cn.lambdalib2.s11n.network.NetworkEvent;
 import cn.lambdalib2.s11n.network.NetworkMessage;
@@ -46,6 +47,8 @@ public class LambdaLib2
         channel.registerMessage(NetworkEvent.MessageHandler.class, NetworkEvent.Message.class, 1, Side.SERVER);
         channel.registerMessage(NetworkMessage.Handler.class, NetworkMessage.Message.class, 2, Side.CLIENT);
         channel.registerMessage(NetworkMessage.Handler.class, NetworkMessage.Message.class, 3, Side.SERVER);
+        channel.registerMessage(MsgBlockMulti.ReqHandler.class, MsgBlockMulti.Req.class, 4, Side.SERVER);
+        channel.registerMessage(MsgBlockMulti.Handler.class, MsgBlockMulti.class, 5, Side.CLIENT);
     }
 
     @EventHandler
