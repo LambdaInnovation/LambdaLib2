@@ -40,7 +40,7 @@ public class $config.blocksClassName {
     #foreach ($block in $blocks)
         #set($id = $block.id)
         ${id}.setRegistryName("$config.domain:$id");
-        ${id}.setUnlocalizedName("${config.locPrefix}$id");
+        ${id}.setTranslationKey("${config.locPrefix}$id");
     #if($block.creativeTab)
         ${id}.setCreativeTab($block.creativeTab);
     #end
@@ -58,7 +58,7 @@ public class $config.blocksClassName {
     #foreach ($block in $blocksWithItemBlock)
         #set($id = "item_$block.id")
         ${id}.setRegistryName("$config.domain:$block.id");
-        ${id}.setUnlocalizedName("${config.locPrefix}$block.id");
+        ${id}.setTranslationKey("${config.locPrefix}$block.id");
         event.getRegistry().register($id);
     #end
 
