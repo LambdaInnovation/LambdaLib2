@@ -1,9 +1,3 @@
-/**
-* Copyright (c) Lambda Innovation, 2013-2016
-* This file is part of LambdaLib modding library.
-* https://github.com/LambdaInnovation/LambdaLib
-* Licensed under MIT, see project root for more information.
-*/
 package cn.lambdalib2.cgui.component;
 
 import static org.lwjgl.opengl.GL11.GL_ALPHA_TEST;
@@ -67,7 +61,7 @@ public class DrawTexture extends Component {
             double preLevel = HudUtils.zLevel;
             HudUtils.zLevel = zLevel;
 
-            if(texture != null && !texture.getResourcePath().equals("<null>")) {
+            if(texture != null && !texture.getPath().equals("<null>")) {
                 HudUtils.loadTexture(texture);
                 if (doesUseUV) {
                     HudUtils.rect(0, 0, u, v, w.transform.width, w.transform.height, texWidth, texHeight);

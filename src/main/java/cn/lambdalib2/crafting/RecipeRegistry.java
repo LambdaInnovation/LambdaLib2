@@ -214,7 +214,7 @@ public class RecipeRegistry {
      * Preserved for debug usage.
      */
     public static String reprStack(ItemStack stack) {
-        return stack.getItem().getUnlocalizedName() + "*" + stack.getCount() + "#" + stack.getItemDamage();
+        return stack.getItem().getTranslationKey() + "*" + stack.getCount() + "#" + stack.getItemDamage();
     }
 
 }

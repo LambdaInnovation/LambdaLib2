@@ -88,7 +88,7 @@ public class ProgressBar extends Component {
                 default:
                     throw new RuntimeException("niconiconi, WTF??");
                 }
-                if(texture != null && !texture.getResourcePath().equals("<null>")) {
+                if(texture != null && !texture.getPath().equals("<null>")) {
                     HudUtils.loadTexture(texture);
                 } else {
                     GL11.glDisable(GL11.GL_TEXTURE_2D);

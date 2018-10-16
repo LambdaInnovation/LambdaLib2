@@ -27,7 +27,7 @@ public class CGUILoadTest {
             return;
         }
 
-        if (dt.texture.getResourcePath().endsWith("data_terminal/logo.png")) {
+        if (dt.texture.getPath().endsWith("data_terminal/logo.png")) {
             out.println("SUCCESS: component data");
         } else {
             out.println("FAIL: component data");
