@@ -90,30 +90,39 @@ public abstract class CleanContainer extends Container {
             }
 
             if (slotStack.getCount() == 0) {
-                slot.putStack(null);
+                slot.putStack(ItemStack.EMPTY);
             } else if (slotChanged) {
                 slot.onSlotChanged();
             }
 
-            return slotChanged ? stackCopy : null;
+            return slotChanged ? stackCopy : ItemStack.EMPTY;
         } else {
-            return null;
+            return ItemStack.EMPTY;
         }
     }
 
+    /**
+     * Put item(stack) to slot[idx].
+     * If slot is empty, put it.
+     * Then check if they can be merged.
+     * @param stackToMerge slot merged from
+     * @param idx slot merged to
+     * @return
+     */
     private boolean tryMerge(ItemStack stackToMerge, int idx) {
-        Slot slot = (Slot) this.inventorySlots.get(idx);
+        Slot slot = this.inventorySlots.get(idx);
         ItemStack stack = slot.getStack();
 
-        if (stack == null && slot.isItemValid(stackToMerge)) {
+        if (stack.isEmpty() && slot.isItemValid(stackToMerge)) {
             stack = stackToMerge.copy();
-            stack.setCount(0);
+            stack.setCount(1);
+            stackToMerge.setCount(stackToMerge.getCount() - 1);
 
             slot.putStack(stack);
             slot.onSlotChanged();
         }
 
-        if (stack != null &&
+        if (!stack.isEmpty() &&
                 stack.getItem() == stackToMerge.getItem() &&
                 (!stackToMerge.getHasSubtypes() ||
                         stackToMerge.getItemDamage() == stack.getItemDamage()) &&
