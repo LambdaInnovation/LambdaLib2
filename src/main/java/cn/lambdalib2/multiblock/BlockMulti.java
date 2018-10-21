@@ -227,8 +227,8 @@ public abstract class BlockMulti extends BlockContainer {
 
     public BlockPos getOrigin(TileEntity te) {
         TileEntity ret = getOriginTile(te);
-        Debug.assertNotNull(ret);
-        return ret.getPos();
+        //Debug.assertNotNull(ret);
+        return ret==null?null: ret.getPos();
     }
 
     public TileEntity getOriginTile(World world, BlockPos pos) {

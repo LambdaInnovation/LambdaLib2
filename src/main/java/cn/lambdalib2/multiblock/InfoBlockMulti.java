@@ -98,9 +98,14 @@ public class InfoBlockMulti {
     }
 
     public void load(NBTTagCompound tag) {
-        dir = EnumFacing.values()[tag.getByte("dir")];
-        subID = tag.getInteger("sub");
-        loaded = true;
+        if(tag.hasKey("dir")) {
+            dir = EnumFacing.values()[tag.getByte("dir")];
+            loaded=true;
+        }
+        if(tag.hasKey("sub")) {
+            subID = tag.getInteger("sub");
+            loaded = true;
+        }
     }
 
 }
