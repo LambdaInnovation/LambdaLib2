@@ -64,7 +64,12 @@ object Main {
         val ctorArgs: String,
         val creativeTab: String?,
         val init: Array<String>?,
-        val itemBlock: BlockItemMetadata
+        val itemBlock: BlockItemMetadata,
+
+        val generateModel: Boolean,
+        val model: Config?,
+        val extModels: Config?,
+        val blockStates: Config?
     )
 
     val gson = Gson()
@@ -162,7 +167,12 @@ object Main {
                     obj.getStringOrDefault("ctorArgs", ""),
                     obj.getStringOrNull("creativeTab"),
                     obj.getStrArrOrNull("init"),
-                    BlockItemMetadata(item.getConfigOrNull("model"))
+                    BlockItemMetadata(item.getConfigOrNull("model")),
+
+                    generateModel = obj.getBooleanOrDefault("generateModel", true),
+                    model = obj.getConfigOrNull("model"),
+                    extModels = obj.getConfigOrNull("extModels"),
+                    blockStates = obj.getConfigOrNull("blockStates")
                 )
             }
 
@@ -215,15 +225,22 @@ object Main {
 
 
         println("Writing block models...")
-        for (block in blocks) {
+        for (block in blocks) if (block.generateModel) {
             val modelJsonPath = File(assetsRootDir, "models/block/${block.id}.json")
-            val modelJson = jsonObject(
-                jsonMark,
-                "parent" to "block/cube_all",
-                "textures" to jsonObject(
-                    "all" to "${config.domain}:blocks/${block.id}"
-                )
-            )
+            val modelJson = when {
+                block.model != null -> {
+                    block.model.toJsonObject()
+                }
+                else -> {
+                    jsonObject(
+                        "parent" to "block/cube_all",
+                        "textures" to jsonObject(
+                            "all" to "${config.domain}:blocks/${block.id}"
+                        )
+                    )
+                }
+            }
+            modelJson.put(jsonMark)
             modelJsonPath.parentFile.mkdirs()
             modelJsonPath.writeText(modelJson.toString())
         }
@@ -248,16 +265,31 @@ object Main {
         println("Writing blockstates...")
         for (block in blocks) {
             val jsonPath = File(assetsRootDir, "blockstates/${block.id}.json")
-            val json = jsonObject(
-                jsonMark,
-                "variants" to jsonObject(
-                    "normal" to jsonObject(
-                        "model" to "${config.domain}:${block.id}"
+            val json  = when {
+                block.blockStates != null -> block.blockStates.toJsonObject()
+                else -> jsonObject(
+                    "variants" to jsonObject(
+                        "normal" to jsonObject(
+                            "model" to "${config.domain}:${block.id}"
+                        )
                     )
                 )
-            )
+            }
+
+            json += jsonMark
             jsonPath.parentFile.mkdirs()
             jsonPath.writeText(json.toString())
+        }
+
+        println("Writing block ext models...")
+        for (block in blocks) {
+            if (block.extModels != null) {
+                for (m in block.extModels.root()) {
+                    val path = File(assetsRootDir, "models/block/${m.key}.json")
+                    val conf = (m.value as ConfigObject).withValue(jsonMark.first, ConfigValueFactory.fromAnyRef(jsonMark.second))
+                    path.writeText(conf.render(ConfigRenderOptions.concise()))
+                }
+            }
         }
 
         println("Writing blocks class...")

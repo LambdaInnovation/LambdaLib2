@@ -1,4 +1,10 @@
+import com.github.salomonbrys.kotson.fromJson
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.typesafe.config.Config
+import com.typesafe.config.ConfigRenderOptions
+
+val gson = Gson()
 
 fun Config.getConfigOrNull(path: String): Config? =
     if (!this.hasPath(path)) null else this.getConfig(path)
@@ -18,3 +24,4 @@ fun Config.getStringOrDefault(path: String, default: String) =
 fun Config.getStrArrOrNull(path: String) =
     if (!this.hasPath(path)) null else this.getStringList(path).toTypedArray()
 
+fun Config.toJsonObject(): JsonObject = gson.fromJson(this.root().render(ConfigRenderOptions.concise()))
