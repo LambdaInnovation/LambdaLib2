@@ -16,6 +16,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -369,7 +370,18 @@ public class NetworkMessage {
         public IMessage onMessage(Message message, MessageContext ctx) {
             if (message.valid) {
                 // LambdaLib.log.info("Received message " + message.channel + " on " + message.instance);
-                processMessage(message.instance, message.channel, message.params);
+                Side side = FMLCommonHandler.instance().getEffectiveSide();
+                if (side == Side.SERVER) {
+                    EntityPlayerMP serverPlayer = ctx.getServerHandler().player;
+                    // Execute the action on the main server thread by adding it as a scheduled task
+                    serverPlayer.getServerWorld().addScheduledTask(() -> {
+                        processMessage(message.instance, message.channel, message.params);
+                    });
+                } else {
+                    Minecraft.getMinecraft().addScheduledTask(() -> {
+                        processMessage(message.instance, message.channel, message.params);
+                    });
+                }
             } else {
                 Debug.log("Ignored network message " + message.instance + ", " + message.channel);
             }
