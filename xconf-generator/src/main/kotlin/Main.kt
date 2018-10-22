@@ -55,6 +55,7 @@ object Main {
     )
 
     data class BlockItemMetadata(
+        val generateModel: Boolean,
         val model: Config?
     )
 
@@ -64,6 +65,7 @@ object Main {
         val ctorArgs: String,
         val creativeTab: String?,
         val init: Array<String>?,
+        val hasItemBlock: Boolean,
         val itemBlock: BlockItemMetadata,
 
         val generateModel: Boolean,
@@ -101,7 +103,7 @@ object Main {
         }
 
         val config = gson.fromJson<ImportConfig>(configFile.readText())
-        println("config is: $config")
+//        println("config is: $config")
 
 
         val srcDir = File(rootDir, config.srcDir)
@@ -122,7 +124,7 @@ object Main {
             res.has(jsonMark.first)
         }
         .forEach {
-            println(it.path)
+//            println(it.path)
             it.delete()
         }
 
@@ -150,8 +152,7 @@ object Main {
                         mapOf(0 to "${config.domain}:$id")
                 )
             }
-        println("\nItem list: \n${items.joinToString(separator = "\n")}")
-        println()
+            .sortedBy { it.id }
 
         val rawBlocks = ConfigFactory.parseFile(File(rootDir, config.blocksDataFile))
         val blockBase = rawBlocks.getValue("_base")
@@ -167,7 +168,10 @@ object Main {
                     obj.getStringOrDefault("ctorArgs", ""),
                     obj.getStringOrNull("creativeTab"),
                     obj.getStrArrOrNull("init"),
-                    BlockItemMetadata(item.getConfigOrNull("model")),
+                    obj.getBooleanOrDefault("hasItemBlock", true),
+                    BlockItemMetadata(
+                        item.getBooleanOrDefault("generateModel", true),
+                        item.getConfigOrNull("model")),
 
                     generateModel = obj.getBooleanOrDefault("generateModel", true),
                     model = obj.getConfigOrNull("model"),
@@ -175,10 +179,9 @@ object Main {
                     blockStates = obj.getConfigOrNull("blockStates")
                 )
             }
+            .sortedBy { it.id }
 
-        val blocksWithItemBlock = blocks
-        println("Block list: \n${blocks.joinToString(separator = "\n")}")
-        println()
+        val blocksWithItemBlock = blocks.filter { it.hasItemBlock }
 
         println("Writing item models...")
         for (item in items) if (item.generateModel) {
@@ -246,7 +249,7 @@ object Main {
         }
 
         println("Writing block item models...")
-        for (block in blocksWithItemBlock) {
+        for (block in blocksWithItemBlock) if (block.itemBlock.generateModel) {
             val modelJsonPath = File(assetsRootDir, "models/item/${block.id}.json")
             val modelJsonStr = if (block.itemBlock.model != null) {
                 val obj: JsonObject = gson.fromJson(block.itemBlock.model.root().render(ConfigRenderOptions.concise()))
