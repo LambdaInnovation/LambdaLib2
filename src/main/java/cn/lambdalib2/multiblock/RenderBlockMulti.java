@@ -12,13 +12,13 @@ import org.lwjgl.opengl.GL11;
  * 
  * @author WeathFolD
  */
-public abstract class RenderBlockMulti extends TileEntitySpecialRenderer {
+public abstract class RenderBlockMulti<T extends TileEntity> extends TileEntitySpecialRenderer<T> {
 
     public RenderBlockMulti() {
     }
 
     @Override
-    public void render(TileEntity te, double x, double y, double z, float partialTicks,
+    public void render(T te, double x, double y, double z, float partialTicks,
         int destroyStage, float alpha) {
         if (!(te.getBlockType() instanceof BlockMulti))
             return;
@@ -38,6 +38,6 @@ public abstract class RenderBlockMulti extends TileEntitySpecialRenderer {
         GL11.glPopMatrix();
     }
 
-    public abstract void drawAtOrigin(TileEntity te);
+    public abstract void drawAtOrigin(T te);
 
 }

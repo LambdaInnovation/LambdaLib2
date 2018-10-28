@@ -90,7 +90,8 @@ public enum RegistryManager {
                     m.setAccessible(true);
                     m.invoke(null, event);
                 } catch (Exception ex) {
-                    throw new RuntimeException("Error when calling StateEventCallback@" + event.getClass() + " " + m, ex);
+                    Debug.log("Error when calling StateEventCallback@" + event.getClass().getSimpleName() + " " + m);
+                    ex.printStackTrace();
                 }
             }
             activeMod = null;

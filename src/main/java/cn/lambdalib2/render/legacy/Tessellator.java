@@ -10,7 +10,7 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Tessellator {
 
-    public static Tessellator instance;
+    public static final Tessellator instance = new Tessellator();
 
     private double _dx, _dy, _dz;
 
@@ -52,7 +52,7 @@ public class Tessellator {
 
     public void setBrightness(int brightness) {
         // TODO
-        Debug.TODO();
+//        Debug.TODO();
     }
 
     private Tessellator() {}

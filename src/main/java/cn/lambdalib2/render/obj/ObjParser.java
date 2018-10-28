@@ -65,17 +65,22 @@ public class ObjParser {
                         break;
 
                     case "f":
-                        scanner.useDelimiter("[ /]");
+                        int[] v1 = parseFaceVertex(scanner.next());
+                        int[] v2 = parseFaceVertex(scanner.next());
+                        int[] v3 = parseFaceVertex(scanner.next());
+
                         ObjFace of = new ObjFace(
-                                scanner.nextInt()-1, scanner.nextInt()-1, scanner.nextInt()-1,
-                                scanner.nextInt()-1, scanner.nextInt()-1, scanner.nextInt()-1);
+                            v1[0], v1[1], v2[0], v2[1], v3[0], v3[1]
+                        );
 
                         faces.put(currentGroup,of);
 
                         break;
 
                     case "usemtl":
-
+                    case "mtllib":
+                    case "vn":
+                    case "s":
                         break;
 
                     default:
@@ -125,8 +130,10 @@ public class ObjParser {
                 t.x = ff * (duv2.y * edge1.x - duv1.y * edge2.x);
                 t.y = ff * (duv2.y * edge1.y - duv1.y * edge2.y);
                 t.z = ff * (duv2.y * edge1.z - duv1.y * edge2.z);
+                t.normalise(t);
 
                 Vector3f.cross(edge1, edge2, n);
+                n.normalise(n);
 
                 ret.faces.put(group, f);
                 vertFaceSharing.put(i0, f);
@@ -145,14 +152,27 @@ public class ObjParser {
                     Vector3f.add(f.normal, accum1, accum1);
                 }
 
-                accum.normalise();
-                accum1.normalise();
+                if (accum.lengthSquared() > 0)
+                    accum.normalise();
+                if (accum1.lengthSquared() > 0)
+                    accum1.normalise();
                 vertices.get(i).tangent.set(accum);
                 vertices.get(i).normal.set(accum1);
             }
         }
 
         ret.vertices.addAll(vertices);
+
+        return ret;
+    }
+
+    private static int[] parseFaceVertex(String v) {
+        String[] arr = v.split("/");
+        Debug.require(arr.length >= 2);
+        int[] ret = new int[arr.length];
+        for (int i = 0; i < arr.length; ++i) {
+            ret[i] = Integer.parseInt(arr[i]) - 1;
+        }
 
         return ret;
     }

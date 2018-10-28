@@ -33,7 +33,9 @@ public class ReflectionUtils {
                 }
             }
             if (asmData.getObjectName().contains("(")) { // Is a method
-                removedMethods.add(asmData);
+                String assumedSide = ((EnumHolder) asmData.getAnnotationInfo().get("value")).getValue();
+                if (!assumedSide.equals(startSide))
+                    removedMethods.add(asmData);
             }
         }
     }

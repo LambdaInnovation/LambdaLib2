@@ -39,7 +39,7 @@ public class ObjLegacyRender {
 
     private void addVertex(Vertex v) {
         glNormal3f(v.normal.x, v.normal.y, v.normal.z);
-        glTexCoord2f(v.uv.x, v.uv.y);
+        glTexCoord2f(v.uv.x, 1 - v.uv.y);
         glVertex3f(v.pos.x, v.pos.y, v.pos.z);
     }
 }

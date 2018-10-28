@@ -19,7 +19,7 @@ import net.minecraft.util.ResourceLocation;
 @RegEntityRender(EntityDummy.class)
 public class RenderDummy extends Render {
 
-    protected RenderDummy(RenderManager renderManager) {
+    public RenderDummy(RenderManager renderManager) {
         super(renderManager);
     }
 
