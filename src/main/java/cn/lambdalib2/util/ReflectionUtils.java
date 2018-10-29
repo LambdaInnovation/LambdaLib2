@@ -1,6 +1,8 @@
 package cn.lambdalib2.util;
 
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModAPIManager;
 import net.minecraftforge.fml.common.discovery.ASMDataTable;
 import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
 import net.minecraftforge.fml.common.discovery.asm.ModAnnotation.EnumHolder;
@@ -24,7 +26,9 @@ public class ReflectionUtils {
         table = _table;
 
         String startSide = FMLCommonHandler.instance().getSide().toString();
-        Set<ASMDataTable.ASMData> sideData = table.getAll("net.minecraftforge.fml.relauncher.SideOnly");
+        Set<ASMData> sideData = table.getAll("net.minecraftforge.fml.relauncher.SideOnly");
+        Set<ASMData> optionalMethods = table.getAll("net.minecraftforge.fml.common.Optional$Method");
+
         for (ASMDataTable.ASMData asmData: sideData) {
             if (Objects.equals(asmData.getClassName(), asmData.getObjectName())) { // Is a class
                 EnumHolder enumHolder = (EnumHolder) asmData.getAnnotationInfo().get("value");
@@ -37,6 +41,15 @@ public class ReflectionUtils {
                 if (!assumedSide.equals(startSide))
                     removedMethods.add(asmData);
             }
+        }
+
+        for (ASMDataTable.ASMData optional : optionalMethods) {
+            String modid = (String) optional.getAnnotationInfo().get("modid");
+            // Ref: ModAPITransformer#72
+            if (Loader.isModLoaded(modid) || ModAPIManager.INSTANCE.hasAPI(modid)) {
+                continue;
+            }
+            removedMethods.add(optional);
         }
     }
 
