@@ -109,17 +109,11 @@ public class ReflectionUtils {
         }
     }
 
-    public static List<Method> getMethods(Class<? extends Annotation> annoClass)  {
-        return getMethods(annoClass, true);
-    }
-
     /**
      * Get all methods in all classes with given annotation.
-     * @param removeSideOnly if false, will CRASH when there are SideOnly methods using this annotation.
-     *                       usually used to enforce that they are not being removed.
      */
-    public static List<Method> getMethods(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
-        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName(), removeSideOnly);
+    public static List<Method> getMethods(Class<? extends Annotation> annoClass) {
+        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName());
         return objects.stream()
             .map(data -> {
                 try {
@@ -147,17 +141,11 @@ public class ReflectionUtils {
             .collect(Collectors.toList());
     }
 
-    public static List<Class<?>> getClasses(Class<? extends Annotation> annoClass) {
-        return getClasses(annoClass, true);
-    }
-
     /**
      * Get all classes with given annotation.
-     * @param removeSideOnly if false, will CRASH when there are SideOnly classes using this annotation.
-     *                       usually used to enforce that they are not being removed.
      */
-    public static List<Class<?>> getClasses(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
-        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName(), removeSideOnly);
+    public static List<Class<?>> getClasses(Class<? extends Annotation> annoClass) {
+        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName());
         return objects.stream()
             .map(ASMData::getClassName)
             .distinct()
@@ -171,12 +159,11 @@ public class ReflectionUtils {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Get all fields with given annotation.
+     */
     public static List<Field> getFields(Class<? extends Annotation> annoClass) {
-        return getFields(annoClass, true);
-    }
-
-    public static List<Field> getFields(Class<? extends Annotation> annoClass, boolean removeSideOnly) {
-        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName(), removeSideOnly);
+        List<ASMData> objects = getRawObjects(annoClass.getCanonicalName());
         List<Field> ret = objects.stream()
             .filter(obj -> !obj.getObjectName().equals(obj.getClassName()))
             .map(it -> {
@@ -190,6 +177,10 @@ public class ReflectionUtils {
         for (Field f : ret)
             f.setAccessible(true);
         return ret;
+    }
+
+    public static List<ASMData> getRawObjects(String annoName) {
+        return getRawObjects(annoName, true);
     }
 
     public static List<ASMData> getRawObjects(String annoName, boolean removeSideOnly) {

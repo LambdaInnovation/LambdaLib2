@@ -56,7 +56,7 @@ public class ModContainer extends DummyModContainer {
         ReflectionUtils._init(data);
 
         RegistryTransformer.setRegistryMods(
-            ReflectionUtils.getRawObjects(RegistryMod.class.getCanonicalName(), true)
+            ReflectionUtils.getRawObjects(RegistryMod.class.getCanonicalName())
                 .stream()
                 .map(ASMData::getClassName)
                 .distinct()

@@ -49,7 +49,7 @@ class RegGuiHandlerImpl {
     @StateEventCallback
     @SuppressWarnings("unchecked")
     private static void init(FMLInitializationEvent ev) {
-        ReflectionUtils.getRawObjects(RegGuiHandler.class.getCanonicalName(), true).forEach(it -> {
+        ReflectionUtils.getRawObjects(RegGuiHandler.class.getCanonicalName()).forEach(it -> {
             try {
                 Class<?> clz = Class.forName(it.getClassName(), true, Loader.instance().getModClassLoader());
                 RegGuiHandler anno = clz.getAnnotation(RegGuiHandler.class);
