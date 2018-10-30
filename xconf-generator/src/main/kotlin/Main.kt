@@ -12,13 +12,13 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Main {
-    data class AdditionalImports(
+    class AdditionalImports(
         val all: Array<String>,
         val item: Array<String>,
         val block: Array<String>
     )
 
-    data class ImportConfig(
+    class ImportConfig(
         val srcDir: String,
         val resourcesDir: String,
         val locPrefix: String,
@@ -39,7 +39,7 @@ object Main {
         fun getBlocksClassName() = blocksClassPath.substringAfterLast('.')
     }
 
-    data class ItemMetadata(
+    class ItemMetadata(
         val id: String,
         val baseClass: String,
         val ctorArgs: String,
@@ -54,12 +54,12 @@ object Main {
         val modelBindings: Map<Int, String>
     )
 
-    data class BlockItemMetadata(
+    class BlockItemMetadata(
         val generateModel: Boolean,
         val model: Config?
     )
 
-    data class BlockMetadata(
+    class BlockMetadata(
         val id: String,
         val baseClass: String,
         val ctorArgs: String,
@@ -72,6 +72,14 @@ object Main {
         val model: Config?,
         val extModels: Config?,
         val blockStates: Config?
+    )
+
+    class BaseContext(
+        val config: ImportConfig,
+        val rootDir: File,
+        val srcDir: File,
+        val resDir: File,
+        val assetsRootDir: File
     )
 
     val gson = Gson()
@@ -103,32 +111,43 @@ object Main {
         }
 
         val config = gson.fromJson<ImportConfig>(configFile.readText())
-//        println("config is: $config")
-
-
         val srcDir = File(rootDir, config.srcDir)
         val resDir = File(rootDir, config.resourcesDir)
         val assetsRootDir = File(resDir, "assets/${config.domain}")
 
-        println()
-        println("Cleaning up...")
-        arrayOf(
-            File(assetsRootDir, "models/item"),
-            File(assetsRootDir, "models/block"),
-            File(assetsRootDir, "blockstates")
+        val context = BaseContext(
+            config,
+            File(rootDir),
+            srcDir,
+            resDir,
+            assetsRootDir
         )
-        .filter { it.isDirectory }
-        .flatMap { it.listFiles().toList() }
-        .filter {
-            val res: JsonObject = gson.fromJson(it.readText())
-            res.has(jsonMark.first)
-        }
-        .forEach {
-//            println(it.path)
-            it.delete()
-        }
 
-        val rawItems = ConfigFactory.parseFile(File(rootDir, config.itemsDataFile))
+        cleanupGeneratedFiles(context)
+        writeItems(context)
+        writeBlocks(context)
+    }
+
+    private fun cleanupGeneratedFiles(ctx: BaseContext) {
+        println("Cleaning up...")
+        val arr = arrayOf(
+            File(ctx.assetsRootDir, "models/item"),
+            File(ctx.assetsRootDir, "models/block"),
+            File(ctx.assetsRootDir, "blockstates")
+        )
+        arr.filter { it.isDirectory }
+            .flatMap { it.listFiles().toList() }
+            .filter {
+                val res: JsonObject = gson.fromJson(it.readText())
+                res.has(jsonMark.first)
+            }
+            .forEach {
+                it.delete()
+            }
+    }
+
+    private fun writeItems(ctx: BaseContext) {
+        val rawItems = ConfigFactory.parseFile(File(ctx.rootDir, ctx.config.itemsDataFile))
         val itemBase = rawItems.getValue("_base")
         val items = rawItems
             .root()
@@ -149,12 +168,57 @@ object Main {
                     extModels = obj.getConfigOrNull("extModels"),
                     modelBindings = obj.getConfigOrNull("modelBindings")?.root()
                         ?.map { it.key.toInt() to it.value.unwrapped() as String }?.toMap() ?:
-                        mapOf(0 to "${config.domain}:$id")
+                    mapOf(0 to "${ctx.config.domain}:$id")
                 )
             }
             .sortedBy { it.id }
 
-        val rawBlocks = ConfigFactory.parseFile(File(rootDir, config.blocksDataFile))
+        println("Writing item models...")
+        for (item in items) if (item.generateModel) {
+            val modelJsonPath = File(ctx.assetsRootDir, "models/item/${item.id}.json")
+            val modelJsonStr = if (item.model != null) {
+                val obj: JsonObject = gson.fromJson(item.model.root().render(ConfigRenderOptions.concise()))
+                obj.put(jsonMark)
+                obj
+            } else {
+                jsonObject(
+                    jsonMark,
+                    "parent" to "item/generated",
+                    "textures" to jsonObject("layer0" to "${ctx.config.domain}:items/${item.id}")
+                )
+            }.toString()
+
+            modelJsonPath.parentFile.mkdirs()
+            modelJsonPath.writeText(modelJsonStr)
+        }
+
+        println("Writing item ext models...")
+        for (item in items) {
+            if (item.extModels != null) {
+                for (m in item.extModels.root()) {
+                    val path = File(ctx.assetsRootDir, "models/item/${m.key}.json")
+                    val conf = (m.value as ConfigObject).withValue(jsonMark.first, ConfigValueFactory.fromAnyRef(jsonMark.second))
+                    path.writeText(conf.render(ConfigRenderOptions.concise()))
+                }
+            }
+        }
+
+        println("Writing item class...")
+        run {
+            val itemClassFile = File(ctx.srcDir, ctx.config.itemsClassPath.replace('.', '/') + ".java")
+            itemClassFile.parentFile.mkdirs()
+
+            val s = renderTemplate("itemClassTemplate.java", mapOf(
+                "date" to dateFormat.format(Date()),
+                "config" to ctx.config,
+                "items" to items
+            ))
+            itemClassFile.writeText(s)
+        }
+    }
+
+    private fun writeBlocks(ctx: BaseContext) {
+        val rawBlocks = ConfigFactory.parseFile(File(ctx.rootDir, ctx.config.blocksDataFile))
         val blockBase = rawBlocks.getValue("_base")
         val blocks = rawBlocks
             .root()
@@ -183,53 +247,9 @@ object Main {
 
         val blocksWithItemBlock = blocks.filter { it.hasItemBlock }
 
-        println("Writing item models...")
-        for (item in items) if (item.generateModel) {
-            val modelJsonPath = File(assetsRootDir, "models/item/${item.id}.json")
-            val modelJsonStr = if (item.model != null) {
-                val obj: JsonObject = gson.fromJson(item.model.root().render(ConfigRenderOptions.concise()))
-                obj.put(jsonMark)
-                obj
-            } else {
-                jsonObject(
-                    jsonMark,
-                    "parent" to "item/generated",
-                    "textures" to jsonObject("layer0" to "${config.domain}:items/${item.id}")
-                )
-            }.toString()
-
-            modelJsonPath.parentFile.mkdirs()
-            modelJsonPath.writeText(modelJsonStr)
-        }
-
-        println("Writing item ext models...")
-        for (item in items) {
-            if (item.extModels != null) {
-                for (m in item.extModels.root()) {
-                    val path = File(assetsRootDir, "models/item/${m.key}.json")
-                    val conf = (m.value as ConfigObject).withValue(jsonMark.first, ConfigValueFactory.fromAnyRef(jsonMark.second))
-                    path.writeText(conf.render(ConfigRenderOptions.concise()))
-                }
-            }
-        }
-
-        println("Writing item class...")
-        run {
-            val itemClassFile = File(srcDir, config.itemsClassPath.replace('.', '/') + ".java")
-            itemClassFile.parentFile.mkdirs()
-
-            val s = renderTemplate("itemClassTemplate.java", mapOf(
-                "date" to dateFormat.format(Date()),
-                "config" to config,
-                "items" to items
-            ))
-            itemClassFile.writeText(s)
-        }
-
-
         println("Writing block models...")
         for (block in blocks) if (block.generateModel) {
-            val modelJsonPath = File(assetsRootDir, "models/block/${block.id}.json")
+            val modelJsonPath = File(ctx.assetsRootDir, "models/block/${block.id}.json")
             val modelJson = when {
                 block.model != null -> {
                     block.model.toJsonObject()
@@ -238,7 +258,7 @@ object Main {
                     jsonObject(
                         "parent" to "block/cube_all",
                         "textures" to jsonObject(
-                            "all" to "${config.domain}:blocks/${block.id}"
+                            "all" to "${ctx.config.domain}:blocks/${block.id}"
                         )
                     )
                 }
@@ -250,7 +270,7 @@ object Main {
 
         println("Writing block item models...")
         for (block in blocksWithItemBlock) if (block.itemBlock.generateModel) {
-            val modelJsonPath = File(assetsRootDir, "models/item/${block.id}.json")
+            val modelJsonPath = File(ctx.assetsRootDir, "models/item/${block.id}.json")
             val modelJsonStr = if (block.itemBlock.model != null) {
                 val obj: JsonObject = gson.fromJson(block.itemBlock.model.root().render(ConfigRenderOptions.concise()))
                 obj[jsonMark.first] = jsonMark.second
@@ -258,7 +278,7 @@ object Main {
             } else {
                 jsonObject(
                     jsonMark,
-                    "parent" to "${config.domain}:block/${block.id}"
+                    "parent" to "${ctx.config.domain}:block/${block.id}"
                 ).toString()
             }
             modelJsonPath.parentFile.mkdirs()
@@ -267,13 +287,13 @@ object Main {
 
         println("Writing blockstates...")
         for (block in blocks) {
-            val jsonPath = File(assetsRootDir, "blockstates/${block.id}.json")
+            val jsonPath = File(ctx.assetsRootDir, "blockstates/${block.id}.json")
             val json  = when {
                 block.blockStates != null -> block.blockStates.toJsonObject()
                 else -> jsonObject(
                     "variants" to jsonObject(
                         "normal" to jsonObject(
-                            "model" to "${config.domain}:${block.id}"
+                            "model" to "${ctx.config.domain}:${block.id}"
                         )
                     )
                 )
@@ -288,7 +308,7 @@ object Main {
         for (block in blocks) {
             if (block.extModels != null) {
                 for (m in block.extModels.root()) {
-                    val path = File(assetsRootDir, "models/block/${m.key}.json")
+                    val path = File(ctx.assetsRootDir, "models/block/${m.key}.json")
                     val conf = (m.value as ConfigObject).withValue(jsonMark.first, ConfigValueFactory.fromAnyRef(jsonMark.second))
                     path.writeText(conf.render(ConfigRenderOptions.concise()))
                 }
@@ -297,12 +317,12 @@ object Main {
 
         println("Writing blocks class...")
         run {
-            val blocksClassFile = File(srcDir, config.blocksClassPath.replace('.', '/') + ".java")
+            val blocksClassFile = File(ctx.srcDir, ctx.config.blocksClassPath.replace('.', '/') + ".java")
             blocksClassFile.parentFile.mkdirs()
 
             val s = renderTemplate("blockClassTemplate.java", mapOf(
                 "date" to dateFormat.format(Date()),
-                "config" to config,
+                "config" to ctx.config,
                 "blocks" to blocks,
                 "blocksWithItemBlock" to blocksWithItemBlock
             ))
