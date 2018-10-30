@@ -74,7 +74,11 @@ public abstract class DataPart<T extends Entity> {
             __syncClient();
         } else {
 //            Debug.log("Send sync " + this);
-            sendMessage("itn_sync", __genSyncBuffer());
+            ByteBuf buffer = __genSyncBuffer();
+            if (buffer.writerIndex() > 0) {
+                sendMessage("itn_sync", buffer);
+            }
+
         }
     }
 
@@ -89,7 +93,11 @@ public abstract class DataPart<T extends Entity> {
                     ". This usually doesn't make sense.");
         }
 
-        NetworkMessage.sendToServer(this, "itn_sync", __genSyncBuffer());
+        ByteBuf buffer = __genSyncBuffer();
+        if (buffer.writerIndex() > 0) {
+            NetworkMessage.sendToServer(this, "itn_sync", buffer);
+        }
+
     }
 
     private ByteBuf __genSyncBuffer() {
