@@ -19,6 +19,7 @@ import cn.lambdalib2.render.font.TrueTypeFont;
 import org.lwjgl.opengl.GL11;
 
 import cn.lambdalib2.cgui.component.Transform;
+import org.lwjgl.util.glu.GLU;
 
 /**
  * @author WeathFolD
@@ -386,6 +387,11 @@ public class CGui extends WidgetContainer {
                 GL11.glColor4d(1, 1, 1, 1); //Force restore color for any widget
                 cur.post(new FrameEvent((mx - cur.x) / cur.scale, (my - cur.y) / cur.scale, cur == top));
                 GL11.glPopMatrix();
+
+                int error = GL11.glGetError();
+                if (error != GL11.GL_NO_ERROR) {
+                    Debug.error("[CGUI] Error while rendering " + cur.getFullName() + ": " + error + "/" + GLU.gluErrorString(error));
+                }
             }
         } catch(Exception e) {
             Debug.error("Error occured handling widget draw. instance class: " + cur.getClass().getName() + ", name: " + cur.getName());

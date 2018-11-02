@@ -78,8 +78,7 @@ public class RenderUtils {
     public static void loadTexture(ResourceLocation src) {
         Minecraft.getMinecraft().renderEngine.bindTexture(src);
     }
-    
-    
+
     public static void drawEquippedItem(ItemStack stackToRender, double width) {
         Debug.TODO();
 //        IIcon icon = stackToRender.getIconIndex();
