@@ -1,7 +1,5 @@
 package cn.lambdalib2.render.legacy;
 
-import cn.lambdalib2.util.Debug;
-
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -39,7 +37,7 @@ public class Tessellator {
 
     public void addVertexWithUV(double x, double y, double z, double u, double v) {
         glTexCoord2d(u, v);
-        glVertex3d(x, y, z);
+        glVertex3d(x + _dx, y + _dy, z + _dz);
     }
 
     public void setColorOpaque_F(float r, float g, float b) {

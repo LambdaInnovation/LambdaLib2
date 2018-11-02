@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -32,7 +32,7 @@ class RegEntityRenderImpl {
     @SideOnly(Side.CLIENT)
     @StateEventCallback
     @SuppressWarnings("unchecked")
-    private static void init(FMLInitializationEvent ev) {
+    private static void preInit(FMLPreInitializationEvent ev) {
         ReflectionUtils.getClasses(RegEntityRender.class).forEach(type -> {
             try {
                 RegEntityRender anno = type.getAnnotation(RegEntityRender.class);
