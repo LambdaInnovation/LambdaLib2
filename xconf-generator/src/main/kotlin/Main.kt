@@ -86,7 +86,8 @@ object Main {
         val baseClass : String,
         val ctorArgs : String,
         val item : String,
-        val parent : String?
+        val parent : String?,
+        val background : String?
     )
 
     class BaseContext(
@@ -361,7 +362,8 @@ object Main {
                             baseClass = obj.getStringOrDefault("baseClass", "cn.academy.advancements.triggers.ACTrigger"),
                             ctorArgs = obj.getStringOrDefault("ctorArgs", id),
                             item = obj.getStringOrDefault("item", "null"),
-                            parent = obj.getStringOrNull("parent")
+                            parent = obj.getStringOrNull("parent"),
+                            background = obj.getStringOrNull("background")
                     )
                 }
                 .sortedBy { it.id }

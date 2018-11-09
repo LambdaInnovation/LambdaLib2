@@ -11,7 +11,7 @@
     }
     #if(${adv.background})
     ,
-    "background": "${adv.bg}",
+    "background": "${adv.background}",
     "show_toast": false,
     "announce_to_chat": false
     #end
@@ -19,9 +19,15 @@
   #if(${adv.parent})
   "parent": "${adv.parent}",
   #end
-  "criteria": {
+  "criteria":{
+  #if(${adv.id}=="root")
+    "impossible": {
+      "trigger": "minecraft:impossible"
+    }
+  #else
     "${adv.id}": {
       "trigger": "academy:${adv.id}"
     }
+  #end
   }
 }
