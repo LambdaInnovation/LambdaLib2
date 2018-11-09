@@ -42,7 +42,7 @@ public class $config.advsClassName {
     #foreach ($adv in $advs)
 
         #if(${adv.id}!="root")
-        CriteriaTriggers.register(${adv.id})
+        CriteriaTriggers.register(${adv.id});
         #end
     #end
     }
