@@ -1,0 +1,27 @@
+{
+  "display": {
+    "icon": {
+      "item": "${adv.item}"
+    },
+    "title": {
+      "translate": "advancements.general.${adv.id}"
+    },
+    "description": {
+      "translate": "advancements.general.${adv.id}.desc"
+    }
+    #if(${adv.background})
+    ,
+    "background": "${adv.bg}",
+    "show_toast": false,
+    "announce_to_chat": false
+    #end
+  },
+  #if(${adv.parent})
+  "parent": "${adv.parent}",
+  #end
+  "criteria": {
+    "${adv.id}": {
+      "trigger": "academy:${adv.id}"
+    }
+  }
+}

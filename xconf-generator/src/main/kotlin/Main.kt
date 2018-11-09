@@ -15,7 +15,8 @@ object Main {
     class AdditionalImports(
         val all: Array<String>,
         val item: Array<String>,
-        val block: Array<String>
+        val block: Array<String>,
+        val adv: Array<String>
     )
 
     class ImportConfig(
@@ -30,6 +31,9 @@ object Main {
         val blocksDataFile: String,
         val blocksClassPath: String,
 
+        val advsDataFile: String,
+        val advsClassPath: String,
+
         val additionalImports: AdditionalImports
     ) {
         fun getItemsPackageName() = itemsClassPath.substringBeforeLast('.')
@@ -37,6 +41,9 @@ object Main {
 
         fun getBlocksPackageName() = blocksClassPath.substringBeforeLast('.')
         fun getBlocksClassName() = blocksClassPath.substringAfterLast('.')
+
+        fun getAdvsPackageName() = advsClassPath.substringBeforeLast('.')
+        fun getAdvsClassName() = advsClassPath.substringAfterLast('.')
     }
 
     class ItemMetadata(
@@ -74,6 +81,14 @@ object Main {
         val blockStates: Config?
     )
 
+    class AdvMetadata(
+        val id : String,
+        val baseClass : String,
+        val ctorArgs : String,
+        val item : String,
+        val parent : String?
+    )
+
     class BaseContext(
         val config: ImportConfig,
         val rootDir: File,
@@ -106,7 +121,7 @@ object Main {
 
         val configFile = File(rootDir, "xconf.json")
         if (!configFile.isFile) {
-            println("Can't find xconf.json in current directory, quitting...")
+            println("Can't find xconf.json in current directory at ${configFile.absolutePath}, quitting...")
             return
         }
 
@@ -126,6 +141,7 @@ object Main {
         cleanupGeneratedFiles(context)
         writeItems(context)
         writeBlocks(context)
+        writeAdvs(context)
     }
 
     private fun cleanupGeneratedFiles(ctx: BaseContext) {
@@ -133,7 +149,8 @@ object Main {
         val arr = arrayOf(
             File(ctx.assetsRootDir, "models/item"),
             File(ctx.assetsRootDir, "models/block"),
-            File(ctx.assetsRootDir, "blockstates")
+            File(ctx.assetsRootDir, "blockstates"),
+             File(ctx.assetsRootDir, "advancements")
         )
         arr.filter { it.isDirectory }
             .flatMap { it.listFiles().toList() }
@@ -327,6 +344,55 @@ object Main {
                 "blocksWithItemBlock" to blocksWithItemBlock
             ))
             blocksClassFile.writeText(s)
+        }
+    }
+
+
+    private fun writeAdvs(ctx: BaseContext) {
+        val rawAdvs = ConfigFactory.parseFile(File(ctx.rootDir, ctx.config.advsDataFile))
+        val itemBase = rawAdvs.getValue("_base")
+        val advs = rawAdvs
+                .root()
+                .filter { !it.key.startsWith("_") }
+                .map { (id, elem) ->
+                    val obj = (elem as ConfigObject).toConfig().withFallback(itemBase)
+                    AdvMetadata(
+                            id = id,
+                            baseClass = obj.getStringOrDefault("baseClass", "cn.academy.advancements.triggers.ACTrigger"),
+                            ctorArgs = obj.getStringOrDefault("ctorArgs", id),
+                            item = obj.getStringOrDefault("item", "null"),
+                            parent = obj.getStringOrNull("parent")
+                    )
+                }
+                .sortedBy { it.id }
+
+        println("Writing advancement json...")
+        run {
+            val advClassFile = File(ctx.assetsRootDir, "advancements")
+            advClassFile.mkdirs()
+
+            for(adv in advs)
+            {
+                val path = File(ctx.assetsRootDir, "advancements/${adv.id}.json")
+                val s = renderTemplate("advJsonTemplate.json", mapOf(
+                        "adv" to adv
+                ))
+                path.writeText(s)
+            }
+
+        }
+
+        println("Writing advancement class...")
+        run {
+            val advClassFile = File(ctx.srcDir, ctx.config.advsClassPath.replace('.', '/') + ".java")
+            advClassFile.parentFile.mkdirs()
+
+            val s = renderTemplate("advClassTemplate.java", mapOf(
+                    "date" to dateFormat.format(Date()),
+                    "config" to ctx.config,
+                    "advs" to advs
+            ))
+            advClassFile.writeText(s)
         }
     }
 

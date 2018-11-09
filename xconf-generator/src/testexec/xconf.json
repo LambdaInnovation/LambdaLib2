@@ -7,6 +7,8 @@
   "itemsClassPath": "cn.academy.ACItems",
   "blocksDataFile": "src/raw/blocks.conf",
   "blocksClassPath": "cn.academy.ACBlocks",
+  "advsDataFile": "src/raw/advs.conf",
+  "advsClassPath": "cn.academy.advancements.ACAdvancements",
   "additionalImports": {
     "all": [
       "test.allpackage"
@@ -17,6 +19,10 @@
     "block": [
       "test.blockpackage1",
       "test.blockpackage2"
+    ],
+    "adv": [
+      "test.f**k1",
+      "test.f**k12"
     ]
   }
 }
