@@ -5,6 +5,7 @@ import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.render.font.Fonts;
 import cn.lambdalib2.render.font.IFont;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.util.Color;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -49,6 +50,16 @@ public enum DOMS11n {
             addText(node, Fonts.getName((IFont) obj));
         }, IFont.class);
 
+        addSerializer((obj) -> obj instanceof Color, (obj, node) -> {
+            Color c = (Color) obj;
+            Document d = node.getOwnerDocument();
+
+            node.appendChild(serialize(d, "red", c.getRed()));
+            node.appendChild(serialize(d, "green", c.getGreen()));
+            node.appendChild(serialize(d, "blue", c.getBlue()));
+            node.appendChild(serialize(d, "alpha", c.getAlpha()));
+        });
+
         // Literal value parsings
         addDeserializerStr(char.class, str -> str.charAt(0));
 
@@ -74,6 +85,28 @@ public enum DOMS11n {
                 Debug.warn("Can't find font " + str);
                 return Fonts.getDefault();
             }
+        });
+
+        addDeserializer(Color.class, (type, node) -> {
+            NodeList ls = node.getChildNodes();
+            int r = 0, g = 0, b = 0, a = 0;
+            for (int i = 0; i < ls.getLength(); ++i) {
+                if (ls instanceof Element) {
+                    Element elem = ((Element) ls.item(i));
+                    int value = Integer.parseInt(elem.getTextContent());
+                    String t = elem.getTagName();
+                    if (t.equals("red")) {
+                        r = value;
+                    } else if (t.equals("green")) {
+                        g = value;
+                    } else if (t.equals("blue")) {
+                        b = value;
+                    } else if (t.equals("alpha")) {
+                        a = value;
+                    }
+                }
+            }
+            return new Color(r, g, b, a);
         });
     }
 

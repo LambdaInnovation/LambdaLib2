@@ -8,6 +8,7 @@ package cn.lambdalib2.s11n;
 
 import cn.lambdalib2.render.font.IFont;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.util.Color;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -19,9 +20,11 @@ import java.util.Map.Entry;
  */
 public class CopyHelper {
 
-    public static final CopyHelper instance = new CopyHelper();
     private static final SerializationHelper serHelper = new SerializationHelper();
 
+    public static final CopyHelper instance = new CopyHelper();
+
+    @FunctionalInterface
     private interface ICopyFactory<T> {
         T copy(T origin);
     }
@@ -50,6 +53,13 @@ public class CopyHelper {
         direct(ResourceLocation.class);
         direct(IFont.class);
         direct(Enum.class);
+        primitiveHandlers.put(Color.class, o -> {
+            Color c = (Color) o;
+            Color ret = new Color();
+            ret.setColor(c);
+            return ret;
+        });
+        serHelper.regS11nType(Color.class);
     }
 
     /**
