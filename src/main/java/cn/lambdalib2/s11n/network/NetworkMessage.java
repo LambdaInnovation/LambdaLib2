@@ -319,6 +319,8 @@ public class NetworkMessage {
         static final byte MAGIC = 0x3c;
 
         boolean valid;
+        String failReason;
+
         Object instance;
         String channel;
         Object[] params;
@@ -357,6 +359,7 @@ public class NetworkMessage {
                 valid = true;
             } catch (ContextException e) {
                 valid = false;
+                failReason = e.getMessage();
             } catch (Exception e) {
                 throw new RuntimeException("Error deserializing network message " + channel + "@" + instance, e);
             }
@@ -383,7 +386,7 @@ public class NetworkMessage {
                     });
                 }
             } else {
-                Debug.log("Ignored network message " + message.instance + ", " + message.channel);
+                Debug.log("Ignored network message " + message.instance + ", " + message.channel + ", reason: " + message.failReason);
             }
             return null;
         }
