@@ -7,8 +7,12 @@ import org.lwjgl.util.vector.Quaternion;
 public class TransformUtils {
 
     public static Matrix4f perspective(float fov, float aspect, float zNear, float zFar) {
-        Matrix4f mat = new Matrix4f();
+        return perspective(fov, aspect, zNear, zFar, null);
+    }
 
+    public static Matrix4f perspective(float fov, float aspect, float zNear, float zFar, Matrix4f mat) {
+        if (mat == null)
+            mat = new Matrix4f();
         float yScale = (float) (1 / (Math.tan(Math.toRadians(fov / 2))));
         float xScale = yScale / aspect;
         float frustrumLength = zFar - zNear;
@@ -17,22 +21,40 @@ public class TransformUtils {
         mat.m11 = yScale;
         mat.m22 = -((zFar + zNear) / frustrumLength);
         mat.m23 = -1;
-        mat.m32  = -((2 * zFar * zNear) / frustrumLength);
+        mat.m32 = -((2 * zFar * zNear) / frustrumLength);
         mat.m33 = 0;
 
         return mat;
     }
 
     public static Matrix4f translate(float dx, float dy, float dz) {
-        Matrix4f mat = new Matrix4f();
+        return translate(dx, dy, dz, null);
+    }
+
+    public static Matrix4f translate(float dx, float dy, float dz, Matrix4f mat) {
+        if (mat == null)
+            mat = new Matrix4f();
         mat.m30 = dx;
         mat.m31 = dy;
         mat.m32 = dz;
         return mat;
     }
 
+    public static Matrix4f scale(float s) {
+        return scale(s, s, s);
+    }
+
+    public static Matrix4f scale(float s, Matrix4f mat) {
+        return scale(s, s, s, mat);
+    }
+
     public static Matrix4f scale(float sx, float sy, float sz) {
-        Matrix4f mat = new Matrix4f();
+        return scale(sx, sy, sz, null);
+    }
+
+    public static Matrix4f scale(float sx, float sy, float sz, Matrix4f mat) {
+        if (mat == null)
+            mat = new Matrix4f();
         mat.m00 = sx;
         mat.m11 = sy;
         mat.m22 = sz;
@@ -41,7 +63,11 @@ public class TransformUtils {
     }
 
     public static Matrix4f rotateEuler(float x, float y, float z) {
-        return quaternionToMatrix(eulerToQuaternion(x, y, z));
+        return rotateEuler(x, y, z, null);
+    }
+
+    public static Matrix4f rotateEuler(float x, float y, float z, Matrix4f mat) {
+        return quaternionToMatrix(eulerToQuaternion(x, y, z), mat);
     }
 
     public static Quaternion eulerToQuaternion(float x, float y, float z) {
@@ -60,8 +86,9 @@ public class TransformUtils {
         return q;
     }
 
-    public static Matrix4f quaternionToMatrix(Quaternion q) {
-        Matrix4f matrix = new Matrix4f();
+    public static Matrix4f quaternionToMatrix(Quaternion q, Matrix4f matrix) {
+        if (matrix == null)
+            matrix = new Matrix4f();
         matrix.m00 = 1.0f - 2.0f * (q.getY() * q.getY() + q.getZ() * q.getZ());
         matrix.m01 = 2.0f * (q.getX() * q.getY() + q.getZ() * q.getW());
         matrix.m02 = 2.0f * (q.getX() * q.getZ() - q.getY() * q.getW());
