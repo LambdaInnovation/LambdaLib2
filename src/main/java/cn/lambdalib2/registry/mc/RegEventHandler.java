@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.discovery.asm.ModAnnotation;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -33,7 +34,7 @@ public @interface RegEventHandler {
 class RegEventHandlerImpl {
 
     @StateEventCallback
-    private static void init(FMLInitializationEvent ev) {
+    private static void preInit(FMLPreInitializationEvent ev) {
         ReflectionUtils.getFields(RegEventHandler.class).forEach(field -> {
             try {
                 Object obj = field.get(null);
