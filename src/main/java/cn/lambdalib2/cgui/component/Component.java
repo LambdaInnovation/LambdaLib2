@@ -14,6 +14,8 @@ import cn.lambdalib2.cgui.event.GuiEvent;
 import cn.lambdalib2.cgui.event.IGuiEventHandler;
 import cn.lambdalib2.s11n.CopyHelper;
 import cn.lambdalib2.s11n.SerializeExcluded;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * <summary>
@@ -25,6 +27,7 @@ import cn.lambdalib2.s11n.SerializeExcluded;
  * </p>
  * @author WeAthFolD
  */
+@SideOnly(Side.CLIENT)
 public class Component {
     
     public final String name;
@@ -78,7 +81,8 @@ public class Component {
     }
     
     private List<Node> addedHandlers = new ArrayList<>();
-    
+
+    @SideOnly(Side.CLIENT)
     private final class EHWrapper<T extends GuiEvent> implements IGuiEventHandler<T> {
         
         final IGuiEventHandler<T> wrapped;
@@ -94,7 +98,8 @@ public class Component {
         }
         
     }
-    
+
+    @SideOnly(Side.CLIENT)
     private static class Node {
         Class<? extends GuiEvent> type;
         IGuiEventHandler handler;

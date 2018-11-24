@@ -30,6 +30,7 @@ public class $config.itemsClassName {
 #end
 
     @RegistryCallback
+    @SuppressWarnings("sideonly")
     private static void registerItems(RegistryEvent.Register<Item> event) {
     #foreach ($item in $items)
         #set($id = $item.id)

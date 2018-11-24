@@ -33,6 +33,7 @@ public enum GameTimer {
         return getTime(false);
     }
 
+    @SuppressWarnings("sideonly")
     private static double getTime(boolean isClient) {
         if (isClient) {
             if (beginTimeClient == 0) beginTimeClient = getRawTimeClient();

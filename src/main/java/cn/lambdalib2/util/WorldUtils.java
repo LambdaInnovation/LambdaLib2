@@ -31,6 +31,7 @@ public class WorldUtils {
     /**
      * Judge whether a world is valid (e.g. currently in use), and false if world is null.
      */
+    @SuppressWarnings("sideonly")
     public static boolean isWorldValid(World world) {
         if (world == null) {
             return false;

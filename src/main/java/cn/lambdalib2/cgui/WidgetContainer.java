@@ -10,12 +10,15 @@ import java.util.*;
 
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * A class that has capability to store widgets. Used by CGui and Widget.
  * Every widget is associated with a name. You can use that name to lookup a widget.
  * @author WeAthFolD
  */
+@SideOnly(Side.CLIENT)
 public class WidgetContainer implements Iterable<Widget> {
     
     HashBiMap<String, Widget> widgets = HashBiMap.create();

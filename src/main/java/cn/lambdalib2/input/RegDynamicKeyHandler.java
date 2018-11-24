@@ -3,6 +3,8 @@ package cn.lambdalib2.input;
 import cn.lambdalib2.registry.StateEventCallback;
 import cn.lambdalib2.util.ReflectionUtils;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,6 +20,7 @@ public @interface RegDynamicKeyHandler {
 class RegDynKeyHandlerImpl {
 
     @StateEventCallback
+    @SideOnly(Side.CLIENT)
     private static void init(FMLInitializationEvent ev) {
         ReflectionUtils.getFields(RegDynamicKeyHandler.class)
             .forEach(field -> {

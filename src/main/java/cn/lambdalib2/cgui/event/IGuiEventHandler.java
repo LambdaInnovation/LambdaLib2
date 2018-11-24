@@ -7,11 +7,14 @@
 package cn.lambdalib2.cgui.event;
 
 import cn.lambdalib2.cgui.Widget;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Handler interface of <code>GuiEvent</code>, typically registered in a {@link cn.lambdalib2.cgui.event.GuiEventBus}.
  */
 @FunctionalInterface
+@SideOnly(Side.CLIENT)
 public interface IGuiEventHandler<T extends GuiEvent> {
 
     void handleEvent(Widget w, T event);

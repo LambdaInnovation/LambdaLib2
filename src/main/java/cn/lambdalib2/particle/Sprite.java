@@ -6,6 +6,8 @@ import cn.lambdalib2.render.legacy.ShaderSimple;
 import cn.lambdalib2.render.legacy.Tessellator;
 import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.RenderUtils;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL20;
 
 import net.minecraft.util.ResourceLocation;
@@ -16,6 +18,7 @@ import org.lwjgl.util.Color;
  * 
  * @author WeAthFolD
  */
+@SideOnly(Side.CLIENT)
 public final class Sprite {
 
     /**

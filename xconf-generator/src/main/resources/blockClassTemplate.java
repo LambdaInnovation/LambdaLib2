@@ -54,6 +54,7 @@ public class $config.blocksClassName {
     }
 
     @RegistryCallback
+    @SuppressWarnings("sideonly")
     private static void registerItems(RegistryEvent.Register<Item> event) {
     #foreach ($block in $blocksWithItemBlock)
         #set($id = "item_$block.id")

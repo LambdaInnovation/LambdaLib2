@@ -7,10 +7,13 @@
 package cn.lambdalib2.cgui.event;
 
 import cn.lambdalib2.cgui.Widget;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Fired on target widget when it has lost input focus.
  */
+@SideOnly(Side.CLIENT)
 public class LostFocusEvent implements GuiEvent {
     
     public Widget newFocus;

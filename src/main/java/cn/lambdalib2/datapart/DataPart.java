@@ -69,6 +69,7 @@ public abstract class DataPart<T extends Entity> {
      *  clients within the range specified by {@link #setServerSyncRange(double)}. The field synchronized follows the
      *  rule of NetworkS11n API.
      */
+    @SuppressWarnings("sideonly")
     public final void sync() {
         if (isClient()) {
             __syncClient();

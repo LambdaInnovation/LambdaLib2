@@ -3,10 +3,13 @@ package cn.lambdalib2.particle.decorators;
 import cn.lambdalib2.particle.Particle;
 import cn.lambdalib2.util.MathUtils;
 import cn.lambdalib2.util.entityx.MotionHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * @author WeAthFolD
  */
+@SideOnly(Side.CLIENT)
 public class SizeGradientDec implements ParticleDecorator {
     
     public float endScale = 0.7f;

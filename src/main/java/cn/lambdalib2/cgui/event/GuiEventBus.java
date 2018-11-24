@@ -10,7 +10,10 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import cn.lambdalib2.cgui.Widget;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public final class GuiEventBus {
     
     private class NodeCollection extends LinkedList<GuiHandlerNode> {

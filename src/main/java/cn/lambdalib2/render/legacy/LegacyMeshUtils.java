@@ -1,9 +1,13 @@
 package cn.lambdalib2.render.legacy;
 
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
 /**
  * @author WeAthFolD
  *
  */
+@SideOnly(Side.CLIENT)
 public class LegacyMeshUtils {
     
     /**

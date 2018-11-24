@@ -102,6 +102,7 @@ public abstract class BlockMulti extends BlockContainer {
     /**
      * You MUST call this via your ctor, after init all the blocks.
      */
+    @SuppressWarnings("sideonly")
     public void finishInit() {
         // Pre-init rotated position offset list.
         buffer = new ArrayList[6];

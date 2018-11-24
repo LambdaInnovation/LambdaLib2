@@ -1,5 +1,7 @@
 package cn.lambdalib2.render.legacy;
 
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.List;
  * @author WeAthFolD
  */
 @Deprecated // Too bad abstraction and efficiency. Work harder!
+@SideOnly(Side.CLIENT)
 public class LegacyMesh {
 
     protected double[][] vertices;

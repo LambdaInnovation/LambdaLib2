@@ -171,6 +171,7 @@ public class VecUtils {
         return _vec(e.posX, e.posY + (isThePlayer(e) ? 0 : e.getEyeHeight()), e.posZ);
     }
 
+    @SuppressWarnings("sideonly")
     private static boolean isThePlayer(Entity e) {
         if (SideUtils.isClient()) {
             return isThePlayer_c(e);

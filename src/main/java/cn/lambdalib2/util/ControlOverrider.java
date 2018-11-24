@@ -263,6 +263,7 @@ public class ControlOverrider {
     /**
      * A group of key overrides with lifetime.
      */
+    @SideOnly(Side.CLIENT)
     private static final class OverrideGroup {
         private final int[] keys;
         private boolean ended = false;

@@ -43,6 +43,7 @@ public class SideUtils {
 
     private static ThreadLocal<SideUtils> threadProxy = new ThreadLocal<SideUtils>() {
         @Override
+        @SuppressWarnings("sideonly")
         protected SideUtils initialValue() {
             Side s = FMLCommonHandler.instance().getEffectiveSide();
             if (s.isClient()) {

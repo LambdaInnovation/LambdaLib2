@@ -8,6 +8,8 @@ import cn.lambdalib2.s11n.xml.DOMS11n;
 import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ResourceUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,6 +30,7 @@ import java.util.Optional;
 /**
  * CGUI Doc reader and writer.
  */
+@SideOnly(Side.CLIENT)
 public enum CGUIDocument {
     instance;
     // API
