@@ -88,4 +88,28 @@ public class TransformUtils {
         return matrix;
     }
 
+    public static javax.vecmath.Matrix4f toJavax(Matrix4f mat) {
+        javax.vecmath.Matrix4f ret = new javax.vecmath.Matrix4f();
+        ret.m00 = mat.m00;
+        ret.m01 = mat.m01;
+        ret.m02 = mat.m02;
+        ret.m03 = mat.m03;
+
+        ret.m10 = mat.m10;
+        ret.m11 = mat.m11;
+        ret.m12 = mat.m12;
+        ret.m13 = mat.m13;
+
+        ret.m20 = mat.m20;
+        ret.m21 = mat.m21;
+        ret.m22 = mat.m22;
+        ret.m23 = mat.m23;
+
+        ret.m30 = mat.m30;
+        ret.m31 = mat.m31;
+        ret.m32 = mat.m32;
+        ret.m33 = mat.m33;
+        return ret;
+    }
+
 }
