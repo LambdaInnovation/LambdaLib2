@@ -1,7 +1,6 @@
 package cn.lambdalib2.render;
 
 import org.lwjgl.util.vector.Matrix4f;
-import sun.util.resources.cldr.dyo.CalendarData_dyo_SN;
 
 public class TransformChain {
 
@@ -10,7 +9,6 @@ public class TransformChain {
     private final Matrix4f _result = new Matrix4f();
 
     public TransformChain() {
-        _result.setIdentity();
     }
 
     public TransformChain translate(float dx, float dy, float dz) {
