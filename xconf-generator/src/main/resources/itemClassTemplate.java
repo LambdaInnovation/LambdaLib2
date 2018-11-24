@@ -51,6 +51,11 @@ public class $config.itemsClassName {
         #end
         #end
         event.getRegistry().register($id);
+        #if($item.initAfterRegistry)
+        #foreach($stmt in $item.initAfterRegistry)
+        ${id}.$stmt;
+        #end
+        #end
     #end
 
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {

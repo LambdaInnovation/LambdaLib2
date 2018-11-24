@@ -54,6 +54,7 @@ object Main {
         val maxDamage: Int?,
         val creativeTab: String?,
         val init: Array<String>?,
+        val initAfterRegistry: Array<String>?,
 
         val generateModel: Boolean,
         val model: Config?,
@@ -180,6 +181,7 @@ object Main {
                     maxDamage = obj.getIntOrNull("maxDamage"),
                     creativeTab = obj.getStringOrNull("creativeTab"),
                     init = obj.getStrArrOrNull("init"),
+                    initAfterRegistry = obj.getStrArrOrNull("initAfterRegistry"),
 
                     generateModel = obj.getBooleanOrDefault("generateModel", true),
                     model = obj.getConfigOrNull("model"),
