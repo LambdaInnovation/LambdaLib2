@@ -36,7 +36,7 @@ public class TransformChain {
         return this;
     }
 
-    public Matrix4f bulid() {
+    public Matrix4f build() {
         return _result;
     }
 }
