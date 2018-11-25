@@ -2,6 +2,7 @@ package cn.lambdalib2.render.obj;
 
 import cn.lambdalib2.render.obj.ObjModel.Face;
 import cn.lambdalib2.render.obj.ObjModel.Vertex;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Collection;
 

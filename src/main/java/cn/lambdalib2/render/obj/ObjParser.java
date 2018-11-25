@@ -68,12 +68,24 @@ public class ObjParser {
                         int[] v1 = parseFaceVertex(scanner.next());
                         int[] v2 = parseFaceVertex(scanner.next());
                         int[] v3 = parseFaceVertex(scanner.next());
+                        if (scanner.hasNext()) { // quad
+                            int[] v4 = parseFaceVertex(scanner.next());
+                            ObjFace of1 = new ObjFace(
+                                v1[0], v1[1], v2[0], v2[1], v3[0], v3[1]
+                            );
+                            ObjFace of2 = new ObjFace(
+                                v1[0], v1[1], v3[0], v3[1], v4[0], v4[1]
+                            );
+                            faces.put(currentGroup, of1);
+                            faces.put(currentGroup, of2);
 
-                        ObjFace of = new ObjFace(
-                            v1[0], v1[1], v2[0], v2[1], v3[0], v3[1]
-                        );
+                        } else {
+                            ObjFace of = new ObjFace(
+                                v1[0], v1[1], v2[0], v2[1], v3[0], v3[1]
+                            );
 
-                        faces.put(currentGroup,of);
+                            faces.put(currentGroup,of);
+                        }
 
                         break;
 
