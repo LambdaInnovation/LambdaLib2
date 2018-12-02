@@ -14,6 +14,8 @@ import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ReflectionUtils;
 import cn.lambdalib2.util.SideUtils;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -48,6 +50,8 @@ public class NetworkS11n {
     private static final SerializationHelper serHelper = new SerializationHelper();
     private static final short IDX_NULL = -1, IDX_ARRAY = -2;
     private static List<Class<?>> serTypes = new ArrayList<>();
+    private static BiMap<Integer, Class<?>> serTypesHashLookup = HashBiMap.create();
+
     private static Map<Class<?>, NetS11nAdaptor> adaptors = new HashMap<>();
     private static Map<Class, Supplier> suppliers = new HashMap<>();
     private static Map<Class, List<Field>> fieldCache = new HashMap<>();
@@ -165,7 +169,7 @@ public class NetworkS11n {
             @Override
             public ByteBuf read(ByteBuf buf) throws ContextException {
                 ByteBuf buf_ = buf.duplicate();
-                ByteBuf buf2 = Unpooled.buffer();
+                ByteBuf buf2 = Unpooled.buffer(buf_.readableBytes());
                 buf_.readBytes(buf2, buf_.readableBytes());
                 return buf2;
             }
@@ -432,7 +436,7 @@ public class NetworkS11n {
     public static void register(Class<?> type) {
         if (!serTypes.contains(type)) {
             serTypes.add(type);
-            serTypes.sort(Comparator.comparing(Class::getName));
+            serTypesHashLookup.put(type.getName().hashCode(), type);
             serHelper.regS11nType(type);
         }
 
@@ -444,26 +448,28 @@ public class NetworkS11n {
     private static void writeTypeIndex(ByteBuf buf, Class type) {
         buf.writeByte(MAGIC);
         if (type.isArray()) {
-            buf.writeShort(IDX_ARRAY);
+            buf.writeInt(IDX_ARRAY);
             writeTypeIndex(buf, type.getComponentType());
         } else {
-            short idx = (short) typeIndex(type);
+            int idx = typeIndex(type);
             if (idx == -1) {
                 throw new RuntimeException("Type " + type + " not registered for net serialization");
             }
-            buf.writeShort(idx);
+            buf.writeInt(idx);
         }
     }
 
     private static Class readTypeIndex(ByteBuf buf) {
         Debug.assert2(buf.readByte() == MAGIC, buf::toString);
-        short idx = buf.readShort();
+        int idx = buf.readInt();
         if (idx == IDX_NULL) {
             return null;
         } else if (idx == IDX_ARRAY) {
             return getArrayClass(readTypeIndex(buf));
         } else {
-            return serTypes.get(idx);
+            Class ret = serTypesHashLookup.get(idx);
+            Debug.assertNotNull(ret, () -> "No class registered for hash " + idx);
+            return ret;
         }
     }
 
@@ -484,7 +490,7 @@ public class NetworkS11n {
         if (obj == null) {
             if (nullable) {
                 buf.writeByte(MAGIC);
-                buf.writeShort(IDX_NULL);
+                buf.writeInt(IDX_NULL);
             } else {
                 throw new NullPointerException("Trying to serialize a null object where it's not accepted");
             }
@@ -631,13 +637,11 @@ public class NetworkS11n {
     private static int typeIndex(Class<?> type) {
         Class<?> cur = type;
         while (cur != null) {
-            int idx = serTypes.indexOf(cur);
-            if (idx != -1) {
-                return idx;
-            }
+            Integer hash = serTypesHashLookup.inverse().get(cur);
+            if (hash != null)
+                return hash;
             cur = cur.getSuperclass();
         }
-
         return -1;
     }
 
