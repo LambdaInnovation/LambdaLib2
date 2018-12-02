@@ -111,15 +111,15 @@ public enum RegistryManager {
             List<Method> allStateEventCallbacks = ReflectionUtils.getMethods(StateEventCallback.class);
             allStateEventCallbacks.forEach(method -> {
                 if (!Modifier.isStatic(method.getModifiers())) {
-                    throw new IllegalArgumentException("StateEventCallback method" + method + " must be static.");
+                    throw new IllegalArgumentException("StateEventCallback method " + method + " must be static.");
                 }
                 if (method.getParameterCount() != 1) {
-                    throw new IllegalArgumentException("StateEventCallback method" + method + " requires exactly 1 argument.");
+                    throw new IllegalArgumentException("StateEventCallback method " + method + " requires exactly 1 argument.");
                 }
 
                 Class<? extends FMLStateEvent> eventType = ((Class<? extends FMLStateEvent>) method.getParameterTypes()[0]);
                 if (!FMLStateEvent.class.isAssignableFrom(eventType)) {
-                    throw new IllegalArgumentException("StateEventCallback method" + method + " 's first argument type must inherit FMLStateEvent");
+                    throw new IllegalArgumentException("StateEventCallback method " + method + " 's first argument type must inherit FMLStateEvent");
                 }
 
                 ModContext mod = findMod(method.getDeclaringClass().getCanonicalName());
