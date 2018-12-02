@@ -46,7 +46,9 @@ public class CGuiScreen extends GuiScreen {
         if(drawBack)
             this.drawDefaultBackground();
         GL11.glPushMatrix(); {
+            GL11.glEnable(GL11.GL_BLEND);
             gui.draw(mx, my);
+            GL11.glDisable(GL11.GL_BLEND);
         } GL11.glPopMatrix();
     }
     

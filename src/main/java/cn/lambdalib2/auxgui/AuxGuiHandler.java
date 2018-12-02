@@ -8,6 +8,7 @@ import java.util.List;
 import cn.lambdalib2.util.GameTimer;
 import cn.lambdalib2.util.RenderUtils;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
@@ -19,6 +20,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.MinecraftForge;
+import org.lwjgl.opengl.GL14;
 
 /**
  * @author WeathFolD
@@ -68,28 +70,32 @@ public class AuxGuiHandler {
     
     @SubscribeEvent
     public void drawHudEvent(RenderGameOverlayEvent event) {
+        if(event.getType() == ElementType.EXPERIENCE) {
+            doRender(event);
+        }
+    }
+
+    private void doRender(RenderGameOverlayEvent event) {
         GL11.glDepthFunc(GL11.GL_ALWAYS);
         GL11.glDepthMask(false);
         GL11.glDisable(GL11.GL_ALPHA_TEST);
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         RenderUtils.pushTextureState();
-        
-        if(event.getType() == ElementType.EXPERIENCE) {
-            Iterator<AuxGui> iter = auxGuiList.iterator();
-            startIterating();
-            while(iter.hasNext()) {
-                AuxGui gui = iter.next();
-                if(!gui.disposed) {
-                    if(!gui.lastFrameActive)
-                        gui.lastActivateTime = GameTimer.getTime();
-                    gui.draw(event.getResolution());
-                    gui.lastFrameActive = true;
-                }
+
+        Iterator<AuxGui> iter = auxGuiList.iterator();
+        startIterating();
+        while(iter.hasNext()) {
+            AuxGui gui = iter.next();
+            if(!gui.disposed) {
+                if(!gui.lastFrameActive)
+                    gui.lastActivateTime = GameTimer.getTime();
+                gui.draw(event.getResolution());
+                gui.lastFrameActive = true;
             }
-            endIterating();
         }
-        
+        endIterating();
+
         RenderUtils.popTextureState();
         GL11.glEnable(GL11.GL_ALPHA_TEST);
         GL11.glDepthMask(true);

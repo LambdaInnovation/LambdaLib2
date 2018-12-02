@@ -16,6 +16,7 @@ import cn.lambdalib2.util.HudUtils;
 import cn.lambdalib2.render.font.IFont;
 import cn.lambdalib2.render.font.IFont.FontOption;
 import cn.lambdalib2.render.font.TrueTypeFont;
+import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL11;
 
 import cn.lambdalib2.cgui.component.Transform;
@@ -95,9 +96,8 @@ public class CGui extends WidgetContainer {
         updateMouse(mx, my);
         
         GL11.glDisable(GL11.GL_ALPHA_TEST);
-        GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        
+
         drawTraverse(mx, my, null, this, getTopWidget(mx, my));
 
         if (debug) {
@@ -112,7 +112,7 @@ public class CGui extends WidgetContainer {
             }
 
         }
-        
+
         GL11.glEnable(GL11.GL_ALPHA_TEST);
     }
     

@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -63,34 +65,40 @@ public class HudUtils {
         int twidth = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH),
             theight = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
         double f = 1.0 / twidth, f1 = 1.0 / theight;
+        Tessellator t = Tessellator.getInstance();
+        BufferBuilder bb= t.getBuffer();
         glEnable(GL_TEXTURE_2D);
-        glBegin(GL_QUADS);
-        addVertexWithUV(x + 0,      y + height, zLevel, (u + 0) * f,          (v + texHeight) * f1);
-        addVertexWithUV(x + width, y + height, zLevel, (u + texWidth) * f, (v + texHeight) * f1);
-        addVertexWithUV(x + width, y + 0,      zLevel, (u + texWidth) * f, (v + 0) * f1);
-        addVertexWithUV(x + 0,      y + 0,      zLevel, (u + 0) * f,          (v + 0) * f1);
-        glEnd();
+        bb.begin(GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        addVertexWithUV(bb, x + 0,      y + height, zLevel, (u + 0) * f,          (v + texHeight) * f1);
+        addVertexWithUV(bb, x + width, y + height, zLevel, (u + texWidth) * f, (v + texHeight) * f1);
+        addVertexWithUV(bb, x + width, y + 0,      zLevel, (u + texWidth) * f, (v + 0) * f1);
+        addVertexWithUV(bb, x + 0,      y + 0,      zLevel, (u + 0) * f,          (v + 0) * f1);
+        t.draw();
     }
     
     public static void rawRect(double x, double y, double u, double v, double width, double height, double texWidth, double texHeight) {
-        glBegin(GL_QUADS);
-        addVertexWithUV(x + 0,      y + height, zLevel, (u + 0),          (v + texHeight));
-        addVertexWithUV(x + width, y + height, zLevel, (u + texWidth), (v + texHeight));
-        addVertexWithUV(x + width, y + 0,         zLevel, (u + texWidth), (v + 0));
-        addVertexWithUV(x + 0,      y + 0,      zLevel, (u + 0),          (v + 0));
-        glEnd();
+        Tessellator t = Tessellator.getInstance();
+        BufferBuilder bb = t.getBuffer();
+        bb.begin(GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        addVertexWithUV(bb, x + 0,      y + height, zLevel, (u + 0),          (v + texHeight));
+        addVertexWithUV(bb, x + width, y + height, zLevel, (u + texWidth), (v + texHeight));
+        addVertexWithUV(bb, x + width, y + 0,         zLevel, (u + texWidth), (v + 0));
+        addVertexWithUV(bb, x + 0,      y + 0,      zLevel, (u + 0),          (v + 0));
+        t.draw();
     }
     
     public static void colorRect(double x, double y, double width, double height) {
         boolean prev = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
 
-        glBegin(GL_QUADS);
-        glVertex3d(x + 0, y + height, zLevel);
-        glVertex3d(x + width, y + height, zLevel);
-        glVertex3d(x + width, y + 0, zLevel);
-        glVertex3d(x + 0, y + 0, zLevel);
-        glEnd();
+        Tessellator t = Tessellator.getInstance();
+        BufferBuilder bb = t.getBuffer();
+        bb.begin(GL_QUADS, DefaultVertexFormats.POSITION);
+        bb.pos(x + 0, y + height, zLevel).endVertex();
+        bb.pos(x + width, y + height, zLevel).endVertex();
+        bb.pos(x + width, y + 0, zLevel).endVertex();
+        bb.pos(x + 0, y + 0, zLevel).endVertex();
+        t.draw();
 
         if(prev) GL11.glEnable(GL11.GL_TEXTURE_2D);
     }
@@ -212,9 +220,8 @@ public class HudUtils {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
     }
 
-    private static void addVertexWithUV(double x, double y, double z, double u, double v) {
-        glTexCoord2d(u, v);
-        glVertex3d(x, y, z);
+    private static void addVertexWithUV(BufferBuilder bb, double x, double y, double z, double u, double v) {
+        bb.pos(x, y, z).tex(u, v).endVertex();
     }
     
 }
