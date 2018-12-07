@@ -85,9 +85,7 @@ public class RenderIcon<T extends Entity> extends Render<T> {
         firstTranslate(e);
         Colors.bindToGL(color);
         tessllator.startDrawingQuads();
-        if(!hasLight) 
-            tessllator.setBrightness(15728880);
-        
+
         if(e instanceof IAssociatePlayer) {
             ViewOptimize.fix((IAssociatePlayer) e);
         }

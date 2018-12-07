@@ -48,11 +48,6 @@ public class Tessellator {
         glNormal3d(x, y, z);
     }
 
-    public void setBrightness(int brightness) {
-        // TODO
-//        Debug.TODO();
-    }
-
     private Tessellator() {}
 
 }
