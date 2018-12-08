@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.*;
+import net.minecraft.util.math.RayTraceResult.Type;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.block.Block;
@@ -19,6 +21,12 @@ import static cn.lambdalib2.util.VecUtils.*;
  * @author WeAthFolD
  */
 public class Raytrace {
+
+    private static RayTraceResult miss(Vec3d pos) {
+        RayTraceResult ret = new RayTraceResult(Type.MISS, pos, EnumFacing.UP,
+            new BlockPos((int) pos.x, (int) pos.y, (int) pos.z));
+        return ret;
+    }
 
     /**
      * Perform a ray trace.
@@ -42,7 +50,7 @@ public class Raytrace {
         if(mop1 != null)
             return mop1;
     
-        return mop2;
+        return mop2 == null ? miss(vec2) : mop2;
     }
     
     public static RayTraceResult perform(World world, Vec3d vec1, Vec3d vec2, Predicate<Entity> entityPred) {
