@@ -76,6 +76,7 @@ public enum RegistryManager {
     }
 
     private void onStateEvent(Object mod, FMLStateEvent event) {
+        Debug.warn("OnStateEvent " + mod + "#" + event);
         checkInit();
 
         ModContext ctx = registryMods.get(mod.getClass().getCanonicalName());

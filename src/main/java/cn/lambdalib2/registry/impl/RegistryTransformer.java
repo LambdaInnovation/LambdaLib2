@@ -19,12 +19,7 @@ public class RegistryTransformer implements IClassTransformer {
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] bytes) {
-        if (registryMods.contains(name)) {
-            if (bytes == null) {
-                RuntimeException ex = new RuntimeException("Byte is null???");
-                ex.printStackTrace();
-                throw ex;
-            }
+        if (registryMods.contains(name) && !name.startsWith("cn.lambdalib2")) {
             System.out.println("[LL2] Find registry mod: " + name);
             ClassWriter cw = new ClassWriter(Opcodes.ASM5);
             ClassReader cr = new ClassReader(bytes);
@@ -53,7 +48,10 @@ public class RegistryTransformer implements IClassTransformer {
             visitRegistryHook(FMLServerStartingEvent.class);
             visitRegistryHook(FMLServerAboutToStartEvent.class);
 
-            visitRegistryHook(FMLConstructionEvent.class);
+            // !!! During FMLConstructionEvent, LL2 can't access other mods' classes in actual game environment,
+            //      because at that time other mods' class URL lookup aren't setup yet.
+//            visitRegistryHook(FMLConstructionEvent.class);
+
             visitRegistryHook(FMLPreInitializationEvent.class);
             visitRegistryHook(FMLInitializationEvent.class);
             visitRegistryHook(FMLPostInitializationEvent.class);
