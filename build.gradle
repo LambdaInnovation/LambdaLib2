@@ -85,6 +85,10 @@ processResources {
 jar {
     from configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
     exclude 'dummyThing'
+    manifest {
+        attributes 'FMLCorePluginContainsFMLMod' : 'true'
+        attributes 'FMLCorePlugin' : 'cn.lambdalib2.CorePlugin'
+    }
 }
 
 task deobfJar(type: Jar) {
