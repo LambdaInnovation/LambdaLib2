@@ -1,5 +1,6 @@
 package cn.lambdalib2.registry.impl;
 
+import cn.lambdalib2.util.Debug;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.*;
@@ -18,6 +19,11 @@ public class RegistryTransformer implements IClassTransformer {
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] bytes) {
+        if (bytes == null) {
+            RuntimeException ex = new RuntimeException("Byte is null???");
+            ex.printStackTrace();
+            throw ex;
+        }
         if (registryMods.contains(name)) {
             System.out.println("[LL2] Find registry mod: " + name);
             ClassWriter cw = new ClassWriter(Opcodes.ASM5);
