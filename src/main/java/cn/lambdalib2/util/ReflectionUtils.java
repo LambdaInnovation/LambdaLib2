@@ -28,6 +28,7 @@ public class ReflectionUtils {
         String startSide = FMLCommonHandler.instance().getSide().toString();
         Set<ASMData> sideData = table.getAll("net.minecraftforge.fml.relauncher.SideOnly");
         Set<ASMData> optionalMethods = table.getAll("net.minecraftforge.fml.common.Optional$Method");
+        Set<ASMData> optionalClasses = table.getAll("net.minecraftforge.fml.common.Optional$Interface");
 
         for (ASMDataTable.ASMData asmData: sideData) {
             if (Objects.equals(asmData.getClassName(), asmData.getObjectName())) { // Is a class
@@ -41,6 +42,15 @@ public class ReflectionUtils {
                 if (!assumedSide.equals(startSide))
                     removedMethods.add(asmData);
             }
+        }
+
+        for (ASMDataTable.ASMData optional : optionalClasses) {
+            String modid = (String) optional.getAnnotationInfo().get("modid");
+            // Ref: ModAPITransformer#72
+            if (Loader.isModLoaded(modid) || ModAPIManager.INSTANCE.hasAPI(modid)) {
+                continue;
+            }
+            removedClasses.add(optional.getClassName());
         }
 
         for (ASMDataTable.ASMData optional : optionalMethods) {
