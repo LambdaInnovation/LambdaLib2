@@ -63,6 +63,7 @@ object Main {
     )
 
     class BlockItemMetadata(
+        val type: String,
         val generateModel: Boolean,
         val model: Config?
     )
@@ -254,6 +255,7 @@ object Main {
                     obj.getStrArrOrNull("init"),
                     obj.getBooleanOrDefault("hasItemBlock", true),
                     BlockItemMetadata(
+                        item.getStringOrDefault("type", "ItemBlock"),
                         item.getBooleanOrDefault("generateModel", true),
                         item.getConfigOrNull("model")),
 

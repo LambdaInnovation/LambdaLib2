@@ -32,7 +32,7 @@ public class $config.blocksClassName {
 #end
 
 #foreach ($block in $blocksWithItemBlock)
-    public static final ItemBlock item_$block.id = new ItemBlock($block.id);
+    public static final $block.itemBlock.type item_$block.id = new ${block.itemBlock.type}($block.id);
 #end
 
     @RegistryCallback
