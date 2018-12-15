@@ -115,15 +115,16 @@ public class WorldUtils {
         return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    public static List<BlockPos> getBlocksWithin(Entity entity, double range, int max, IBlockSelector... filters) {
-        return getBlocksWithin(entity.world, entity.posX, entity.posY, entity.posZ, range, max, filters);
+    public static void getBlocksWithin(List<BlockPos> outList, Entity entity, double range, int max, IBlockSelector... filters) {
+        getBlocksWithin(outList, entity.world, entity.posX, entity.posY, entity.posZ, range, max, filters);
     }
 
-    public static List<BlockPos> getBlocksWithin(TileEntity te, double range, int max, IBlockSelector... filters) {
-        return getBlocksWithin(te.getWorld(), te.getPos().getX() + 0.5, te.getPos().getY() + 0.5, te.getPos().getZ() + 0.5, range, max, filters);
+    public static void getBlocksWithin(List<BlockPos> outList, TileEntity te, double range, int max, IBlockSelector... filters) {
+        getBlocksWithin(outList, te.getWorld(), te.getPos().getX() + 0.5, te.getPos().getY() + 0.5, te.getPos().getZ() + 0.5, range, max, filters);
     }
 
-    public static List<BlockPos> getBlocksWithin(
+    public static void getBlocksWithin(
+            List<BlockPos> outList,
             World world,
             final double x, final double y, final double z,
             double range, int max,
@@ -151,17 +152,18 @@ public class WorldUtils {
                 maxY = MathHelper.ceil(y + range),
                 maxZ = MathHelper.ceil(z + range);
 
-        return getBlocksWithin(world, minX, minY, minZ, maxX, maxY, maxZ, max, fs);
+        getBlocksWithin(outList, world, minX, minY, minZ, maxX, maxY, maxZ, max, fs);
     }
 
-    public static List<BlockPos> getBlocksWithin(
+    public static void getBlocksWithin(
+            List<BlockPos> outList,
             World world,
             int minX, int minY, int minZ,
             int maxX, int maxY, int maxZ,
             int max,
             IBlockSelector... filter) {
 
-        List<BlockPos> ret = new ArrayList();
+        outList.clear();
         for (int x = minX; x <= maxX; ++x) {
             for (int y = minY; y <= maxY; ++y) {
                 for (int z = minZ; z <= maxZ; ++z) {
@@ -173,15 +175,13 @@ public class WorldUtils {
                         }
                     }
                     if (match) {
-                        ret.add(new BlockPos(x, y, z));
-                        if (ret.size() == max)
-                            return ret;
+                        outList.add(new BlockPos(x, y, z));
+                        if (outList.size() == max)
+                            return;
                     }
                 }
             }
         }
-
-        return ret;
     }
 
     public static List<Entity> getEntities(TileEntity te, double range, Predicate<Entity> predicate) {
