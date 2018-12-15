@@ -3,6 +3,8 @@ package cn.lambdalib2.render.legacy;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.stream.IntStream;
+
 /**
  * @author WeAthFolD
  *
@@ -63,7 +65,7 @@ public class LegacyMeshUtils {
         
         return mesh;
     }
-    
+
     public static LegacyMesh createBoxWithUV(LegacyMesh mesh, double x0, double y0, double z0, double xw, double yw, double zw) {
         if(mesh == null)
             mesh = new LegacyMesh();
@@ -90,45 +92,22 @@ public class LegacyMeshUtils {
                 { x0, y1, z1 }
         };
         
-        int[] triangles = new int[] { 0, 1, 2, 3 };
-        
-        LegacyMesh sub = new LegacyMesh();
-        
-        sub.setVertices(new double[][] { vs[0], vs[1], vs[2], vs[3] });
-        sub.setUVs(uvs);
-        sub.setQuads(triangles);
-        mesh.addMesh(sub);
-        
-        sub = new LegacyMesh();
-        sub.setVertices(new double[][] { vs[4], vs[5], vs[6], vs[7] });
-        sub.setUVs(uvs);
-        sub.setQuads(triangles);
-        mesh.addMesh(sub);
-        
-        sub = new LegacyMesh();
-        sub.setVertices(new double[][] { vs[5], vs[1], vs[2], vs[6] });
-        sub.setUVs(uvs);
-        sub.setQuads(triangles);
-        mesh.addMesh(sub);
-        
-        sub = new LegacyMesh();
-        sub.setVertices(new double[][] { vs[6], vs[2], vs[3], vs[7] });
-        sub.setUVs(uvs);
-        sub.setQuads(triangles);
-        mesh.addMesh(sub);
-        
-        sub = new LegacyMesh();
-        sub.setVertices(new double[][] { vs[7], vs[3], vs[0], vs[4] });
-        sub.setUVs(uvs);
-        sub.setQuads(triangles);
-        mesh.addMesh(sub);
-        
-        sub = new LegacyMesh();
-        sub.setVertices(new double[][] { vs[4], vs[0], vs[1], vs[5] });
-        sub.setUVs(uvs);
-        sub.setQuads(triangles);
-        mesh.addMesh(sub);
-        
+        double[][] ruvs = new double[24][];
+        for (int i = 0; i < 24; ++i) {
+            ruvs[i] = uvs[i % 4];
+        }
+
+        mesh.setVertices(new double[][] {
+            vs[0], vs[1], vs[2], vs[3],
+            vs[4], vs[5], vs[6], vs[7],
+            vs[5], vs[1], vs[2], vs[6],
+            vs[6], vs[2], vs[3], vs[7],
+            vs[7], vs[3], vs[0], vs[4],
+            vs[4], vs[0], vs[1], vs[5]
+        });
+        mesh.setUVs(ruvs);
+        mesh.setQuads(IntStream.range(0, 24).toArray());
+
         return mesh;
     }
     
