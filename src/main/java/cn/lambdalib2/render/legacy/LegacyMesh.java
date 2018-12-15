@@ -143,39 +143,16 @@ public class LegacyMesh {
         }
         
         mat.onRenderStage(RenderStage.START);
-        GL11.glPushMatrix();
-        
+
         mat.onRenderStage(RenderStage.BEFORE_TESSELLATE);
         Tessellator t = Tessellator.instance;
         t.startDrawing(GL11.GL_TRIANGLES);
         mat.onRenderStage(RenderStage.START_TESSELLATE);
+
+        redrawWithinBatch(mat);
         
-        if(uvs != null) {
-            if(triangles != null) {
-                for(int i : triangles) {
-                    double[] vert = vertices[i];
-                    double[] uv = uvs[i];
-                    if(normals != null) {
-                        t.setNormal(normals[i][0], normals[i][1], normals[i][2]);
-                    }
-                    t.addVertexWithUV(vert[0], vert[1], vert[2], uv[0], uv[1]);
-                    
-                }
-            }
-        } else {
-            if(triangles != null) {
-                for(int i : triangles) {
-                    double[] vert = vertices[i];
-                    if(normals != null) {
-                        t.setNormal(normals[i][0], normals[i][1], normals[i][2]);
-                    }
-                    t.addVertex(vert[0], vert[1], vert[2]);
-                }
-            }
-        }
         t.draw();
         
-        GL11.glPopMatrix();
         mat.onRenderStage(RenderStage.END);
         
         for(LegacyMesh m : this.sub) {
@@ -189,6 +166,32 @@ public class LegacyMesh {
     
     public void redraw(LegacyMaterial mat) {
         redraw(mat, true);
+    }
+
+    public void redrawWithinBatch(LegacyMaterial mat) {
+        Tessellator t = Tessellator.instance;
+        if(uvs != null) {
+            if(triangles != null) {
+                for(int i : triangles) {
+                    double[] vert = vertices[i];
+                    double[] uv = uvs[i];
+                    if(normals != null) {
+                        t.setNormal(normals[i][0], normals[i][1], normals[i][2]);
+                    }
+                    t.addVertexWithUV(vert[0], vert[1], vert[2], uv[0], uv[1]);
+                }
+            }
+        } else {
+            if(triangles != null) {
+                for(int i : triangles) {
+                    double[] vert = vertices[i];
+                    if(normals != null) {
+                        t.setNormal(normals[i][0], normals[i][1], normals[i][2]);
+                    }
+                    t.addVertex(vert[0], vert[1], vert[2]);
+                }
+            }
+        }
     }
     
     public void draw(LegacyMaterial mat) {
