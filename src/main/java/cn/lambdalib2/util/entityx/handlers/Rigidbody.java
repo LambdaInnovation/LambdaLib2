@@ -8,6 +8,7 @@ import cn.lambdalib2.util.entityx.MotionHandler;
 import cn.lambdalib2.util.entityx.event.CollideEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -67,7 +68,7 @@ public class Rigidbody extends MotionHandler
             result = Raytrace.perform(target.getEntityWorld(), cur, next, entitySel, blockFil);
         }
         
-        if(result != null) {
+        if(result != null && result.typeOfHit != Type.MISS) {
             getEntityX().postEvent(new CollideEvent(result)); //Let the event handlers do the actual job.
         }
         
