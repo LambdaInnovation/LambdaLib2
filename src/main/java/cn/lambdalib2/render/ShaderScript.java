@@ -1,5 +1,7 @@
 package cn.lambdalib2.render;
 
+import cn.lambdalib2.render.ShaderScript.PropertyType;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ResourceUtils;
 import com.google.common.base.Charsets;
 import net.minecraft.util.ResourceLocation;
@@ -24,15 +26,28 @@ import static org.lwjgl.opengl.GL20.*;
 public class ShaderScript {
 
     public enum PropertyType {
-        Float, Vec2, Vec3, Vec4, Sampler2D, PassData, Mat4
+        Float(1), Vec2(2), Vec3(3), Vec4(4), Sampler2D(-1), PassData(-1), Mat4(16);
+
+        public final int floatCount;
+
+        PropertyType(int fc) {
+            floatCount = fc;
+        }
     }
 
-    static class Property {
+    static class BaseProperty {
         public String name;
         public PropertyType type;
         public Object value;
+    }
 
+    static class Property extends BaseProperty {
         int uniformLocation;
+    }
+
+    static class InstanceProperty extends BaseProperty{
+        int offsetInBuf;
+        int location = -1;
     }
 
     static class VertexAttribute {
@@ -63,7 +78,7 @@ public class ShaderScript {
     }
 
     public final List<Property> uniformProperties = new ArrayList<>();
-    public final List<Property> instanceProperties = new ArrayList<>();
+    public final List<InstanceProperty> instanceProperties = new ArrayList<>();
     public int drawOrder;
 
     public final RenderStates renderStates = new RenderStates();
@@ -73,6 +88,7 @@ public class ShaderScript {
     final Map<String, VertexAttribute> vertexLayout = new HashMap<>();
 
     int floatsPerVertex;
+    int floatsPerInstance;
 
     int glProgramID;
 
@@ -192,6 +208,15 @@ final class ShaderScriptParser {
             p.uniformLocation = location;
         }
 
+        // Precalculate
+        int offset = 0;
+        for (ShaderScript.InstanceProperty p : script.instanceProperties) {
+            Debug.require(p.type.floatCount > 0 && p.type != PropertyType.Mat4, "Unsupported instance type " + p.type + " for " + p.name);
+            p.offsetInBuf = offset;
+            offset += p.type.floatCount;
+        }
+        script.floatsPerInstance = offset;
+
         // Store property layout indexes
         int attrCount = glGetProgrami(script.glProgramID, GL_ACTIVE_ATTRIBUTES);
         ByteBuffer nameBuffer = BufferUtils.createByteBuffer(
@@ -215,6 +240,12 @@ final class ShaderScriptParser {
             if (va != null) {
                 va.index = index;
                 va.type = GLPropertyType.fromGLType(typeBuffer.get());
+            }
+
+            ShaderScript.InstanceProperty ip =
+                script.instanceProperties.stream().filter(it -> it.name.equals(name)).findAny().orElse(null);
+            if (ip != null) {
+                ip.location = index;
             }
         }
 
@@ -302,7 +333,7 @@ final class ShaderScriptParser {
                                             t.content));
                         }
 
-                        List<ShaderScript.Property> propertyList = isInstance ? shader.instanceProperties : shader.uniformProperties;
+                        List<ShaderScript.BaseProperty> propertyList = (List) (isInstance ? shader.instanceProperties : shader.uniformProperties);
 
                         // data-section := section_name { property-list }
                         // property-list := property-list property-statement | property-statement
@@ -317,7 +348,7 @@ final class ShaderScriptParser {
                                 String propertyName = tName.content;
                                 assertNext(lexer, tknEq);
 
-                                ShaderScript.Property property = new ShaderScript.Property();
+                                ShaderScript.BaseProperty property = isInstance ? new ShaderScript.InstanceProperty() : new ShaderScript.Property();
                                 property.name = propertyName;
 
                                 MatchedToken tInitHead = nextTokenSkipSpaces(lexer);

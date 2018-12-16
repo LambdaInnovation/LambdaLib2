@@ -1,5 +1,12 @@
 package cn.lambdalib2.render;
 
+import cn.lambdalib2.render.ShaderScript.InstanceProperty;
+import cn.lambdalib2.util.Debug;
+import org.lwjgl.opengl.GL31;
+import org.lwjgl.util.vector.Vector2f;
+import org.lwjgl.util.vector.Vector3f;
+
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,20 +14,21 @@ import java.util.Map;
 
 import static java.lang.System.out;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 
 public class RenderPass {
 
     private List<DrawCall> drawCalls = new ArrayList<>();
     private List<BatchGroup> batchList = new ArrayList<>();
+
+    private int instanceBuffer = -1;
 
     public void draw(RenderMaterial material, Mesh mesh) {
         draw(material, mesh, null);
@@ -68,7 +76,6 @@ public class RenderPass {
         }
 
         for (BatchGroup batch : batchList) {
-            // TODO: Currently assumes there is no InstanceData assigned. Support instancing.
             emitDrawCall(batch);
         }
 
@@ -117,11 +124,70 @@ public class RenderPass {
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+        // Instancing setup (if any)
+        if (shader.floatsPerInstance > 0) {
+            if (instanceBuffer == -1)
+                instanceBuffer = glGenBuffers();
+
+            FloatBuffer buf = BufferUploadUtils.requestFloatBuffer(shader.floatsPerInstance * batch.count());
+            float[] arr = new float[shader.floatsPerInstance];
+            // Populate instance buffer
+            for (InstanceData inst : batch.instances) {
+                for (InstanceProperty prop : shader.instanceProperties) {
+                    int ix = prop.offsetInBuf;
+
+                    Object def = inst.objectMap.get(prop.name);
+                    if (def == null)
+                        def = prop.value;
+
+                    if (def instanceof Float) {
+                        arr[ix] = (float) def;
+                    } else if (def instanceof Vector2f) {
+                        Vector2f v = ((Vector2f) def);
+                        arr[ix] = v.x;
+                        arr[ix + 1] = v.y;
+                    } else if (def instanceof Vector3f) {
+                        Vector3f v = ((Vector3f) def);
+                        arr[ix] = v.x;
+                        arr[ix + 1] = v.y;
+                        arr[ix + 2] = v.z;
+                    } else
+                        throw new IllegalArgumentException("Invalid instance data " + def + " for " + prop.name);
+                }
+                buf.put(arr);
+            }
+            buf.flip();
+
+            // Set GL instance properties
+            glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
+            glBufferData(GL_ARRAY_BUFFER, buf, GL_DYNAMIC_DRAW);
+
+            // Layout setup
+            for (InstanceProperty ip : shader.instanceProperties) {
+                Debug.assert2(ip.location != -1, () -> "Invalid instance property " + ip.name);
+                glEnableVertexAttribArray(ip.location);
+                glVertexAttribPointer(
+                    ip.location,
+                    ip.type.floatCount,
+                    GL_FLOAT,
+                    false,
+                    4 * shader.floatsPerInstance,
+                    (ip.offsetInBuf * 4)
+                );
+                glVertexAttribDivisor(ip.location, 1);
+            }
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
         // IBO setup
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.getIBO());
 
         // Draw!
-        glDrawElements(GL_TRIANGLES, mesh.getIndicesCount(), GL_UNSIGNED_INT, 0);
+        if (shader.floatsPerInstance > 0)
+            GL31.glDrawElementsInstanced(GL_TRIANGLES, mesh.getIndicesCount(), GL_UNSIGNED_INT, 0, batch.count());
+        else
+            glDrawElements(GL_TRIANGLES, mesh.getIndicesCount(), GL_UNSIGNED_INT, 0);
 
         // Cleanup VAO
         glBindVertexArray(0);
