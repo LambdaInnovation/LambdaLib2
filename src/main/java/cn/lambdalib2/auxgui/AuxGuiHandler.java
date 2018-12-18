@@ -100,6 +100,7 @@ public class AuxGuiHandler {
         GL11.glEnable(GL11.GL_ALPHA_TEST);
         GL11.glDepthMask(true);
         GL11.glDepthFunc(GL11.GL_LEQUAL);
+        GL11.glColor4f(1,1,1,1);
     }
     
     @SubscribeEvent
