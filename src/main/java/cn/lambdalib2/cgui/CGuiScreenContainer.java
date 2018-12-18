@@ -49,11 +49,14 @@ public class CGuiScreenContainer extends GuiContainer {
     @Override
     public void drawScreen(int a, int b, float c) {
         if(isSlotActive()) {
+            this.drawDefaultBackground();
             super.drawScreen(a, b, c);
         } else {
             gui.resize(width, height);
             this.drawDefaultBackground();
+            GL11.glEnable(GL11.GL_BLEND);
             gui.draw(a, b);
+            GL11.glDisable(GL11.GL_BLEND);
         }
     }
 
