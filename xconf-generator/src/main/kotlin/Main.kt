@@ -146,7 +146,7 @@ object Main {
             File(ctx.assetsRootDir, "models/item"),
             File(ctx.assetsRootDir, "models/block"),
             File(ctx.assetsRootDir, "blockstates"),
-             File(ctx.assetsRootDir, "advancements")
+            File(ctx.assetsRootDir, "advancements")
         )
         arr.filter { it.isDirectory }
             .flatMap { it.listFiles().toList() }
