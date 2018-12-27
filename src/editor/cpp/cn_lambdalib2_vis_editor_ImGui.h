@@ -23,6 +23,46 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCreateContext
 JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nShowDemoWindow
   (JNIEnv *, jclass, jboolean);
 
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nFillInput
+ * Signature: (FFFFF[ZFZZZZ[Z[C)V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nFillInput
+  (JNIEnv *, jclass, jfloat, jfloat, jfloat, jfloat, jfloat, jbooleanArray, jfloat, jboolean, jboolean, jboolean, jboolean, jbooleanArray, jcharArray);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nNewFrame
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nNewFrame
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nRender
+ * Signature: ()Lcn/lambdalib2/vis/editor/ImDrawData;
+ */
+JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nRender
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nGetFontTexARGB32
+ * Signature: ()Lcn/lambdalib2/vis/editor/ImFontTex;
+ */
+JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nGetFontTexARGB32
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nSetFontTexID
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSetFontTexID
+  (JNIEnv *, jclass, jint);
+
 #ifdef __cplusplus
 }
 #endif

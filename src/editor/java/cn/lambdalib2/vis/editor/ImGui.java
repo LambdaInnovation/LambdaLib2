@@ -11,6 +11,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector4f;
+import scala.actors.threadpool.Arrays;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -88,26 +89,39 @@ class ImDrawVert {
 }
 
 class ImDrawList {
-    public List<ImDrawCmd> cmdBuffer = new ArrayList<>();
-    public List<Integer> idxBuffer = new ArrayList<>();
-    public List<ImDrawVert> vtxBuffer = new ArrayList<>();
+    public ImDrawCmd[] cmdBuffer;
+    public int[] idxBuffer;
+    public ImDrawVert[] vtxBuffer;
     public int flags;
+
+    public ImDrawList(ImDrawCmd[] cmdBuffer, int[] idxBuffer, ImDrawVert[] vtxBuffer, int flags) {
+        this.cmdBuffer = cmdBuffer;
+        this.idxBuffer = idxBuffer;
+        this.vtxBuffer = vtxBuffer;
+        this.flags = flags;
+    }
 }
 
 class ImDrawData
 {
     public List<ImDrawList> cmdLists = new ArrayList<>();
-    public int cmdListsCount;
-    public int totalIdxCount;
-    public int totalVtxCount;
     public float dispX, dispY;
     public float dispW, dispH;
 
+    @SuppressWarnings("unchecked")
+    public ImDrawData(ImDrawList[] cmdLists, float dispX, float dispY, float dispW, float dispH) {
+        this.cmdLists.addAll(Arrays.asList(cmdLists));
+        this.dispX = dispX;
+        this.dispY = dispY;
+        this.dispW = dispW;
+        this.dispH = dispH;
+    }
+
     public void scaleClipRects(float sx, float sy) {
-        for (int i = 0; i < cmdListsCount; ++i) {
+        for (int i = 0; i < cmdLists.size(); ++i) {
             ImDrawList list = cmdLists.get(i);
-            for (int cmd_i = 0; cmd_i < list.cmdBuffer.size(); ++cmd_i) {
-                ImDrawCmd cmd = list.cmdBuffer.get(cmd_i);
+            for (int cmd_i = 0; cmd_i < list.cmdBuffer.length; ++cmd_i) {
+                ImDrawCmd cmd = list.cmdBuffer[cmd_i];
                 cmd.clipX *= sx;
                 cmd.clipY *= sy;
                 cmd.clipW *= sx;
@@ -205,6 +219,8 @@ public class ImGui {
             keyCtrl, keyShift, keyAlt, keySuper,
             _keysDown,
             inputChars);
+
+        nNewFrame();
     }
 
     public static void render() {
@@ -429,14 +445,14 @@ public class ImGui {
         glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, true, ImDrawVert.BYTES, 4);
 
         // Draw
-        for (int n = 0; n < dd.cmdListsCount; n++)
+        for (int n = 0; n < dd.cmdLists.size(); n++)
         {
             final ImDrawList cmd_list = dd.cmdLists.get(n);
             int idx_buffer_offset = 0;
 
             glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
             {
-                ByteBuffer buf = BufferUtils.createByteBuffer(cmd_list.vtxBuffer.size() * ImDrawVert.BYTES);
+                ByteBuffer buf = BufferUtils.createByteBuffer(cmd_list.vtxBuffer.length * ImDrawVert.BYTES);
                 for (ImDrawVert v : cmd_list.vtxBuffer) {
                     v.put(buf);
                 }
@@ -446,7 +462,7 @@ public class ImGui {
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ElementsHandle);
             {
-                ByteBuffer buf = BufferUtils.createByteBuffer(4 * cmd_list.idxBuffer.size());
+                ByteBuffer buf = BufferUtils.createByteBuffer(4 * cmd_list.idxBuffer.length);
                 for (int idx : cmd_list.idxBuffer) {
                     buf.putInt(idx);
                 }
@@ -455,9 +471,9 @@ public class ImGui {
             }
 
             Vector2f pos = new Vector2f(dd.dispX, dd.dispY);
-            for (int cmd_i = 0; cmd_i < cmd_list.cmdBuffer.size(); cmd_i++)
+            for (int cmd_i = 0; cmd_i < cmd_list.cmdBuffer.length; cmd_i++)
             {
-                ImDrawCmd pcmd = cmd_list.cmdBuffer.get(cmd_i);
+                ImDrawCmd pcmd = cmd_list.cmdBuffer[cmd_i];
                 {
                     Vector4f clip_rect = new Vector4f(
                         pcmd.clipX - pos.x,
@@ -519,6 +535,8 @@ public class ImGui {
         boolean[] keysDown,
         char[] inputCharacters
     );
+
+    private static native void nNewFrame();
 
     private static native ImDrawData nRender();
 
