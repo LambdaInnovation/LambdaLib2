@@ -4,12 +4,12 @@ object TestImGui {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        ImGui.Begin("Hello ImGui", 0)
+        ImGui.begin("Hello ImGui", 0)
 
-        ImGui.Text("AAA")
-        ImGui.Text("BBB")
+        ImGui.text("AAA")
+        ImGui.text("BBB")
 
-        ImGui.End()
+        ImGui.end()
     }
 
 }

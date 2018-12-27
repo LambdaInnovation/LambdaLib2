@@ -9,26 +9,26 @@ extern "C" {
 #endif
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
- * Method:    Begin
+ * Method:    begin
  * Signature: (Ljava/lang/String;I)Z
  */
-JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_Begin
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_begin
   (JNIEnv *, jclass, jstring, jint);
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
- * Method:    End
+ * Method:    end
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_End
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_end
   (JNIEnv *, jclass);
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
- * Method:    Text
+ * Method:    text
  * Signature: (Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_Text
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_text
   (JNIEnv *, jclass, jstring);
 
 #ifdef __cplusplus

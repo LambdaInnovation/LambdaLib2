@@ -16,11 +16,11 @@ public class ImGui {
     }
 
     // Windows
-    public static native boolean Begin(String name, int flags);
+    public static native boolean begin(String name, int flags);
 
-    public static native void End();
+    public static native void end();
 
     // Widgets: Text
-    public static native void Text(String s);
+    public static native void text(String s);
 
 }

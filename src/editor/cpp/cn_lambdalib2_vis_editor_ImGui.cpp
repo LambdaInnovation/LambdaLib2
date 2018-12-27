@@ -7,10 +7,10 @@
  * Method:    Begin
  * Signature: (Ljava/lang/String;I)Z
  */
-JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_Begin
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_begin
   (JNIEnv * env, jclass, jstring str, jint) {
 	auto s = env->GetStringUTFChars(str, nullptr);
-	std::cout << "ImGui::Begin: " << s << std::endl;
+	std::cout << "ImGui::begin2: " << s << std::endl;
 	env->ReleaseStringUTFChars(str, s);
 	return true;
 }
@@ -20,7 +20,7 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_Begin
  * Method:    End
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_End
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_end
 (JNIEnv *env, jclass) {
 	std::cout << "ImGui::End" << std::endl;
 }
@@ -30,7 +30,7 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_End
  * Method:    Text
  * Signature: (Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_Text
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_text
 (JNIEnv *env, jclass, jstring str) {
 	auto s = env->GetStringUTFChars(str, nullptr);
 	std::cout << "ImGui::Text: " << s << std::endl;
