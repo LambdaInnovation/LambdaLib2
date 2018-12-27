@@ -225,6 +225,7 @@ public class ImGui {
 
         String version = "#version 330 core";
         String vertexSrc =
+            version +
             "layout (location = 0) in vec2 Position;\n" +
             "layout (location = 1) in vec2 UV;\n" +
             "layout (location = 2) in vec4 Color;\n" +
