@@ -181,7 +181,7 @@ JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nRender
 
 	auto cmdLists = env->NewObjectArray(drawData->CmdListsCount, clzImDrawList, nullptr);
 
-	auto ctorDrawList = env->GetMethodID(clzImDrawList, "<init>", "");
+	auto ctorDrawList = env->GetMethodID(clzImDrawList, "<init>", "([Lcn/lambdalib2/vis/editor/ImDrawCmd;[I[Lcn/lambdalib2/vis/editor/ImDrawVert;I)V");
 	for (int i = 0; i < drawData->CmdListsCount; ++i) {
 		auto list = drawData->CmdLists[i];
 
@@ -189,8 +189,38 @@ JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nRender
 		auto arrIdxBuffer = env->NewIntArray(list->IdxBuffer.Size);
 		auto arrVtxBuffer = env->NewObjectArray(list->VtxBuffer.Size, clzImDrawVert, nullptr);
 
-		auto jlist = env->NewObject(clzImDrawData, ctorDrawList, arrCmdBuffer, arrIdxBuffer, arrVtxBuffer, list->Flags);
-		// TODO: Add item
+		// Fill cmd buf
+		auto ctorDrawCmd = env->GetMethodID(clzImDrawCmd, "<init>", "(IFFFFI)V");
+		for (int ncmd = 0; ncmd < list->CmdBuffer.Size; ++ncmd) {
+			auto& c = list->CmdBuffer[ncmd];
+			auto jcmd = env->NewObject(clzImDrawCmd, ctorDrawCmd, c.ElemCount, 
+				c.ClipRect.x, c.ClipRect.y, c.ClipRect.z, c.ClipRect.w, (int) c.TextureId);
+
+			if (c.UserCallback != nullptr)
+				std::cout << "WARN: This DrawCmd Has UserCallback!" << std::endl;
+			env->SetObjectArrayElement(arrCmdBuffer, ncmd, jcmd);
+		}
+
+		// Fill idx buf
+		{
+			auto buf = new jint[list->IdxBuffer.Size];
+			for (int j = 0; j < list->IdxBuffer.Size; ++j)
+				buf[j] = list->IdxBuffer[j];
+			env->SetIntArrayRegion(arrIdxBuffer, 0, list->IdxBuffer.Size, buf);
+			delete[] buf;
+		}
+
+		// Fill vtx buf
+		auto ctorDrawVtx = env->GetMethodID(clzImDrawVert, "<init>", "(FFFFI)V");
+		for (int nvtx = 0; nvtx < list->VtxBuffer.Size; ++nvtx) {
+			auto& v = list->VtxBuffer[nvtx];
+			auto jvtx = env->NewObject(clzImDrawVert, ctorDrawVtx, 
+				v.pos.x, v.pos.y, v.uv.x, v.uv.y, v.col);
+			env->SetObjectArrayElement(arrVtxBuffer, nvtx, jvtx);
+		}
+
+		auto jlist = env->NewObject(clzImDrawList, ctorDrawList, arrCmdBuffer, arrIdxBuffer, arrVtxBuffer, list->Flags);
+		env->SetObjectArrayElement(cmdLists, i, jlist);
 	}
 
 	jobject ret;
@@ -227,7 +257,7 @@ JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nGetFontTexARGB32
 
 	auto jByteArr = env->NewByteArray(arrLen);
 	env->SetByteArrayRegion(jByteArr, 0, arrLen, buf);
-	delete buf; // ! buf lifetime ends here
+	delete[] buf; // ! buf lifetime ends here
 
 	// new ImFontTex(...)
 	return env->NewObject(clzImFontTex, ctor, jByteArr, width, height);

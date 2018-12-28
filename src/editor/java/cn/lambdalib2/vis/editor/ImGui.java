@@ -55,12 +55,13 @@ class ImDrawCmd {
     public int textureID;
     public float clipX, clipY, clipW, clipH;
 
-    public ImDrawCmd(int elemCount, float clipX, float clipY, float clipW, float clipH) {
+    public ImDrawCmd(int elemCount, float clipX, float clipY, float clipW, float clipH, int textureID) {
         this.elemCount = elemCount;
         this.clipX = clipX;
         this.clipY = clipY;
         this.clipW = clipW;
         this.clipH = clipH;
+        this.textureID = textureID;
     }
 }
 
@@ -169,6 +170,12 @@ public class ImGui {
     private static int g_AttribLocationUV;
     private static int g_AttribLocationColor;
 
+    private static boolean _withoutMC = false;
+
+    public static void setWithoutMC() {
+        _withoutMC = true;
+    }
+
     public static void newFrame(float dWheel, char[] inputChars) {
         if (!_init) {
             createContext();
@@ -179,23 +186,27 @@ public class ImGui {
             createDeviceObjects();
         }
 
-        float w, h;
-        // Note: MC's displayWidth(height) actually is framebuffer size,
-        //  which correspond to IMGUI's displaySize.
-        Minecraft mc = Minecraft.getMinecraft();
-        w = mc.displayWidth;
-        h = mc.displayHeight;
-
         float dw, dh;
         DisplayMode dm = Display.getDisplayMode();
         dw = dm.getWidth();
         dh = dm.getHeight();
 
+        float w, h;
+        if (_withoutMC) {
+            w = dw; h = dh;
+        } else {
+            // Note: MC's displayWidth(height) actually is framebuffer size,
+            //  which correspond to IMGUI's displaySize.
+            Minecraft mc = Minecraft.getMinecraft();
+            w = mc.displayWidth;
+            h = mc.displayHeight;
+        }
+
         double t = GameTimer.getAbsTime();
         float dt = (float) MathUtils.clampd(0, 0.33, t - _lastTime);
 
         float mx = Mouse.getX();
-        float my = Mouse.getY();
+        float my = dh - Mouse.getY();
 
         _displayFBScale.set(dw / w, dh / h);
 
@@ -239,7 +250,7 @@ public class ImGui {
         last_array_buffer = glGetInteger(GL_ARRAY_BUFFER_BINDING);
         last_vertex_array = glGetInteger(GL_VERTEX_ARRAY_BINDING);
 
-        String version = "#version 330 core";
+        String version = "#version 330 core\n";
         String vertexSrc =
             version +
             "layout (location = 0) in vec2 Position;\n" +
@@ -332,7 +343,7 @@ public class ImGui {
         log_length = glGetShaderi(handle, GL_INFO_LOG_LENGTH);
         if (status == GL_FALSE)
             Debug.error(
-                String.format("ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to compile %s!\n", desc));
+                String.format("ERROR: ImGui_CreateDeviceObjects: failed to compile %s!\n", desc));
         if (log_length > 0)
         {
             Debug.error(glGetShaderInfoLog(handle, log_length));
@@ -345,7 +356,7 @@ public class ImGui {
         status = glGetProgrami(handle, GL_LINK_STATUS);
         log_length = glGetProgrami(handle, GL_INFO_LOG_LENGTH);
         if (status == GL_FALSE)
-            Debug.error(String.format("ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to link %s!\n", desc));
+            Debug.error(String.format("ERROR: ImGui_CreateDeviceObjects: failed to link %s!\n", desc));
         if (log_length > 0)
         {
             String s = glGetProgramInfoLog(handle, log_length);
@@ -358,9 +369,8 @@ public class ImGui {
     }
 
     private static int[] glGetIntegerv(int name, int count) {
-        IntBuffer buf = BufferUtils.createIntBuffer(count);
+        IntBuffer buf = BufferUtils.createIntBuffer(16);
         glGetInteger(name, buf);
-        buf.flip();
         int[] ret = new int[count];
         buf.get(ret);
         return ret;
@@ -433,22 +443,20 @@ public class ImGui {
 
         // Recreate the VAO every time
         // (This is to easily allow multiple GL contexts. VAO are not shared among GL contexts, and we don't track creation/deletion of windows so we don't have an obvious key to use to cache them.)
-        int vao_handle = 0;
-        vao_handle = glGenVertexArrays();
+        int vao_handle = glGenVertexArrays();
         glBindVertexArray(vao_handle);
         glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
         glEnableVertexAttribArray(g_AttribLocationPosition);
         glEnableVertexAttribArray(g_AttribLocationUV);
         glEnableVertexAttribArray(g_AttribLocationColor);
         glVertexAttribPointer(g_AttribLocationPosition, 2, GL_FLOAT, false, ImDrawVert.BYTES, 0);
-        glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, false, ImDrawVert.BYTES, 2);
-        glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, true, ImDrawVert.BYTES, 4);
+        glVertexAttribPointer(g_AttribLocationUV, 2, GL_FLOAT, false, ImDrawVert.BYTES, 2 * 4);
+        glVertexAttribPointer(g_AttribLocationColor, 4, GL_UNSIGNED_BYTE, true, ImDrawVert.BYTES, 4 * 4);
 
         // Draw
         for (int n = 0; n < dd.cmdLists.size(); n++)
         {
             final ImDrawList cmd_list = dd.cmdLists.get(n);
-            int idx_buffer_offset = 0;
 
             glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
             {
@@ -471,6 +479,7 @@ public class ImGui {
             }
 
             Vector2f pos = new Vector2f(dd.dispX, dd.dispY);
+            int idx_buffer_offset = 0;
             for (int cmd_i = 0; cmd_i < cmd_list.cmdBuffer.length; cmd_i++)
             {
                 ImDrawCmd pcmd = cmd_list.cmdBuffer[cmd_i];
@@ -490,7 +499,7 @@ public class ImGui {
 
                         // Bind texture, Draw
                         glBindTexture(GL_TEXTURE_2D, pcmd.textureID);
-                        glDrawElements(GL_TRIANGLES, pcmd.elemCount, GL_UNSIGNED_INT, idx_buffer_offset);
+                        glDrawElements(GL_TRIANGLES, pcmd.elemCount, GL_UNSIGNED_INT, idx_buffer_offset * 4);
                     }
                 }
                 idx_buffer_offset += pcmd.elemCount;

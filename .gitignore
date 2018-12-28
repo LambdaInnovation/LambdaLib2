@@ -27,3 +27,4 @@ eclipse
 run
 .vscode/
 *.log
+*.ini
