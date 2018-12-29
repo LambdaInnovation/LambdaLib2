@@ -1,14 +1,17 @@
 package cn.lambdalib2.vis.editor;
 
+import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.GameTimer;
 import cn.lambdalib2.util.MathUtils;
 import net.minecraft.client.Minecraft;
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.util.Color;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector4f;
 import scala.actors.threadpool.Arrays;
@@ -172,6 +175,8 @@ public class ImGui {
 
     private static boolean _withoutMC = false;
 
+    // Main
+
     public static void setWithoutMC() {
         _withoutMC = true;
     }
@@ -239,9 +244,516 @@ public class ImGui {
         renderImpl(drawData);
     }
 
+    // Debug, Demo, Information
+
     public static boolean showDemoWindow(boolean show) {
         return nShowDemoWindow(show);
     }
+
+    // Windows
+    public static boolean begin(String name, boolean open) {
+        return begin(name, open, 0);
+    }
+
+    public static boolean begin(String name, boolean open, int flags) {
+        return nBegin(name, open, flags);
+    }
+
+    private static native boolean nBegin(String name, boolean open, int flags);
+
+    public static boolean beginChild(String str_id) {
+        return beginChild(str_id, new Vector2f(0, 0));
+    }
+
+    public static boolean beginChild(String str_id, Vector2f size) {
+        return beginChild(str_id, size, false);
+    }
+
+    public static boolean beginChild(String str_id, Vector2f size, boolean border) {
+        return beginChild(str_id, size, border, 0);
+    }
+
+    public static boolean beginChild(String str_id, Vector2f size, boolean border, int flags) {
+        return nBeginChild(str_id, size, border, flags);
+    }
+
+    private static native boolean nBeginChild(String str_id, Vector2f size, boolean border, int flags);
+
+    // Cursor / Layout
+    public static void separator() {
+        nSeparator();
+    }
+
+    private static native void nSeparator();
+
+    public static void newLine() {
+        nNewLine();
+    }
+
+    private static native void nNewLine();
+
+    public static void spacing() {
+        nSpacing();
+    }
+
+    private static native void nSpacing();
+
+    public static void beginGroup() {
+        nBeginGroup();
+    }
+
+    private static native void nBeginGroup();
+
+    public static void endGroup() {
+        nEndGroup();
+    }
+
+    private static native void nEndGroup();
+
+    // ID stack/scopes
+    
+    public static void pushID(String id) {
+        nPushID(id);
+    }
+    
+    public static void pushID(int int_id) {
+        nPushID2(int_id);
+    }
+
+    private static native void nPushID(String id);
+    private static native void nPushID2(int intID);
+    
+    public static void popID() {
+        nPopID();
+    }
+
+    private static native void nPopID();
+    
+    // Widgets: Text
+    
+    public static void text(String s, Object... fmt) {
+        nText(String.format(s, fmt));
+    }
+
+    private static native void nText(String s);
+    
+    public static void textColored(Color c, String str, Object... fmt) {
+        nTextColored(c, String.format(str, fmt));
+    }
+
+    private static native void nTextColored(Color c, String s);
+
+    public static void textWrapped(String s, Object... fmt) {
+        nTextWrapped(String.format(s, fmt));
+    }
+
+    private static native void nTextWrapped(String s);
+    
+    public static void labelText(String label, String s, Object... fmt) {
+        nLabelText(label, String.format(s, fmt));
+    }
+
+    private static native void nLabelText(String l, String s);
+    
+    public static void bulletText(String s, Object... fmt) {
+        nBulletText(String.format(s, fmt));
+    }
+
+    private static native void nBulletText(String s);
+    
+    // Widgets: Main
+
+    public static boolean button(String label) {
+        return button(label, new Vector2f(.0f, .0f));
+    }
+
+    public static boolean button(String label, Vector2f size) {
+        return nButton(label, size);
+    }
+
+    private static native boolean nButton(String label, Vector2f size);
+
+    public static boolean arrowButton(String id, int idr) {
+        return nArrowButton(id, idr);
+    }
+
+    private static native boolean nArrowButton(String id, int idr);
+
+    public static void image(int textureID, Vector2f size) {
+        image(textureID, size, new Vector2f(0, 0), new Vector2f(1, 1));
+    }
+
+    public static void image(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1) {
+        image(textureID, size, uv0, uv1, Colors.white());
+    }
+
+    public static void image(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, Color tintColor) {
+        image(textureID, size, uv0, uv1, tintColor, Colors.white());
+    }
+
+    public static void image(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, Color tintColor, Color borderColor) {
+        nImage(textureID, size, uv0, uv1, tintColor, borderColor);
+    }
+
+    private static native void nImage(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, Color tintColor, Color borderColor);
+
+    public static boolean imageButton(int textureID, Vector2f size) {
+        return imageButton(textureID, size, new Vector2f(0, 0), new Vector2f(1, 1), -1);
+    }
+
+    public static boolean imageButton(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, int framePadding) {
+        return imageButton(textureID, size, uv0, uv1, framePadding, Colors.black(), Colors.white());
+    }
+
+    public static boolean imageButton(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, int framePadding, Color bgCol, Color tintCol) {
+        return nImageButton(textureID, size, uv0, uv1, framePadding, bgCol, tintCol);
+    }
+
+    private static native boolean nImageButton(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, int framePadding, Color bgCol, Color tintCol);
+
+    public static boolean checkbox(String label, boolean v) {
+        return nCheckbox(label, v);
+    }
+
+    private static native boolean nCheckbox(String label, boolean v);
+
+    public static boolean checkboxFlags(String label, int[] flags, int flags_value) {
+        return nCheckboxFlags(label, flags, flags_value);
+    }
+
+    private static native boolean nCheckboxFlags(String label, int[] flags, int flags_value);
+
+    public static boolean radioButton(String label, boolean active) {
+        return nRadioButton(label, active);
+    }
+
+    private static native boolean nRadioButton(String label, boolean active);
+
+    public static void bullet() {
+        nBullet();
+    }
+
+    private static native void nBullet();
+
+    // Widget: Combo Box
+    public static boolean beginCombo(String label, String previewValue) {
+        return beginCombo(label, previewValue, 0);
+    }
+
+    // Widget: Combo Box
+    public static boolean beginCombo(String label, String previewValue, int flags) {
+        return nBeginCombo(label, previewValue, flags);
+    }
+
+    private static native boolean nBeginCombo(String label, String previewValue, int flags);
+    
+    public static void endCombo() {
+        nEndCombo();
+    }
+
+    private static native void nEndCombo();
+
+    public static boolean combo(String label, int[] currentItem, String[] items) {
+        return nCombo(label, currentItem, items);
+    }
+
+    private static native boolean nCombo(String label, int[] currentItem, String[] items);
+    
+    // Widget: Drags
+
+
+    // Widget: Sliders
+    public static float sliderFloat(String label, float v, float vMin, float vMax) {
+        return sliderFloat(label, v, vMin, vMax, "%.3f");
+    }
+
+    public static float sliderFloat(String label, float v, float vMin, float vMax, String format) {
+        return sliderFloat(label, v, vMin, vMax, format, 1.0f);
+    }
+
+    public static float sliderFloat(String label, float v, float vMin, float vMax, String format, float pwr) {
+        return nSliderFloat(label, v, vMin, vMax, format, pwr);
+    }
+
+    private static native float nSliderFloat(String label, float v, float vMin, float vMax, String format, float pwr);
+
+    public static void sliderFloat2(String label, float[] v, float vMin, float vMax) {
+        sliderFloat2(label, v, vMin, vMax, "%.3f");
+    }
+
+    public static void sliderFloat2(String label, float[] v, float vMin, float vMax, String format) {
+        sliderFloat2(label, v, vMin, vMax, format, 1.0f);
+    }
+
+    public static void sliderFloat2(String label, float[] v, float vMin, float vMax, String format, float pwr) {
+        nSliderFloat2(label, v, vMin, vMax, format, pwr);
+    }
+
+    public static native void nSliderFloat2(String label, float[] v, float vMin, float vMax, String format, float pwr);
+
+    public static void sliderFloat3(String label, float[] v, float vMin, float vMax) {
+        sliderFloat3(label, v, vMin, vMax, "%.3f");
+    }
+
+    public static void sliderFloat3(String label, float[] v, float vMin, float vMax, String format) {
+        sliderFloat3(label, v, vMin, vMax, format, 1.0f);
+    }
+
+    public static void sliderFloat3(String label, float[] v, float vMin, float vMax, String format, float pwr) {
+        nSliderFloat3(label, v, vMin, vMax, format, pwr);
+    }
+
+    private static native void nSliderFloat3(String label, float[] v, float vMin, float vMax, String format, float pwr);
+
+    public static void sliderFloat4(String label, float[] v, float vMin, float vMax) {
+        sliderFloat4(label, v, vMin, vMax, "%.3f");
+    }
+
+    public static void sliderFloat4(String label, float[] v, float vMin, float vMax, String format) {
+        sliderFloat4(label, v, vMin, vMax, format, 1.0f);
+    }
+
+    public static void sliderFloat4(String label, float[] v, float vMin, float vMax, String format, float pwr) {
+        nSliderFloat4(label, v, vMin, vMax, format, pwr);
+    }
+
+    private static native void nSliderFloat4(String label, float[] v, float vMin, float vMax, String format, float pwr);
+
+    public static float sliderAngle(String label, float rad) {
+        return sliderAngle(label, rad, -360f, 360f);
+    }
+
+    public static float sliderAngle(String label, float rad, float degMin, float degMax) {
+        return sliderAngle(label, rad, degMin, degMax, "%.0f deg");
+    }
+
+    public static float sliderAngle(String label, float rad, float degMin, float degMax, String format)  {
+        return nSliderAngle(label, rad, degMin, degMax, format);
+    }
+
+    private static native float nSliderAngle(String label, float rad, float degMin, float degMax, String format);
+
+    public static int sliderInt(String label, int v, int vMin, int vMax) {
+        return nSliderInt(label, v, vMin, vMax);
+    }
+
+    private static native int nSliderInt(String label, int v, int vMin, int vMax);
+
+    // Widget: sliders
+
+    public static String inputText(String label, String text) {
+        return inputText(label, text, 0);
+    }
+
+    public static String inputText(String label, String text, int flags) {
+        return nInputText(label, text, flags);
+    }
+
+    private static native String nInputText(String label, String text, int flags);
+
+    public static String inputTextMultiline(String label, String text) {
+        return inputTextMultiline(label, text, new Vector2f(0, 0), 0);
+    }
+
+    public static String inputTextMultiline(String label, String text, Vector2f size, int flags) {
+        return nInputTextMultiline(label, text, size, flags);
+    }
+
+    private static native String nInputTextMultiline(String label, String text, Vector2f size, int flags);
+
+    public static float inputFloat(String label, float v) {
+        return inputFloat(label, v, 0);
+    }
+
+    public static float inputFloat(String label, float v, int extraFlags) {
+        return inputFloat(label, v, "%.3f", extraFlags);
+    }
+
+    public static float inputFloat(String label, float v, String format, int extraFlags) {
+        return nInputFloat(label, v, format, extraFlags);
+    }
+
+    private static native float nInputFloat(String label, float v, String format, int extraFlags);
+
+    public static void inputFloat2(String label, float[] v) {
+        inputFloat2(label, v, 0);
+    }
+
+    public static void inputFloat2(String label, float[] v, int extraFlags) {
+        inputFloat2(label, v, "%.3f", extraFlags);
+    }
+
+    public static void inputFloat2(String label, float[] v, String format, int extraFlags) {
+        nInputFloat2(label, v, format, extraFlags);
+    }
+
+    private static native void nInputFloat2(String label, float[] v, String format, int extraFlags);
+
+    public static void inputFloat3(String label, float[] v) {
+        inputFloat3(label, v, 0);
+    }
+
+    public static void inputFloat3(String label, float[] v, int extraFlags) {
+        inputFloat3(label, v, "%.3f", extraFlags);
+    }
+
+    public static void inputFloat3(String label, float[] v, String format, int extraFlags) {
+        nInputFloat3(label, v, format, extraFlags);
+    }
+
+    private static native void nInputFloat3(String label, float[] v, String format, int extraFlags);
+
+    public static void inputFloat4(String label, float[] v) {
+        inputFloat4(label, v, 0);
+    }
+
+    public static void inputFloat4(String label, float[] v, int extraFlags) {
+        inputFloat4(label, v, "%.3f", extraFlags);
+    }
+
+    public static void inputFloat4(String label, float[] v, String format, int extraFlags) {
+        nInputFloat4(label, v, format, extraFlags);
+    }
+
+    private static native void nInputFloat4(String label, float[] v, String format, int extraFlags);
+
+    public static int inputInt(String label, int v) {
+        return inputInt(label, v, 0);
+    }
+
+    public static int inputInt(String label, int v, int extraFlags) {
+        return nInputInt(label, v, extraFlags);
+    }
+
+    private static native int nInputInt(String label, int v, int extraFlags);
+
+    public static void inputInt2(String label, int[] v) {
+        inputInt2(label, v, 0);
+    }
+
+    public static void inputInt2(String label, int[] v, int extraFlags) {
+        nInputInt2(label, v, extraFlags);
+    }
+
+    private static native void nInputInt2(String label, int[] v, int extraFlags);
+
+    public static void inputInt3(String label, int[] v) {
+        inputInt3(label, v, 0);
+    }
+
+    public static void inputInt3(String label, int[] v, int extraFlags) {
+        nInputInt3(label, v, extraFlags);
+    }
+
+    private static native void nInputInt3(String label, int[] v, int extraFlags);
+
+    public static void inputInt4(String label, int[] v) {
+        inputInt4(label, v, 0);
+    }
+
+    public static void inputInt4(String label, int[] v, int extraFlags) {
+        nInputInt4(label, v, extraFlags);
+    }
+
+    private static native void nInputInt4(String label, int[] v, int extraFlags);
+
+    public static double inputDouble(String label, double v) {
+        return inputDouble(label, v, 0);
+    }
+
+    public static double inputDouble(String label, double v, int extraFlags) {
+        return nInputDouble(label, v, extraFlags);
+    }
+
+    private static native double nInputDouble(String label, double v, int extraFlags);
+    
+    // Widgets: Color editor/picker
+    public static void colorEdit4(String label, Color color, int flags) {
+        nColorEdit4(label, color, flags);
+    }
+
+    private static native void nColorEdit4(String label, Color color, int flags);
+
+    public static void colorButton(String descID, Color color) {
+        colorButton(descID, color, 0);
+    }
+
+    public static void colorButton(String descID, Color color, int flags) {
+        colorButton(descID, color, flags, new Vector2f(0, 0));
+    }
+
+    public static void colorButton(String descID, Color color, int flags, Vector2f size) {
+        nColorButton(descID, color, flags, size);
+    }
+
+    private static native void nColorButton(String descID, Color color, int flags, Vector2f size);
+
+    // Widgets: Trees
+
+    public static boolean treeNode(String label, Object ...fmt) {
+        return nTreeNode(String.format(label, fmt));
+    }
+
+    private static native boolean nTreeNode(String label);
+
+    public static void treePop() {
+        nTreePop();
+    }
+
+    private static native void nTreePop();
+
+    public static boolean collapsingHeader(String label, int flags) {
+        return collapsingHeader(label, flags);
+    }
+
+    private static native boolean nCollapsingHeader2(String label, int flags);
+
+    public static boolean collapsingHeader(String label, boolean open, int flags) {
+        return nCollapsingHeader(label, open, flags);
+    }
+
+    private static native boolean nCollapsingHeader(String label, boolean open, int flags);
+
+    public static boolean beginMainMenuBar() {
+        return nBeginMainMenuBar();
+    }
+
+    private static native boolean nBeginMainMenuBar();
+
+    public static void endMainMenubar() {
+        nEndMainMenuBar();
+    }
+
+    private static native void nEndMainMenuBar();
+
+    public static boolean beginMenuBar() {
+        return nBeginMenuBar();
+    }
+
+    private static native boolean nBeginMenuBar();
+
+    public static void endMenuBar() {
+        nEndMenuBar();
+    }
+
+    private static native void nEndMenuBar();
+
+    public static boolean menuItem(String label, boolean enabled) {
+        return nMenuItem(label, enabled);
+    }
+
+    private static native boolean nMenuItem(String label, boolean enabled);
+
+    public static class MenuItemRet {
+        public boolean activated;
+        public boolean selected;
+    }
+
+    public static MenuItemRet menuItem(String label, boolean selected, boolean enabled) {
+        return nMenuItem2(label, selected, enabled);
+    }
+
+    private static native MenuItemRet nMenuItem2(String label, boolean selected, boolean enabled);
 
     private static void createDeviceObjects() {
         // Backup GL state
