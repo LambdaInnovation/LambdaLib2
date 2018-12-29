@@ -181,6 +181,10 @@ public class ReflectionUtils {
                     return Class.forName(it.getClassName()).getDeclaredField(it.getObjectName());
                 } catch (ClassNotFoundException|NoSuchFieldException ex) {
                     throw new RuntimeException(ex);
+                } catch (NoClassDefFoundError ex)
+                {
+                    Debug.log(String.format("Error when get field %s.%s ", it.getClassName(), it.getObjectName()));
+                    throw new RuntimeException(ex);
                 }
             })
             .collect(Collectors.toList());

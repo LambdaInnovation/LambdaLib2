@@ -43,7 +43,7 @@ public class ShapedOreRegistry implements IRecipeRegistry {
             recipe[y] = spec.toString();
         }
 
-        Debug.log("[ShapedOre] " +
+        Debug.debug("[ShapedOre] " +
                 RecipeRegistry.reprStack(output) + "[" + mirrored + "]" +
                 Joiner.on(',').join(recipe));
         GameRegistry.addShapedRecipe(new ResourceLocation(registry.PREFIX + ':' + UUID.randomUUID()),
