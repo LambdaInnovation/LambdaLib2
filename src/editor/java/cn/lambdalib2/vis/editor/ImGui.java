@@ -261,6 +261,12 @@ public class ImGui {
 
     private static native boolean nBegin(String name, boolean open, int flags);
 
+    public static void end() {
+        nEnd();
+    }
+
+    private static native void nEnd();
+
     public static boolean beginChild(String str_id) {
         return beginChild(str_id, new Vector2f(0, 0));
     }
@@ -278,6 +284,12 @@ public class ImGui {
     }
 
     private static native boolean nBeginChild(String str_id, float sizeX, float sizeY, boolean border, int flags);
+
+    public static void endChild() {
+        nEndChild();
+    }
+
+    private static native void nEndChild();
 
     // Cursor / Layout
     public static void separator() {

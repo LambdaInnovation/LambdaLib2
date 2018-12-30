@@ -13,5 +13,7 @@ if exist build (
     echo "build folder doesn't exist."
 )
 
+pause
+
 @echo on
 

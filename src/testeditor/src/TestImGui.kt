@@ -1,4 +1,5 @@
 import cn.lambdalib2.render.*
+import cn.lambdalib2.util.Colors
 import cn.lambdalib2.vis.editor.ImGui
 import cn.ll2test.common.OfflineTestUtils
 import org.lwjgl.opengl.Display
@@ -21,7 +22,18 @@ object TestImGui {
             glClear(GL_COLOR_BUFFER_BIT)
 
             ImGui.newFrame(0.0f, charArrayOf())
+
+            // Show demo window
             ImGui.showDemoWindow(true)
+
+            // Show java window
+            ImGui.begin("My Test Window", false)
+            ImGui.text("Some Text")
+            ImGui.labelText("Label", "Text")
+            ImGui.textColored(Colors.fromRGB32(0xEE22CCFF.toInt()), "Text Colored")
+            ImGui.textWrapped("asldkfjaksldfjaksld jfasl;kdfj a;sldkjfa;sldjv ao[sidf jaopsdfj[aisdf Some wrapped text")
+            ImGui.end()
+
             ImGui.render()
 
             val error = glGetError()

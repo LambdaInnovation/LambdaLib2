@@ -4,6 +4,46 @@
 #include "imgui.h"
 #include "cn_lambdalib2_vis_editor_ImGui.h"
 
+// Utilities
+
+ImVec4 ParseColor(int col) {
+	int r = (col >> 24) & 0xFF;
+	int g = (col >> 16) & 0xFF;
+	int b = (col >> 8) & 0xFF;
+	int a = (col) & 0xFF;
+	return ImVec4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+}
+
+class JNIStr {
+	const char* chars;
+
+	JNIEnv* env;
+	jstring str;
+
+public:
+	JNIStr(JNIEnv* env, jstring s) : env(env), str(s) {
+		chars = env->GetStringUTFChars(str, nullptr);
+	}
+	
+	~JNIStr() {
+		env->ReleaseStringUTFChars(str, chars);
+	}
+
+	const char* c_str() const {
+		return chars;
+	}
+
+	operator const char*() {
+		return c_str();
+	}
+
+	// Disallow copy & move
+	JNIStr(JNIStr& ref) = delete;
+	JNIStr(JNIStr&& rref) = delete;
+};
+
+// Globals
+
 static JNIEnv* gJNIEnv;
 static jclass gJavaImGuiClass;
 
@@ -272,4 +312,94 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSetFontTexID
 (JNIEnv* env, jclass clz, jint texID) {
 	auto& io = ImGui::GetIO();
 	io.Fonts->TexID = (ImTextureID)(intptr_t)texID;
+}
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBegin
+(JNIEnv* env, jclass clz, jstring name, jboolean open, jint flags) {
+	JNIStr cname(env, name);
+	bool copen = open;
+	ImGui::Begin(cname, &copen, flags);
+	return copen;
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nEnd
+(JNIEnv *, jclass) {
+	ImGui::End();
+}
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBeginChild
+(JNIEnv* env, jclass clz, jstring name, jfloat sx, jfloat sy, jboolean border, jint flags) {
+	JNIStr cname(env, name);
+	auto ret = ImGui::BeginChild(cname, ImVec2(sx, sy), border, flags);
+	return ret;
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nEndChild
+(JNIEnv *, jclass) {
+	ImGui::EndChild();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSeparator
+(JNIEnv *, jclass) {
+	ImGui::Separator();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nNewLine
+(JNIEnv *, jclass) {
+	ImGui::NewLine();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSpacing
+(JNIEnv *, jclass) {
+	ImGui::Spacing();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBeginGroup
+(JNIEnv *, jclass) {
+	ImGui::BeginGroup();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nEndGroup
+(JNIEnv *, jclass) {
+	ImGui::EndGroup();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nPushID
+(JNIEnv * env, jclass, jstring id) {
+	JNIStr cid(env, id);
+	ImGui::PushID(cid);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nPushID2
+(JNIEnv *, jclass, jint id) {
+	ImGui::PushID(id);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nPopID
+(JNIEnv *, jclass) {
+	ImGui::PopID();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nText
+(JNIEnv* env, jclass, jstring s) {
+	JNIStr cs(env, s);
+	ImGui::Text(cs);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nTextColored
+(JNIEnv* env, jclass, jint col, jstring s) {
+	JNIStr cs(env, s);
+	ImGui::TextColored(ParseColor(col), cs);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nTextWrapped
+(JNIEnv* env, jclass, jstring str) {
+	JNIStr cs(env, str);
+	ImGui::TextWrapped(cs);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nLabelText
+(JNIEnv* env, jclass, jstring label, jstring text) {
+	JNIStr clabel(env, label), ctext(env, text);
+	ImGui::LabelText(clabel, ctext);
 }
