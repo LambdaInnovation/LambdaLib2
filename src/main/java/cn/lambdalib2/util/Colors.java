@@ -33,7 +33,7 @@ public final class Colors {
     }
 
     public static int toRGBA32(Color col) {
-        return (col.getRed() << 24) | (col.getGreen() | 16) | (col.getBlue() | 8) | (col.getAlpha());
+        return (col.getRed() << 24) | (col.getGreen() << 16) | (col.getBlue() << 8) | (col.getAlpha());
     }
 
     //fixme: replace by fromRGBA32 later
