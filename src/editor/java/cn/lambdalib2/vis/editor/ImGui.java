@@ -274,10 +274,10 @@ public class ImGui {
     }
 
     public static boolean beginChild(String str_id, Vector2f size, boolean border, int flags) {
-        return nBeginChild(str_id, size, border, flags);
+        return nBeginChild(str_id, size.x, size.y, border, flags);
     }
 
-    private static native boolean nBeginChild(String str_id, Vector2f size, boolean border, int flags);
+    private static native boolean nBeginChild(String str_id, float sizeX, float sizeY, boolean border, int flags);
 
     // Cursor / Layout
     public static void separator() {
@@ -338,10 +338,10 @@ public class ImGui {
     private static native void nText(String s);
     
     public static void textColored(Color c, String str, Object... fmt) {
-        nTextColored(c, String.format(str, fmt));
+        nTextColored(Colors.toRGBA32(c), String.format(str, fmt));
     }
 
-    private static native void nTextColored(Color c, String s);
+    private static native void nTextColored(int c, String s);
 
     public static void textWrapped(String s, Object... fmt) {
         nTextWrapped(String.format(s, fmt));
@@ -368,10 +368,10 @@ public class ImGui {
     }
 
     public static boolean button(String label, Vector2f size) {
-        return nButton(label, size);
+        return nButton(label, size.x, size.y);
     }
 
-    private static native boolean nButton(String label, Vector2f size);
+    private static native boolean nButton(String label, float sizeX, float sizeY);
 
     public static boolean arrowButton(String id, int idr) {
         return nArrowButton(id, idr);
@@ -392,10 +392,11 @@ public class ImGui {
     }
 
     public static void image(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, Color tintColor, Color borderColor) {
-        nImage(textureID, size, uv0, uv1, tintColor, borderColor);
+        nImage(textureID, size.x, size.y, uv0.x, uv0.y, uv1.x, uv1.y, Colors.toRGBA32(tintColor), Colors.toRGBA32(borderColor));
     }
 
-    private static native void nImage(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, Color tintColor, Color borderColor);
+    private static native void nImage(int textureID, float sizex, float sizey,
+        float u0, float v0, float u1, float v1, int tintColor, int borderColor);
 
     public static boolean imageButton(int textureID, Vector2f size) {
         return imageButton(textureID, size, new Vector2f(0, 0), new Vector2f(1, 1), -1);
@@ -406,10 +407,11 @@ public class ImGui {
     }
 
     public static boolean imageButton(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, int framePadding, Color bgCol, Color tintCol) {
-        return nImageButton(textureID, size, uv0, uv1, framePadding, bgCol, tintCol);
+        return nImageButton(textureID, size.x, size.y, uv0.x, uv0.y, uv1.x, uv1.y, framePadding, Colors.toRGBA32(bgCol), Colors.toRGBA32(tintCol));
     }
 
-    private static native boolean nImageButton(int textureID, Vector2f size, Vector2f uv0, Vector2f uv1, int framePadding, Color bgCol, Color tintCol);
+    private static native boolean nImageButton
+        (int textureID, float sx, float sy, float u0, float v0, float u1,  float v1, int framePadding, int bgCol, int tintCol);
 
     public static boolean checkbox(String label, boolean v) {
         return nCheckbox(label, v);
@@ -556,10 +558,10 @@ public class ImGui {
     }
 
     public static String inputTextMultiline(String label, String text, Vector2f size, int flags) {
-        return nInputTextMultiline(label, text, size, flags);
+        return nInputTextMultiline(label, text, size.x, size.y, flags);
     }
 
-    private static native String nInputTextMultiline(String label, String text, Vector2f size, int flags);
+    private static native String nInputTextMultiline(String label, String text, float sx, float sy, int flags);
 
     public static float inputFloat(String label, float v) {
         return inputFloat(label, v, 0);
@@ -669,10 +671,12 @@ public class ImGui {
     
     // Widgets: Color editor/picker
     public static void colorEdit4(String label, Color color, int flags) {
-        nColorEdit4(label, color, flags);
+        int c = nColorEdit4(label, Colors.toRGBA32(color), flags);
+        Color cc = Colors.fromRGBA32(c);
+        color.setColor(cc);
     }
 
-    private static native void nColorEdit4(String label, Color color, int flags);
+    private static native int nColorEdit4(String label, int color, int flags);
 
     public static void colorButton(String descID, Color color) {
         colorButton(descID, color, 0);
@@ -683,10 +687,10 @@ public class ImGui {
     }
 
     public static void colorButton(String descID, Color color, int flags, Vector2f size) {
-        nColorButton(descID, color, flags, size);
+        nColorButton(descID, Colors.toRGBA32(color), flags, size.x, size.y);
     }
 
-    private static native void nColorButton(String descID, Color color, int flags, Vector2f size);
+    private static native void nColorButton(String descID, int color, int flags, float sx, float sy);
 
     // Widgets: Trees
 
