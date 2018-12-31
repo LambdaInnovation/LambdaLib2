@@ -49,6 +49,14 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSeparator
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nSameLine
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSameLine
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nNewLine
  * Signature: ()V
  */
@@ -393,19 +401,11 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nTreePop
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
- * Method:    nCollapsingHeader2
+ * Method:    nCollapsingHeader
  * Signature: (Ljava/lang/String;I)Z
  */
-JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCollapsingHeader2
-  (JNIEnv *, jclass, jstring, jint);
-
-/*
- * Class:     cn_lambdalib2_vis_editor_ImGui
- * Method:    nCollapsingHeader
- * Signature: (Ljava/lang/String;ZI)Z
- */
 JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCollapsingHeader
-  (JNIEnv *, jclass, jstring, jboolean, jint);
+  (JNIEnv *, jclass, jstring, jint);
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
@@ -433,6 +433,22 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBeginMenuBar
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nBeginMenu
+ * Signature: (Ljava/lang/String;Z)Z
+ */
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBeginMenu
+  (JNIEnv *, jclass, jstring, jboolean);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nEndMenu
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nEndMenu
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nEndMenuBar
  * Signature: ()V
  */
@@ -450,10 +466,10 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nMenuItem
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nMenuItem2
- * Signature: (Ljava/lang/String;ZZ)Lcn/lambdalib2/vis/editor/ImGui/MenuItemRet;
+ * Signature: (Ljava/lang/String;Lcn/lambdalib2/vis/editor/ImBoolRef;Z)Z
  */
-JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nMenuItem2
-  (JNIEnv *, jclass, jstring, jboolean, jboolean);
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nMenuItem2
+  (JNIEnv *, jclass, jstring, jobject, jboolean);
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
@@ -511,17 +527,6 @@ JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nGetFontTexARGB32
 JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSetFontTexID
   (JNIEnv *, jclass, jint);
 
-#ifdef __cplusplus
-}
-#endif
-#endif
-/* Header for class cn_lambdalib2_vis_editor_ImGui_MenuItemRet */
-
-#ifndef _Included_cn_lambdalib2_vis_editor_ImGui_MenuItemRet
-#define _Included_cn_lambdalib2_vis_editor_ImGui_MenuItemRet
-#ifdef __cplusplus
-extern "C" {
-#endif
 #ifdef __cplusplus
 }
 #endif

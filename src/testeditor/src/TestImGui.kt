@@ -1,8 +1,10 @@
 import cn.lambdalib2.render.*
 import cn.lambdalib2.util.Colors
+import cn.lambdalib2.vis.editor.ImBoolRef
 import cn.lambdalib2.vis.editor.ImGui
 import cn.lambdalib2.vis.editor.ImGuiDir
 import cn.ll2test.common.OfflineTestUtils
+import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.Display
 import org.lwjgl.opengl.DisplayMode
 import org.lwjgl.opengl.GL11.*
@@ -33,14 +35,31 @@ object TestImGui {
         var testFloat = 0.0f
         var testFloat2 = floatArrayOf(1.0f, 2.0f)
         var testInt = 1
+        var testInt2 = intArrayOf(0, 0)
         var testAngle = 0.0f
+        var testColor = Colors.white()
+        var testText = "A quick brown fox"
+        var testTextMult = "#include <iostream>\nusing"
+        val openAbout = ImBoolRef(false)
 
         while (!Display.isCloseRequested()) {
             glViewport(0, 0, 1280, 720)
             glClearColor(0.1f, 0.1f, 0f, 0f)
             glClear(GL_COLOR_BUFFER_BIT)
 
-            ImGui.newFrame(0.0f, charArrayOf())
+            val inputs = run {
+                val ret = ArrayList<Char>()
+                while (Keyboard.next()) {
+                    if (Keyboard.getEventKeyState()) {
+                        var chr = Keyboard.getEventCharacter()
+                        if (!chr.isISOControl())
+                            ret += chr
+                    }
+                }
+                ret.toCharArray()
+            }
+
+            ImGui.newFrame(0.0f, inputs)
 
             // Show demo window
             ImGui.showDemoWindow(true)
@@ -83,8 +102,62 @@ object TestImGui {
             testInt = ImGui.sliderInt("SliderInt", testInt, 0, 24)
 
             testAngle = ImGui.sliderAngle("TestAngle", testAngle)
+            testInt = ImGui.inputInt("InInt", testInt)
+            ImGui.inputInt2("InInt2", testInt2)
+
+            ImGui.colorEdit4("ColorEdit4", testColor)
+            ImGui.colorButton("ColorButton", testColor)
+            testText = ImGui.inputText("Text", testText)
+            testTextMult = ImGui.inputTextMultiline("TextMult", testTextMult)
+
+            testFloat = ImGui.inputFloat("InFloat", testFloat)
+            ImGui.inputFloat2("InFloat2", testFloat2)
+
+            if (ImGui.treeNode("Hello %s %s %s", 0, 1, 2)) {
+                ImGui.labelText("A", "1")
+                ImGui.labelText("B", "asldkfjaslkc")
+                ImGui.labelText("C", "66.6666")
+
+                ImGui.treePop()
+            }
+
+            if (ImGui.collapsingHeader("CollapsingHeader")) {
+                ImGui.labelText("A", "1")
+                ImGui.labelText("B", "asldkfjaslkc")
+                ImGui.labelText("C", "66.6666")
+                ImGui.text("Some")
+                ImGui.sameLine(); ImGui.button("Some")
+                ImGui.sameLine(); ImGui.button("Horizontal")
+                ImGui.sameLine(); ImGui.button("Layout")
+
+            }
+
+            if (ImGui.beginMainMenuBar()) {
+                if (ImGui.beginMenu("File")) {
+                    if (ImGui.menuItem("Open")) {
+                        println("Oh!!")
+                    }
+                    if (ImGui.menuItem("Save")) {}
+
+                    ImGui.endMenu()
+                }
+                if (ImGui.beginMenu("About")) {
+                    ImGui.menuItem("Hi...", openAbout, true)
+                    ImGui.endMenu()
+                }
+                ImGui.endMainMenubar()
+            }
 
             ImGui.end()
+
+            if (openAbout.value) {
+                openAbout.value = ImGui.begin("About", openAbout.value)
+
+                ImGui.text("ImGui LambdaLib2 binding by WeAthFolD")
+                ImGui.text(":-)")
+
+                ImGui.end()
+            }
 
             ImGui.render()
 

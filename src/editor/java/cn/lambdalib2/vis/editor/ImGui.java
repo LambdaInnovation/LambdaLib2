@@ -209,6 +209,7 @@ public class ImGui {
 
         double t = GameTimer.getAbsTime();
         float dt = (float) MathUtils.clampd(0, 0.33, t - _lastTime);
+        _lastTime = t;
 
         float mx = Mouse.getX();
         float my = dh - Mouse.getY();
@@ -297,6 +298,12 @@ public class ImGui {
     }
 
     private static native void nSeparator();
+
+    public static void sameLine() {
+        nSameLine();
+    }
+
+    private static native void nSameLine();
 
     public static void newLine() {
         nNewLine();
@@ -676,6 +683,10 @@ public class ImGui {
     private static native double nInputDouble(String label, double v, int extraFlags);
     
     // Widgets: Color editor/picker
+    public static void colorEdit4(String label, Color color) {
+        colorEdit4(label, color, 0);
+    }
+
     public static void colorEdit4(String label, Color color, int flags) {
         int c = nColorEdit4(label, Colors.toRGBA32(color), flags);
         Color cc = Colors.fromRGBA32(c);
@@ -712,17 +723,15 @@ public class ImGui {
 
     private static native void nTreePop();
 
+    public static boolean collapsingHeader(String label) {
+        return collapsingHeader(label, 0);
+    }
+
     public static boolean collapsingHeader(String label, int flags) {
-        return collapsingHeader(label, flags);
+        return nCollapsingHeader(label, flags);
     }
 
-    private static native boolean nCollapsingHeader2(String label, int flags);
-
-    public static boolean collapsingHeader(String label, boolean open, int flags) {
-        return nCollapsingHeader(label, open, flags);
-    }
-
-    private static native boolean nCollapsingHeader(String label, boolean open, int flags);
+    private static native boolean nCollapsingHeader(String label,  int flags);
 
     public static boolean beginMainMenuBar() {
         return nBeginMainMenuBar();
@@ -746,7 +755,27 @@ public class ImGui {
         nEndMenuBar();
     }
 
+    public static boolean beginMenu(String label) {
+        return beginMenu(label, true);
+    }
+
+    public static boolean beginMenu(String label, boolean enabled) {
+        return nBeginMenu(label, enabled);
+    }
+
+    private static native boolean nBeginMenu(String label, boolean enabled);
+
+    public static void endMenu() {
+        nEndMenu();
+    }
+
+    private static native void nEndMenu();
+
     private static native void nEndMenuBar();
+
+    public static boolean menuItem(String label) {
+        return menuItem(label, true);
+    }
 
     public static boolean menuItem(String label, boolean enabled) {
         return nMenuItem(label, enabled);
@@ -754,16 +783,13 @@ public class ImGui {
 
     private static native boolean nMenuItem(String label, boolean enabled);
 
-    public static class MenuItemRet {
-        public boolean activated;
-        public boolean selected;
-    }
-
-    public static MenuItemRet menuItem(String label, boolean selected, boolean enabled) {
+    public static boolean menuItem(String label, ImBoolRef selected, boolean enabled) {
+        if (selected == null)
+            return menuItem(label, enabled);
         return nMenuItem2(label, selected, enabled);
     }
 
-    private static native MenuItemRet nMenuItem2(String label, boolean selected, boolean enabled);
+    private static native boolean nMenuItem2(String label, ImBoolRef selected, boolean enabled);
 
     private static void createDeviceObjects() {
         // Backup GL state
