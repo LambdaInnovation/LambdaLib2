@@ -185,14 +185,6 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCheckbox
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
- * Method:    nCheckboxFlags
- * Signature: (Ljava/lang/String;[II)Z
- */
-JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCheckboxFlags
-  (JNIEnv *, jclass, jstring, jintArray, jint);
-
-/*
- * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nRadioButton
  * Signature: (Ljava/lang/String;Z)Z
  */
@@ -226,10 +218,10 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nEndCombo
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nCombo
- * Signature: (Ljava/lang/String;[I[Ljava/lang/String;)Z
+ * Signature: (Ljava/lang/String;I[Ljava/lang/String;)I
  */
-JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCombo
-  (JNIEnv *, jclass, jstring, jintArray, jobjectArray);
+JNIEXPORT jint JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCombo
+  (JNIEnv *, jclass, jstring, jint, jobjectArray);
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui

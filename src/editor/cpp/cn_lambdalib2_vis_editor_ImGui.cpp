@@ -1,5 +1,7 @@
 #include <jni.h>
 #include <iostream>
+#include <algorithm>
+#include <vector>
 #include <string>
 #include "imgui.h"
 #include "cn_lambdalib2_vis_editor_ImGui.h"
@@ -402,4 +404,138 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nLabelText
 (JNIEnv* env, jclass, jstring label, jstring text) {
 	JNIStr clabel(env, label), ctext(env, text);
 	ImGui::LabelText(clabel, ctext);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBulletText
+(JNIEnv* env, jclass clz, jstring str) {
+	JNIStr cstr(env, str);
+	ImGui::BulletText(cstr);
+}
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nButton
+(JNIEnv* env, jclass, jstring str, jfloat sizeX, jfloat sizeY) {
+	JNIStr cstr(env, str);
+	return ImGui::Button(cstr, ImVec2(sizeX, sizeY));
+}
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nArrowButton
+(JNIEnv* env, jclass clz, jstring str, jint dir) {
+	JNIStr cstr(env, str);
+	return ImGui::ArrowButton(cstr, dir);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nImage
+(JNIEnv* env, jclass, jint texID, jfloat sizeX, jfloat sizeY, 
+	jfloat u0, jfloat v0, jfloat u1, jfloat v1, jint tintColor, jint borderColor) {
+	ImGui::Image(reinterpret_cast<ImTextureID>(texID), ImVec2(sizeX, sizeY), ImVec2(u0, v0), ImVec2(u1, v1), 
+		ParseColor(tintColor), ParseColor(borderColor));
+}
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nImageButton
+(JNIEnv* env, jclass, jint texID, jfloat sx, jfloat sy, jfloat u0, jfloat v0, 
+	jfloat u1, jfloat v1, jint framePadding, jint bgCol, jint tintCol) {
+	return ImGui::ImageButton(reinterpret_cast<ImTextureID>(texID), ImVec2(sx, sy), ImVec2(u0, v0),
+		ImVec2(u1, v1), framePadding, ParseColor(bgCol), ParseColor(tintCol));
+}
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCheckbox
+(JNIEnv* env, jclass, jstring text, jboolean active) {
+	JNIStr ctext(env, text);
+	bool cactive = active;
+	ImGui::Checkbox(ctext, &cactive);
+	return cactive;
+}
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nRadioButton
+(JNIEnv* env, jclass, jstring label, jboolean active) {
+	JNIStr clabel(env, label);
+	return ImGui::RadioButton(clabel, active);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBullet
+(JNIEnv *, jclass) {
+	ImGui::Bullet();
+}
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBeginCombo
+(JNIEnv* env, jclass, jstring label, jstring text, jint flags) {
+	JNIStr clabel(env, label), ctext(env, text);
+	return ImGui::BeginCombo(clabel, ctext, flags);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nEndCombo
+(JNIEnv *, jclass) {
+	ImGui::EndCombo();
+}
+
+JNIEXPORT jint JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCombo
+(JNIEnv* env, jclass, jstring label, jint ix, jobjectArray arr) {
+	int cix = ix;
+	int len = env->GetArrayLength(arr);
+	std::vector<const char*> cs;
+	for (int i = 0; i < len; ++i) {
+		auto str = (jstring) env->GetObjectArrayElement(arr, i);
+		cs.push_back(env->GetStringUTFChars(str, nullptr));
+	}
+	
+	JNIStr clabel(env, label);
+	ImGui::Combo(clabel, &cix, &cs.at(0), len);
+
+	for (int i = 0; i < len; ++i) {
+		auto str = (jstring) env->GetObjectArrayElement(arr, i);
+		env->ReleaseStringUTFChars(str, cs[i]);
+	}
+	return cix;
+}
+
+JNIEXPORT jfloat JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderFloat
+(JNIEnv* env, jclass, jstring label, jfloat v, jfloat vmin, jfloat vmax,
+	jstring format, jfloat pwr) {
+	float cf = v;
+	JNIStr clabel(env, label);
+	JNIStr cformat(env, format);
+	ImGui::SliderFloat(clabel, &cf, vmin, vmax, cformat, pwr);
+	return cf;
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderFloat2
+(JNIEnv* env, jclass, jstring label, jfloatArray val,
+	jfloat vmin, jfloat vmax, jstring fmt, jfloat pwr) {
+	JNIStr clabel(env, label), cfmt(env, fmt);
+	auto cval = env->GetFloatArrayElements(val, nullptr);
+	ImGui::SliderFloat2(clabel, cval, vmin, vmax, cfmt, pwr);
+	env->ReleaseFloatArrayElements(val, cval, 0);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderFloat3
+(JNIEnv* env, jclass, jstring label, jfloatArray val,
+	jfloat vmin, jfloat vmax, jstring fmt, jfloat pwr) {
+	JNIStr clabel(env, label), cfmt(env, fmt);
+	auto cval = env->GetFloatArrayElements(val, nullptr);
+	ImGui::SliderFloat3(clabel, cval, vmin, vmax, cfmt, pwr);
+	env->ReleaseFloatArrayElements(val, cval, 0);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderFloat4
+(JNIEnv* env, jclass, jstring label, jfloatArray val,
+	jfloat vmin, jfloat vmax, jstring fmt, jfloat pwr) {
+	JNIStr clabel(env, label), cfmt(env, fmt);
+	auto cval = env->GetFloatArrayElements(val, nullptr);
+	ImGui::SliderFloat4(clabel, cval, vmin, vmax, cfmt, pwr);
+	env->ReleaseFloatArrayElements(val, cval, 0);
+}
+
+JNIEXPORT jfloat JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderAngle
+(JNIEnv* env, jclass, jstring label, jfloat v, jfloat vmin, jfloat vmax, jstring fmt) {
+	JNIStr clabel(env, label), cfmt(env, fmt);
+	ImGui::SliderAngle(clabel, &v, vmin, vmax, cfmt);
+	return v;
+}
+
+JNIEXPORT jint JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderInt
+(JNIEnv* env, jclass, jstring label, jint v, jint vmin, jint vmax) {
+	JNIStr clabel(env, label);
+	int cv = v;
+	ImGui::SliderInt(clabel, &cv, vmin, vmax);
+	return cv;
 }

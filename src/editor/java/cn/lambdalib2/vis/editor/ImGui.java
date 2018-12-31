@@ -385,11 +385,11 @@ public class ImGui {
 
     private static native boolean nButton(String label, float sizeX, float sizeY);
 
-    public static boolean arrowButton(String id, int idr) {
-        return nArrowButton(id, idr);
+    public static boolean arrowButton(String id, ImGuiDir dir) {
+        return nArrowButton(id, dir.ordinal());
     }
 
-    private static native boolean nArrowButton(String id, int idr);
+    private static native boolean nArrowButton(String id, int dir);
 
     public static void image(int textureID, Vector2f size) {
         image(textureID, size, new Vector2f(0, 0), new Vector2f(1, 1));
@@ -431,12 +431,6 @@ public class ImGui {
 
     private static native boolean nCheckbox(String label, boolean v);
 
-    public static boolean checkboxFlags(String label, int[] flags, int flags_value) {
-        return nCheckboxFlags(label, flags, flags_value);
-    }
-
-    private static native boolean nCheckboxFlags(String label, int[] flags, int flags_value);
-
     public static boolean radioButton(String label, boolean active) {
         return nRadioButton(label, active);
     }
@@ -467,11 +461,11 @@ public class ImGui {
 
     private static native void nEndCombo();
 
-    public static boolean combo(String label, int[] currentItem, String[] items) {
+    public static int combo(String label, int currentItem, String[] items) {
         return nCombo(label, currentItem, items);
     }
 
-    private static native boolean nCombo(String label, int[] currentItem, String[] items);
+    private static native int nCombo(String label, int currentItem, String[] items);
     
     // Widget: Drags
 
