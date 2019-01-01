@@ -3,8 +3,11 @@ import cn.lambdalib2.util.Colors
 import cn.lambdalib2.vis.editor.ImBoolRef
 import cn.lambdalib2.vis.editor.ImGui
 import cn.lambdalib2.vis.editor.ImGuiDir
+import cn.lambdalib2.vis.editor.ObjectInspection
 import cn.ll2test.common.OfflineTestUtils
+import net.minecraft.util.ResourceLocation
 import org.lwjgl.input.Keyboard
+import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.Display
 import org.lwjgl.opengl.DisplayMode
 import org.lwjgl.opengl.GL11.*
@@ -13,6 +16,26 @@ import org.lwjgl.util.vector.Vector2f
 object TestImGui {
     enum class TestEnum {
         Fly, Walk, Dive, Crawl
+    }
+
+    class TestInner {
+        val x = 5
+        val y = 6
+        val z = 7
+        val xxddr = "The earth is piercing like a rainbow"
+        val aVector2f = Vector2f()
+    }
+
+    class TestInspection {
+        var x = 5
+        var y = 6
+        var z = 7.5f
+        var testEnum = TestEnum.Fly
+        var aDouble = 1.4142424242
+        val aColor = Colors.white()
+        var aResLoc: ResourceLocation = ResourceLocation("minecraft", "wtf")
+        var aTestInner = TestInner()
+        val aVector2f: Vector2f? = null
     }
 
     @JvmStatic
@@ -59,7 +82,10 @@ object TestImGui {
                 ret.toCharArray()
             }
 
-            ImGui.newFrame(0.0f, inputs)
+            Mouse.poll()
+            val dwheel = Mouse.getDWheel().toFloat() * 0.1f
+
+            ImGui.newFrame(dwheel, inputs)
 
             // Show demo window
             ImGui.showDemoWindow(true)
@@ -129,7 +155,6 @@ object TestImGui {
                 ImGui.sameLine(); ImGui.button("Some")
                 ImGui.sameLine(); ImGui.button("Horizontal")
                 ImGui.sameLine(); ImGui.button("Layout")
-
             }
 
             if (ImGui.beginMainMenuBar()) {
@@ -159,6 +184,8 @@ object TestImGui {
                 ImGui.end()
             }
 
+            testInspection()
+
             ImGui.render()
 
             val error = glGetError()
@@ -170,6 +197,15 @@ object TestImGui {
         }
 
         Display.destroy()
+    }
+
+    val inspection = ObjectInspection()
+    val obj = TestInspection()
+
+    fun testInspection() {
+        ImGui.begin("Test inspection", false)
+        inspection.inspect(obj)
+        ImGui.end()
     }
 
 }

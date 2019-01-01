@@ -329,6 +329,31 @@ public class ImGui {
 
     private static native void nEndGroup();
 
+    public static void pushItemWidth(float width) {
+        nPushItemWidth(width);
+    }
+
+    private static native void nPushItemWidth(float width);
+
+    public static void popItemWidth() {
+        nPopItemWidth();
+    }
+
+    private static native void nPopItemWidth();
+
+    public static void setCursorPosX(float x) {
+        nSetCursorPosX(x);
+    }
+
+    private static native void nSetCursorPosX(float x);
+
+    public static Vector2f getCursorPos() {
+        float[] v = nGetCursorPos();
+        return new Vector2f(v[0], v[1]);
+    }
+
+    private static native float[] nGetCursorPos();
+
     // ID stack/scopes
     
     public static void pushID(String id) {

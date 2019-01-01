@@ -14,6 +14,10 @@ public final class Colors {
         return new Color(0, 0, 0, 255);
     }
 
+    public static Color red() {
+        return new Color(255, 0, 0, 255);
+    }
+
     public static Color fromRGB32(int col) {
         return new Color(
             (col >> 16) & 0xFF,

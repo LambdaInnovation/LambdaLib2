@@ -89,6 +89,38 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nEndGroup
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nPushItemWidth
+ * Signature: (F)V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nPushItemWidth
+  (JNIEnv *, jclass, jfloat);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nPopItemWidth
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nPopItemWidth
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nSetCursorPosX
+ * Signature: (F)V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSetCursorPosX
+  (JNIEnv *, jclass, jfloat);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nGetCursorPos
+ * Signature: ()[F
+ */
+JNIEXPORT jfloatArray JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nGetCursorPos
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nPushID
  * Signature: (Ljava/lang/String;)V
  */

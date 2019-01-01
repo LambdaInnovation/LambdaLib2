@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Supply extra information for {@link cn.lambdalib2.vis.editor.ObjectEditor}. You can also use
+ * Supply extra information for {@link ObjectInspection}. You can also use
  *  this annotation to force inspection of private values.
  */
 @Target(ElementType.FIELD)

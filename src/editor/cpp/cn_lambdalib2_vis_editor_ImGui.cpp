@@ -234,6 +234,7 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nNewFrame
 JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nRender
 (JNIEnv* env, jclass clz) {
 	ImGui::Render();
+
 	auto drawData = ImGui::GetDrawData();
 
 	// Fill ImDrawData
@@ -810,4 +811,28 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nEndMenu
 JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSameLine
 (JNIEnv *, jclass) {
 	ImGui::SameLine();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nPushItemWidth
+(JNIEnv*, jclass, jfloat w) {
+	ImGui::PushItemWidth(w);
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nPopItemWidth
+(JNIEnv* env, jclass) {
+	ImGui::PopItemWidth();
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSetCursorPosX
+(JNIEnv *, jclass, jfloat v) {
+	ImGui::SetCursorPosX(v);
+}
+
+JNIEXPORT jfloatArray JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nGetCursorPos
+(JNIEnv* env, jclass) {
+	auto p = ImGui::GetCursorPos();
+	float arr[] = { p.x, p.y };
+	auto jarr = env->NewFloatArray(2);
+	env->SetFloatArrayRegion(jarr, 0, 2, arr);
+	return jarr;
 }
