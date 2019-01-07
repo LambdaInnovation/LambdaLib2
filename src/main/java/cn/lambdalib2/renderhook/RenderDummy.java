@@ -6,7 +6,6 @@ import static org.lwjgl.opengl.GL11.glRotated;
 import static org.lwjgl.opengl.GL11.glTranslated;
 
 import cn.lambdalib2.registry.mc.RegEntityRender;
-import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.MathUtils;
 import cn.lambdalib2.util.ViewOptimize;
 import net.minecraft.client.renderer.entity.Render;
@@ -51,6 +50,7 @@ public class RenderDummy extends Render {
         } else {
             ViewOptimize.fixThirdPerson();
         }
+        
         for(PlayerRenderHook hook : entity.data.renderers) {
             hook.renderHand(fp);
         }

@@ -7,7 +7,6 @@ import java.util.List;
 import cn.lambdalib2.datapart.DataPart;
 import cn.lambdalib2.datapart.EntityData;
 import cn.lambdalib2.datapart.RegDataPart;
-import cn.lambdalib2.util.Debug;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,11 +36,11 @@ public class DummyRenderData extends DataPart<EntityPlayer> {
         if(entity != null) {
             entity.player = (AbstractClientPlayer) getEntity();
         }
+
         renderers.removeIf(val -> val.disposed);
         
         // Destroy the entity when no more needed, saving resources
         if(entity != null && renderers.size() == 0) {
-            Debug.log("Remove hand effect.");
             entity.setDead();
             entity = null;
         }
@@ -56,10 +55,10 @@ public class DummyRenderData extends DataPart<EntityPlayer> {
         EntityPlayer player = getEntity();
         hook.player = player;
         hook.disposed = false;
+        
         if(entity == null) {
-            entity = new EntityDummy(this);
-            entity.setPositionAndUpdate(player.posX, player.posY + player.getEyeHeight(), player.posZ);
-            player.world.spawnEntity(entity);
+            player.world.spawnEntity(
+                entity = new EntityDummy(this));
         }
         
         renderers.add(hook);
