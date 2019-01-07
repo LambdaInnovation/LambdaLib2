@@ -164,11 +164,11 @@ public class VecUtils {
     }
     
     public static Vec3d entityPos(Entity e) {
-        return _vec(e.posX, e.posY + (isThePlayer(e) ? -1.6 : 0.0), e.posZ);
+        return e.getPositionVector();
     }
 
     public static Vec3d entityHeadPos(Entity e) {
-        return _vec(e.posX, e.posY + (isThePlayer(e) ? 0 : e.getEyeHeight()), e.posZ);
+        return e.getPositionEyes(1f);
     }
 
     @SuppressWarnings("sideonly")

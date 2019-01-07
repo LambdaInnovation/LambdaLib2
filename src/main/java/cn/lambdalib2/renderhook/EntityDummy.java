@@ -27,7 +27,10 @@ public class EntityDummy extends Entity implements IAssociatePlayer {
         super(_data.getEntity().world);
         data = _data;
         player = (AbstractClientPlayer) _data.getEntity();
+        forceSpawn = true;
         ignoreFrustumCheck = true;
+
+        setPosition(player.posX, player.posY, player.posZ);
     }
 
     @Override
@@ -49,8 +52,6 @@ public class EntityDummy extends Entity implements IAssociatePlayer {
         
         posX = player.posX;
         posY = player.posY;
-        if(!player.equals(Minecraft.getMinecraft().player))
-            posY += 1.6;
         posZ = player.posZ;
         
         rotationYaw = player.renderYawOffset;

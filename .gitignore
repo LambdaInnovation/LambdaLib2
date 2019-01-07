@@ -26,3 +26,5 @@ build
 eclipse
 run
 .vscode/
+imgui.ini
+*.log

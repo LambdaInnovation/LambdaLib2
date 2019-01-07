@@ -29,7 +29,7 @@ public class DummyRenderData extends DataPart<EntityPlayer> {
     }
     
     private EntityDummy entity;
-    List<PlayerRenderHook> renderers = new LinkedList();
+    List<PlayerRenderHook> renderers = new LinkedList<>();
     
     @Override
     public void tick() {
@@ -56,7 +56,7 @@ public class DummyRenderData extends DataPart<EntityPlayer> {
         hook.player = player;
         hook.disposed = false;
         
-        if(entity == null) {
+        if(entity == null || entity.isDead) {
             player.world.spawnEntity(
                 entity = new EntityDummy(this));
         }
