@@ -1,6 +1,7 @@
 package cn.lambdalib2.renderhook;
 
 import cn.lambdalib2.registry.mc.RegEntity;
+import cn.lambdalib2.util.Debug;
 import cn.lambdalib2.util.ViewOptimize.IAssociatePlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
@@ -48,10 +49,9 @@ public class EntityDummy extends Entity implements IAssociatePlayer {
         }
         
         posX = player.posX;
-        posY = player.posY;
-        if(!player.equals(Minecraft.getMinecraft().player))
-            posY += 1.6;
+        posY = player.posY + 1.6;
         posZ = player.posZ;
+        Debug.log(String.format("%f %f %f", posX, posY, posZ));
         
         rotationYaw = player.renderYawOffset;
         rotationYawHead = player.rotationYawHead;
