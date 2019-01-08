@@ -173,13 +173,7 @@ public class ImGui {
     private static int g_AttribLocationUV;
     private static int g_AttribLocationColor;
 
-    private static boolean _withoutMC = false;
-
     // Main
-
-    public static void setWithoutMC() {
-        _withoutMC = true;
-    }
 
     public static void newFrame(float dWheel, char[] inputChars) {
         if (!_init) {
@@ -192,20 +186,11 @@ public class ImGui {
         }
 
         float dw, dh;
-        DisplayMode dm = Display.getDisplayMode();
-        dw = dm.getWidth();
-        dh = dm.getHeight();
+        dw = Display.getWidth();
+        dh = Display.getHeight();
 
         float w, h;
-        if (_withoutMC) {
-            w = dw; h = dh;
-        } else {
-            // Note: MC's displayWidth(height) actually is framebuffer size,
-            //  which correspond to IMGUI's displaySize.
-            Minecraft mc = Minecraft.getMinecraft();
-            w = mc.displayWidth;
-            h = mc.displayHeight;
-        }
+        w = dw; h = dh;
 
         double t = GameTimer.getAbsTime();
         float dt = (float) MathUtils.clampd(0, 0.33, t - _lastTime);
@@ -214,7 +199,7 @@ public class ImGui {
         float mx = Mouse.getX();
         float my = dh - Mouse.getY();
 
-        _displayFBScale.set(dw / w, dh / h);
+        _displayFBScale.set(w / dw, h / dh);
 
         for (int i = 0; i < 5; ++i) {
             _mouseDown[i] = Mouse.isButtonDown(i);

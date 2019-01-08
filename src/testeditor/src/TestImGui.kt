@@ -41,7 +41,6 @@ object TestImGui {
     @JvmStatic
     fun main(args: Array<String>) {
         OfflineTestUtils.hackNatives()
-        ImGui.setWithoutMC()
 
         Display.setDisplayMode(DisplayMode(1280, 720))
         Display.create()
