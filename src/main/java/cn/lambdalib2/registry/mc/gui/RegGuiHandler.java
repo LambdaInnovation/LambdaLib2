@@ -29,68 +29,65 @@ public @interface RegGuiHandler {
 
 class RegGuiHandlerImpl {
 
-    private static Map<Object, ModGuiHandler> modHandlers = new HashMap();
+    private static final Map<Object, ModGuiHandler> modHandlers = new HashMap<>();
 
-    private static void regHandler(Object mod, GuiHandlerBase handler) {
+    private static void addHandler(Object mod, GuiHandlerBase handler, int hash) {
         ModGuiHandler modHandler = modHandlers.get(mod);
         if (modHandler == null) {
-            modHandler = new ModGuiHandler();
+            modHandler = new ModGuiHandler(mod);
             modHandlers.put(mod, modHandler);
             NetworkRegistry.INSTANCE.registerGuiHandler(mod, modHandler);
         }
-        int id = modHandler.addHandler(handler.getHandler());
-        handler.register(mod, id);
-    }
 
-    protected static void register(Object mod, GuiHandlerBase value, RegGuiHandler anno, String field) throws Exception {
-        regHandler(mod, value);
+        Debug.assert2(!modHandler.subHandlers.containsKey(hash), "Duplicate hash!!!");
+        modHandler.subHandlers.put(hash, handler);
     }
 
     @StateEventCallback
-    @SuppressWarnings("unchecked")
     private static void init(FMLInitializationEvent ev) {
         ReflectionUtils.getRawObjects(RegGuiHandler.class.getCanonicalName()).forEach(it -> {
             try {
                 Class<?> clz = Class.forName(it.getClassName(), true, Loader.instance().getModClassLoader());
-                RegGuiHandler anno = clz.getAnnotation(RegGuiHandler.class);
                 Object mod = RegistryContext.getModForPackage(clz.getCanonicalName());
                 Field field = clz.getDeclaredField(it.getObjectName());
                 GuiHandlerBase handlerBase = (GuiHandlerBase) field.get(null);
-                register(mod, handlerBase, anno, it.getObjectName());
+                int hash = (field.getDeclaringClass().getCanonicalName() + "#" + field.getName()).hashCode();
+
+                addHandler(mod, handlerBase, hash);
+                handlerBase.init(mod, hash);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
     }
 
-
-//    private static Map<Object, Integer> counterMap = new HashMap<>();
-
     private static class ModGuiHandler implements IGuiHandler {
 
-        private List<IGuiHandler> subHandlers = new ArrayList();
+        public final Object mod;
 
-        public int addHandler(IGuiHandler handler) {
-            subHandlers.add(handler);
-            return subHandlers.size() - 1;
+        // Path hash -> handler
+        private final HashMap<Integer, GuiHandlerBase> subHandlers = new HashMap<>();
+
+        private ModGuiHandler(Object mod) {
+            this.mod = mod;
         }
 
         @Override
         public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-            if (ID >= subHandlers.size()) {
-                Debug.error("Invalid GUI id on server.");
+            if (!subHandlers.containsKey(ID)) {
+                Debug.error("Invalid GUI id: " + ID);
                 return null;
             }
-            return subHandlers.get(ID).getServerGuiElement(0, player, world, x, y, z);
+            return subHandlers.get(ID).getServerContainer(player, world, x, y, z);
         }
 
         @Override
         public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-            if (ID >= subHandlers.size()) {
-                Debug.error("Invalid GUI id on client.");
+            if (!subHandlers.containsKey(ID)) {
+                Debug.error("Invalid GUI id: " + ID);
                 return null;
             }
-            return subHandlers.get(ID).getClientGuiElement(0, player, world, x, y, z);
+            return subHandlers.get(ID).getClientContainer(player, world, x, y, z);
         }
 
     }
