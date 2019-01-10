@@ -836,3 +836,20 @@ JNIEXPORT jfloatArray JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nGetCursorPos
 	env->SetFloatArrayRegion(jarr, 0, 2, arr);
 	return jarr;
 }
+
+JNIEXPORT jfloatArray JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nGetWindowRect
+(JNIEnv* env, jclass) {
+	auto sz = ImGui::GetWindowSize();
+	auto pos = ImGui::GetWindowPos();
+
+	float arr[] = { pos.x, pos.y, sz.x, sz.y };
+	auto jarr = env->NewFloatArray(4);
+	env->SetFloatArrayRegion(jarr, 0, 4, arr);
+	return jarr;
+}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBegin2
+(JNIEnv * env, jclass, jstring name, jint flags) {
+	JNIStr cname(env, name);
+	ImGui::Begin(cname, nullptr, flags);
+}

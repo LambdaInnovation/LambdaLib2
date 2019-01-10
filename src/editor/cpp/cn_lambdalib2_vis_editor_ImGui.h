@@ -9,6 +9,14 @@ extern "C" {
 #endif
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nBegin2
+ * Signature: (Ljava/lang/String;I)V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBegin2
+  (JNIEnv *, jclass, jstring, jint);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nBegin
  * Signature: (Ljava/lang/String;ZI)Z
  */
@@ -502,6 +510,14 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nMenuItem
  */
 JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nMenuItem2
   (JNIEnv *, jclass, jstring, jobject, jboolean);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nGetWindowRect
+ * Signature: ()[F
+ */
+JNIEXPORT jfloatArray JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nGetWindowRect
+  (JNIEnv *, jclass);
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui

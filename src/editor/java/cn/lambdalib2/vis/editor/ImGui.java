@@ -237,6 +237,14 @@ public class ImGui {
     }
 
     // Windows
+    public static void begin(String name) {
+        begin(name, 0);
+    }
+
+    public static void begin(String name, int flags) {
+        nBegin2(name, flags);
+    }
+
     public static boolean begin(String name, boolean open) {
         return begin(name, open, 0);
     }
@@ -244,6 +252,8 @@ public class ImGui {
     public static boolean begin(String name, boolean open, int flags) {
         return nBegin(name, open, flags);
     }
+
+    private static native void nBegin2(String name, int flags);
 
     private static native boolean nBegin(String name, boolean open, int flags);
 
@@ -800,6 +810,17 @@ public class ImGui {
     }
 
     private static native boolean nMenuItem2(String label, ImBoolRef selected, boolean enabled);
+
+    // Windows Utilities
+
+    public static Vector4f getWindowRect() {
+        float[] arr = nGetWindowRect();
+        return new Vector4f(arr[0], arr[1], arr[2], arr[3]);
+    }
+
+    private static native float[] nGetWindowRect();
+
+    //
 
     private static void createDeviceObjects() {
         // Backup GL state
