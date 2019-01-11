@@ -169,6 +169,10 @@ public enum DOMS11n {
         }
     }
 
+    public SerializationHelper getSerHelper() {
+        return serHelper;
+    }
+
     private Node serializeDefault(Document doc, Object obj, String name) {
         Element ret = doc.createElement(name);
         List<Field> fields = serHelper.getExposedFields(obj.getClass());

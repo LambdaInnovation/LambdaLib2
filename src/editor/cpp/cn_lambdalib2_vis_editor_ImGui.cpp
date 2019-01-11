@@ -859,3 +859,8 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBegin2
 	JNIStr cname(env, name);
 	ImGui::Begin(cname, nullptr, flags);
 }
+
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nIsItemClicked
+(JNIEnv *, jclass, jint btn) {
+	return ImGui::IsItemClicked(btn);
+}

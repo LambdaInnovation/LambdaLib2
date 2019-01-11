@@ -4,8 +4,10 @@ import cn.lambdalib2.cgui.CGui
 import cn.lambdalib2.cgui.Widget
 import cn.lambdalib2.cgui.loader.CGUIDocument
 import cn.lambdalib2.registry.StateEventCallback
+import cn.lambdalib2.s11n.xml.DOMS11n
 import cn.lambdalib2.util.Colors
 import cn.lambdalib2.vis.editor.ImGui
+import cn.lambdalib2.vis.editor.ObjectInspection
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.gui.ScaledResolution
@@ -23,6 +25,7 @@ import org.lwjgl.util.Color
 import org.lwjgl.util.vector.Vector2f
 import org.lwjgl.util.vector.Vector3f
 import org.lwjgl.util.vector.Vector4f
+import java.lang.reflect.Field
 
 object CGuiEditor {
 
@@ -59,11 +62,18 @@ object CGuiEditor {
         var dWheel = 0.0f
 
         var targetPath: String? = null
-        var targetWidget: Widget = Widget()
+        var selectedWidget: Widget? = null
+        var reparentingWidget: Widget? = null
 
         val cgui = CGui()
 
         val conf = Conf()
+
+        val inspection = object : ObjectInspection() {
+            override fun getExposedFields(klass: Class<*>?): MutableList<Field> {
+                return DOMS11n.instance.serHelper.getExposedFields(klass)
+            }
+        }
 
         init {
 //            cgui.addWidget(
@@ -72,7 +82,7 @@ object CGuiEditor {
 //                )
 //            )
             val container = CGUIDocument.read(ResourceLocation("academy", "guis/rework/page_wireless.xml"))
-            targetWidget = container.getWidget(0)
+            val targetWidget = container.getWidget(0)
             cgui.addWidget(targetWidget)
         }
 
@@ -102,6 +112,8 @@ object CGuiEditor {
             // ImGui calss begin
             doMenu()
             doHierarchy()
+            if (selectedWidget != null)
+                doInspector(selectedWidget!!)
             ImGui.showDemoWindow(true)
             val sceneRect = doScene()
             // ImGui calls end
@@ -180,30 +192,111 @@ object CGuiEditor {
         }
 
         private fun doHierarchy() {
-            ImGui.begin("Hierarchy")
+            ImGui.begin("Hierarchy", ImGui.WindowFlags_MenuBar)
             if (ImGui.beginMenuBar()) {
-                if (ImGui.button("+")) {
+                if (ImGui.button("Add")) {
 
                 }
 
-                if (ImGui.button("-")) {
+                if (selectedWidget != null) {
+                    val selected = selectedWidget!!
+                    ImGui.text("|")
 
-                }
+                    if (ImGui.button("Del")) {
+                        selected.dispose()
+                        selectedWidget = null
+                    }
 
-                if (ImGui.button("↑")) {
+                    if (ImGui.button("Up")) {
+                        val prevIx = selected.abstractParent.indexOf(selected)
+                        if (prevIx > 0) {
+                            selected.abstractParent.reorder(selected, prevIx - 1)
+                        }
+                    }
 
-                }
+                    if (ImGui.button("Down")) {
+                        val prevIx = selected.abstractParent.indexOf(selected)
+                        if (prevIx < selected.abstractParent.widgetCount() - 1) {
+                            selected.abstractParent.reorder(selected, prevIx + 2)
+                        }
+                    }
 
-                if (ImGui.button("↓")) {
+                    if (ImGui.button("Deselect")) {
+                        selectedWidget = null
+                    }
 
+                    if (reparentingWidget == null && ImGui.button("Reparent")) {
+                        reparentingWidget = selectedWidget
+                    }
                 }
 
                 ImGui.endMenuBar()
             }
 
+            if (reparentingWidget != null) {
+                val reparenting = reparentingWidget!!
+                ImGui.textColored(Colors.fromRGB32(0xFF8888), "REPARENTING: " + reparenting.fullName)
+
+                val sel = selectedWidget
+                val isSelfOrChild = run {
+                    var cur: Widget? = sel
+                    var ret = false
+                    while (cur != null) {
+                        if (cur == reparenting) {
+                            ret = true
+                            break
+                        }
+                        cur = cur.widgetParent
+                    }
+                    ret
+                }
+                if (!isSelfOrChild) {
+                    val text = "TO: " + if (sel == null) {
+                        "<root>"
+                    } else {
+                        sel.fullName
+                    }
+                    ImGui.textColored(Colors.fromRGB32(0xFF8888), text)
+                }
+                if (ImGui.button("CANCEL")) {
+                    reparentingWidget = null
+                }
+                if (!isSelfOrChild) {
+                    ImGui.sameLine()
+                    if (ImGui.button("GO")) {
+                        var name = reparenting.name
+                        val par = reparenting.abstractParent
+                        par.forceRemoveWidget(reparenting)
+
+                        val newpar = sel ?: cgui
+
+                        // Find a suitable name for widget
+                        if (newpar.hasWidget(name)) {
+                            var i = 0
+                            while (newpar.hasWidget("$name $i")) {
+                                i += 1
+                            }
+                            name = "$name $i"
+                        }
+
+                        // Reparent!
+                        newpar.addWidget(name, reparenting)
+                        reparentingWidget = null
+                    }
+                }
+                ImGui.separator()
+            }
+
             fun doWidget(w: Widget) {
                 val isChild = w.widgetCount() == 0
-                if (ImGui.treeNodeEx(w.name, if (isChild) ImGui.TreeNodeFlags_Leaf else 0)) {
+                val nodeFlags = ImGui.TreeNodeFlags_OpenOnArrow or ImGui.TreeNodeFlags_OpenOnDoubleClick or
+                    (if (isChild) ImGui.TreeNodeFlags_Leaf else 0) or
+                    (if (selectedWidget == w) ImGui.TreeNodeFlags_Selected else 0)
+
+                val open = ImGui.treeNodeEx(w.name, nodeFlags)
+                if (ImGui.isItemClicked())
+                    selectedWidget = w
+                if (open) {
                     for (child in w) {
                         doWidget(child)
                     }
@@ -211,10 +304,24 @@ object CGuiEditor {
                 }
             }
 
-            doWidget(targetWidget)
+            for (w in cgui)
+                doWidget(w)
             ImGui.end()
         }
 
+        private fun doInspector(target: Widget) {
+            ImGui.begin("Inspector")
+
+            inspection.inspect(target, "Widget: " + target.fullName)
+
+            ImGui.separator()
+
+            for (com in target.componentList) {
+                inspection.inspect(com)
+            }
+
+            ImGui.end()
+        }
 
         private fun drawSceneContents(rect: Vector4f) {
             GL11.glMatrixMode(GL11.GL_MODELVIEW)

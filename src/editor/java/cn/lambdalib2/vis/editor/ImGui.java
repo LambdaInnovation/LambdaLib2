@@ -136,6 +136,31 @@ class ImDrawData
 }
 
 public class ImGui {
+    public static final int
+        WindowFlags_None                   = 0,
+        WindowFlags_NoTitleBar             = 1 << 0,   // Disable title-bar
+        WindowFlags_NoResize               = 1 << 1,   // Disable user resizing with the lower-right grip
+        WindowFlags_NoMove                 = 1 << 2,   // Disable user moving the window
+        WindowFlags_NoScrollbar            = 1 << 3,   // Disable scrollbars (window can still scroll with mouse or programatically)
+        WindowFlags_NoScrollWithMouse      = 1 << 4,   // Disable user vertically scrolling with mouse wheel. On child window, mouse wheel will be forwarded to the parent unless NoScrollbar is also set.
+        WindowFlags_NoCollapse             = 1 << 5,   // Disable user collapsing window by double-clicking on it
+        WindowFlags_AlwaysAutoResize       = 1 << 6,   // Resize every window to its content every frame
+        WindowFlags_NoBackground           = 1 << 7,   // Disable drawing background color (WindowBg, etc.) and outside border. Similar as using SetNextWindowBgAlpha(0.0f).
+        WindowFlags_NoSavedSettings        = 1 << 8,   // Never load/save settings in .ini file
+        WindowFlags_NoMouseInputs          = 1 << 9,   // Disable catching mouse, hovering test with pass through.
+        WindowFlags_MenuBar                = 1 << 10,  // Has a menu-bar
+        WindowFlags_HorizontalScrollbar    = 1 << 11,  // Allow horizontal scrollbar to appear (off by default). You may use SetNextWindowContentSize(ImVec2(width,0.0f)); prior to calling Begin() to specify width. Read code in imgui_demo in the "Horizontal Scrolling" section.
+        WindowFlags_NoFocusOnAppearing     = 1 << 12,  // Disable taking focus when transitioning from hidden to visible state
+        WindowFlags_NoBringToFrontOnFocus  = 1 << 13,  // Disable bringing window to front when taking focus (e.g. clicking on it or programatically giving it focus)
+        WindowFlags_AlwaysVerticalScrollbar= 1 << 14,  // Always show vertical scrollbar (even if ContentSize.y < Size.y)
+        WindowFlags_AlwaysHorizontalScrollbar=1<< 15,  // Always show horizontal scrollbar (even if ContentSize.x < Size.x)
+        WindowFlags_AlwaysUseWindowPadding = 1 << 16,  // Ensure child windows without border uses style.WindowPadding (ignored by default for non-bordered child windows, because more convenient)
+        WindowFlags_NoNavInputs            = 1 << 18,  // No gamepad/keyboard navigation within the window
+        WindowFlags_NoNavFocus             = 1 << 19,  // No focusing toward this window with gamepad/keyboard navigation (e.g. skipped by CTRL+TAB)
+        WindowFlags_UnsavedDocument        = 1 << 20,  // Append '*' to title without affecting the ID, as a convenience to avoid using the ### operator. When used in a tab/docking context, tab is selected on closure and closure is deferred by one frame to allow code to cancel the closure (with a confirmation popup, etc.) without flicker.
+        WindowFlags_NoNav                  = WindowFlags_NoNavInputs | WindowFlags_NoNavFocus,
+        WindowFlags_NoDecoration           = WindowFlags_NoTitleBar | WindowFlags_NoResize | WindowFlags_NoScrollbar | WindowFlags_NoCollapse,
+        WindowFlags_NoInputs               = WindowFlags_NoMouseInputs | WindowFlags_NoNavInputs | WindowFlags_NoNavFocus;
 
     public static int
         TreeNodeFlags_None                 = 0,
@@ -861,6 +886,16 @@ public class ImGui {
     }
 
     private static native float[] nGetWindowRect();
+
+    public static boolean isItemClicked() {
+        return isItemClicked(0);
+    }
+
+    public static boolean isItemClicked(int btn) {
+        return nIsItemClicked(btn);
+    }
+
+    private static native boolean nIsItemClicked(int btn);
 
     //
 

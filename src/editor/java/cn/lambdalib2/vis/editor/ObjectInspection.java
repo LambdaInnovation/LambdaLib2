@@ -67,6 +67,13 @@ public class ObjectInspection {
             }
         }, Color.class);
 
+        registerMulti(new ObjectEditor<Boolean>() {
+            @Override
+            public Boolean inspect(Boolean target, String fieldName) {
+                return ImGui.checkbox(fieldName, target);
+            }
+        }, boolean.class, Boolean.class);
+
         registerMulti(new ObjectEditor<Enum>() {
             private final Map<Class<? extends Enum>, String[]> namesCache = new HashMap<>();
 
