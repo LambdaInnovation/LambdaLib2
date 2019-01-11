@@ -433,6 +433,14 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nTreeNode
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nTreeNodeEx
+ * Signature: (Ljava/lang/String;I)Z
+ */
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nTreeNodeEx
+  (JNIEnv *, jclass, jstring, jint);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nTreePop
  * Signature: ()V
  */

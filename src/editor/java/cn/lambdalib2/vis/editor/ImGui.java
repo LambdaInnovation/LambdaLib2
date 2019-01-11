@@ -137,6 +137,21 @@ class ImDrawData
 
 public class ImGui {
 
+    public static int
+        TreeNodeFlags_None                 = 0,
+        TreeNodeFlags_Selected             = 1 << 0,   // Draw as selected
+        TreeNodeFlags_Framed               = 1 << 1,   // Full colored frame (e.g. for CollapsingHeader)
+        TreeNodeFlags_AllowItemOverlap     = 1 << 2,   // Hit testing to allow subsequent widgets to overlap this one
+        TreeNodeFlags_NoTreePushOnOpen     = 1 << 3,   // Don't do a TreePush() when open (e.g. for CollapsingHeader) = no extra indent nor pushing on ID stack
+        TreeNodeFlags_NoAutoOpenOnLog      = 1 << 4,   // Don't automatically and temporarily open node when Logging is active (by default logging will automatically open tree nodes)
+        TreeNodeFlags_DefaultOpen          = 1 << 5,   // Default node to be open
+        TreeNodeFlags_OpenOnDoubleClick    = 1 << 6,   // Need double-click to open node
+        TreeNodeFlags_OpenOnArrow          = 1 << 7,   // Only open when clicking on the arrow part. If TreeNodeFlags_OpenOnDoubleClick is also set, single-click arrow or double-click all box to open.
+        TreeNodeFlags_Leaf                 = 1 << 8,   // No collapsing, no arrow (use as a convenience for leaf nodes).
+        TreeNodeFlags_Bullet               = 1 << 9,   // Display a bullet instead of arrow
+        TreeNodeFlags_FramePadding         = 1 << 10,  // Use FramePadding (even for an unframed text node) to vertically align text baseline to regular widget height. Equivalent to calling AlignTextToFramePadding().
+        TreeNodeFlags_CollapsingHeader     = TreeNodeFlags_Framed | TreeNodeFlags_NoTreePushOnOpen | TreeNodeFlags_NoAutoOpenOnLog;
+
     static {
         try {
             URL res = ImGui.class.getResource("/imgui_64.dll");
@@ -512,6 +527,12 @@ public class ImGui {
 
     private static native float nSliderFloat(String label, float v, float vMin, float vMax, String format, float pwr);
 
+    public static void sliderVector2(String label, Vector2f v, float vMin, float vMax) {
+        float[] arr = new float[] { v.x, v.y };
+        sliderFloat2(label, arr, vMin, vMax);
+        v.x = arr[0]; v.y = arr[1];
+    }
+
     public static void sliderFloat2(String label, float[] v, float vMin, float vMax) {
         sliderFloat2(label, v, vMin, vMax, "%.3f");
     }
@@ -609,6 +630,21 @@ public class ImGui {
     }
 
     private static native float nInputFloat(String label, float v, String format, int extraFlags);
+
+    public static void inputVector2(String label, Vector2f v) {
+        inputVector2(label, v, 0);
+    }
+
+    public static void inputVector2(String label, Vector2f v, int extraFlags) {
+        inputVector2(label, v, "%.3f", extraFlags);
+    }
+
+    public static void inputVector2(String label, Vector2f v, String fmt, int extraFlags) {
+        float[] arr = new float[] { v.x, v.y };
+        inputFloat2(label, arr, fmt, extraFlags);
+        v.x = arr[0];
+        v.y = arr[1];
+    }
 
     public static void inputFloat2(String label, float[] v) {
         inputFloat2(label, v, 0);
@@ -735,7 +771,13 @@ public class ImGui {
         return nTreeNode(String.format(label, fmt));
     }
 
+    public static boolean treeNodeEx(String label, int flags) {
+        return nTreeNodeEx(label, flags);
+    }
+
     private static native boolean nTreeNode(String label);
+
+    private static native boolean nTreeNodeEx(String label, int flags);
 
     public static void treePop() {
         nTreePop();

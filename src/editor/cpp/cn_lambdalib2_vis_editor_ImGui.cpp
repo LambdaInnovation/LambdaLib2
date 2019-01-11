@@ -740,6 +740,12 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nTreeNode
 	return ImGui::TreeNode(clabel);
 }
 
+JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nTreeNodeEx
+(JNIEnv* env, jclass, jstring label, jint flags) {
+	JNIStr clabel(env, label);
+	return ImGui::TreeNodeEx(clabel, flags);
+}
+
 JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nTreePop
 (JNIEnv *, jclass) {
 	ImGui::TreePop();
