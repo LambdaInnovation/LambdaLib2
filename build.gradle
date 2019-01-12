@@ -8,13 +8,12 @@ buildscript {
     }
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
-//Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
-
 apply plugin: 'maven'
 
 version = "0.1.2"
 group = "cn.lambdalib2" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "LambdaLib2"
+
 ext.usr = "$System.env.USR"
 ext.pswd = "$System.env.PSWD"
 
@@ -36,7 +35,7 @@ minecraft {
     // simply re-run your setup task after changing the mappings to update your workspace.
     mappings = "snapshot_20180814"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
-    replace "@LAMBDA_LIB_VERSION@", mod_version
+    replace "@LAMBDA_LIB_VERSION@", project.version
 }
 
 dependencies {
