@@ -58,6 +58,9 @@ class ImDrawCmd {
     public int textureID;
     public float clipX, clipY, clipW, clipH;
 
+    public boolean isUserCallback;
+    public int userCallbackID;
+
     public ImDrawCmd(int elemCount, float clipX, float clipY, float clipW, float clipH, int textureID) {
         this.elemCount = elemCount;
         this.clipX = clipX;
@@ -65,6 +68,11 @@ class ImDrawCmd {
         this.clipW = clipW;
         this.clipH = clipH;
         this.textureID = textureID;
+    }
+
+    public ImDrawCmd(int userCallbackID) {
+        isUserCallback = true;
+        this.userCallbackID = userCallbackID;
     }
 }
 
@@ -268,6 +276,7 @@ public class ImGui {
     public static void render() {
         ImDrawData drawData = nRender();
         renderImpl(drawData);
+        _userCallbacks.clear();
     }
 
     // Debug, Demo, Information
@@ -897,6 +906,19 @@ public class ImGui {
 
     private static native boolean nIsItemClicked(int btn);
 
+    // Advanced
+
+    private static final List<Runnable> _userCallbacks = new ArrayList<>();
+
+    public static void addUserCallback(Runnable callback) {
+        int ix = _userCallbacks.size();
+        _userCallbacks.add(callback);
+
+        nAddUserCallback(ix);
+    }
+
+    private static native void nAddUserCallback(int ix);
+
     //
 
     private static void createDeviceObjects() {
@@ -1039,33 +1061,8 @@ public class ImGui {
         // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
         dd.scaleClipRects(_displayFBScale.x, _displayFBScale.y);
 
-        // Backup GL state
-        int last_active_texture = glGetInteger(GL_ACTIVE_TEXTURE);
+        StoredGLState storedGLState = new StoredGLState();
         glActiveTexture(GL_TEXTURE0);
-        int last_program = glGetInteger(GL_CURRENT_PROGRAM);
-        int last_texture = glGetInteger(GL_TEXTURE_BINDING_2D);
-        int last_sampler = glGetInteger(GL_SAMPLER_BINDING);
-        int last_array_buffer = glGetInteger(GL_ARRAY_BUFFER_BINDING);
-        int last_vertex_array = glGetInteger(GL_VERTEX_ARRAY_BINDING);
-        int[] last_polygon_mode = glGetIntegerv(GL_POLYGON_MODE, 2);
-        int[] last_viewport = glGetIntegerv(GL_VIEWPORT, 4);
-        int[] last_scissor_box = glGetIntegerv(GL_SCISSOR_BOX, 4);
-        int last_blend_src_rgb = glGetInteger(GL_BLEND_SRC_RGB);
-        int last_blend_dst_rgb = glGetInteger(GL_BLEND_DST_RGB);
-        int last_blend_src_alpha = glGetInteger(GL_BLEND_SRC_ALPHA);
-        int last_blend_dst_alpha = glGetInteger(GL_BLEND_DST_ALPHA);
-        int last_blend_equation_rgb = glGetInteger(GL_BLEND_EQUATION_RGB);
-        int last_blend_equation_alpha = glGetInteger(GL_BLEND_EQUATION_ALPHA);
-        boolean last_enable_blend = glIsEnabled(GL_BLEND);
-        boolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
-        boolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
-        boolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
-        boolean clip_origin_lower_left = true;
-
-        // GL45 feature
-//        GLenum last_clip_origin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&last_clip_origin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
-//        if (last_clip_origin == GL_UPPER_LEFT)
-//            clip_origin_lower_left = false;
 
         // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
         glEnable(GL_BLEND);
@@ -1139,7 +1136,7 @@ public class ImGui {
             for (int cmd_i = 0; cmd_i < cmd_list.cmdBuffer.length; cmd_i++)
             {
                 ImDrawCmd pcmd = cmd_list.cmdBuffer[cmd_i];
-                {
+                if (!pcmd.isUserCallback) {
                     Vector4f clip_rect = new Vector4f(
                         pcmd.clipX - pos.x,
                         pcmd.clipY - pos.y,
@@ -1147,40 +1144,64 @@ public class ImGui {
                         pcmd.clipH - pos.y);
                     if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
                     {
-                        // Apply scissor/clipping rectangle
-                        if (clip_origin_lower_left)
-                            glScissor((int)clip_rect.x, (int)(fb_height - clip_rect.w), (int)(clip_rect.z - clip_rect.x), (int)(clip_rect.w - clip_rect.y));
-                        else
-                            glScissor((int)clip_rect.x, (int)clip_rect.y, (int)clip_rect.z, (int)clip_rect.w); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
+                        glScissor((int)clip_rect.x, (int)(fb_height - clip_rect.w), (int)(clip_rect.z - clip_rect.x), (int)(clip_rect.w - clip_rect.y));
 
                         // Bind texture, Draw
                         glBindTexture(GL_TEXTURE_2D, pcmd.textureID);
                         glDrawElements(GL_TRIANGLES, pcmd.elemCount, GL_UNSIGNED_INT, idx_buffer_offset * 4);
                     }
+                } else {
+                    _userCallbacks.get(pcmd.userCallbackID).run();
                 }
                 idx_buffer_offset += pcmd.elemCount;
             }
         }
         glDeleteVertexArrays(vao_handle);
-
-        // Restore modified GL state
-        glUseProgram(last_program);
-        glBindTexture(GL_TEXTURE_2D, last_texture);
-        glBindSampler(0, last_sampler);
-        glActiveTexture(last_active_texture);
-        glBindVertexArray(last_vertex_array);
-        glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-        glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
-        glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
-        if (last_enable_blend) glEnable(GL_BLEND); else glDisable(GL_BLEND);
-        if (last_enable_cull_face) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
-        if (last_enable_depth_test) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
-        if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
-        glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
-        glViewport(last_viewport[0], last_viewport[1], last_viewport[2], last_viewport[3]);
-        glScissor(last_scissor_box[0], last_scissor_box[1], last_scissor_box[2], last_scissor_box[3]);
+        storedGLState.restore();
     }
 
+    public static class StoredGLState {
+
+        // Backup GL state
+        int last_active_texture = glGetInteger(GL_ACTIVE_TEXTURE);
+        int last_program = glGetInteger(GL_CURRENT_PROGRAM);
+        int last_texture = glGetInteger(GL_TEXTURE_BINDING_2D);
+        int last_sampler = glGetInteger(GL_SAMPLER_BINDING);
+        int last_array_buffer = glGetInteger(GL_ARRAY_BUFFER_BINDING);
+        int last_vertex_array = glGetInteger(GL_VERTEX_ARRAY_BINDING);
+        int[] last_polygon_mode = glGetIntegerv(GL_POLYGON_MODE, 2);
+        int[] last_viewport = glGetIntegerv(GL_VIEWPORT, 4);
+        int[] last_scissor_box = glGetIntegerv(GL_SCISSOR_BOX, 4);
+        int last_blend_src_rgb = glGetInteger(GL_BLEND_SRC_RGB);
+        int last_blend_dst_rgb = glGetInteger(GL_BLEND_DST_RGB);
+        int last_blend_src_alpha = glGetInteger(GL_BLEND_SRC_ALPHA);
+        int last_blend_dst_alpha = glGetInteger(GL_BLEND_DST_ALPHA);
+        int last_blend_equation_rgb = glGetInteger(GL_BLEND_EQUATION_RGB);
+        int last_blend_equation_alpha = glGetInteger(GL_BLEND_EQUATION_ALPHA);
+        boolean last_enable_blend = glIsEnabled(GL_BLEND);
+        boolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
+        boolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
+        boolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
+
+        public void restore() {
+            // Restore modified GL state
+            glUseProgram(last_program);
+            glBindTexture(GL_TEXTURE_2D, last_texture);
+            glBindSampler(0, last_sampler);
+            glActiveTexture(last_active_texture);
+            glBindVertexArray(last_vertex_array);
+            glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
+            glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
+            glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
+            if (last_enable_blend) glEnable(GL_BLEND); else glDisable(GL_BLEND);
+            if (last_enable_cull_face) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
+            if (last_enable_depth_test) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+            if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
+            glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
+            glViewport(last_viewport[0], last_viewport[1], last_viewport[2], last_viewport[3]);
+            glScissor(last_scissor_box[0], last_scissor_box[1], last_scissor_box[2], last_scissor_box[3]);
+        }
+    }
 
     // NATIVE section
     private static native void nCreateContext();

@@ -585,6 +585,14 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nIsItemClicked
 
 /*
  * Class:     cn_lambdalib2_vis_editor_ImGui
+ * Method:    nAddUserCallback
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nAddUserCallback
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     cn_lambdalib2_vis_editor_ImGui
  * Method:    nCreateContext
  * Signature: ()V
  */

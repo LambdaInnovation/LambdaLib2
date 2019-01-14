@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "cn_lambdalib2_vis_editor_ImGui.h"
 
 // Globals
@@ -256,13 +257,15 @@ JNIEXPORT jobject JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nRender
 
 		// Fill cmd buf
 		auto ctorDrawCmd = env->GetMethodID(clzImDrawCmd, "<init>", "(IFFFFI)V");
+		auto ctorDrawCmdCb = env->GetMethodID(clzImDrawCmd, "<init>", "(I)V");
 		for (int ncmd = 0; ncmd < list->CmdBuffer.Size; ++ncmd) {
 			auto& c = list->CmdBuffer[ncmd];
-			auto jcmd = env->NewObject(clzImDrawCmd, ctorDrawCmd, c.ElemCount, 
-				c.ClipRect.x, c.ClipRect.y, c.ClipRect.z, c.ClipRect.w, (int) c.TextureId);
-
-			if (c.UserCallback != nullptr)
-				std::cout << "WARN: This DrawCmd Has UserCallback!" << std::endl;
+			jobject jcmd;
+			if (c.UserCallback == nullptr)
+				jcmd = env->NewObject(clzImDrawCmd, ctorDrawCmd, c.ElemCount, 
+					c.ClipRect.x, c.ClipRect.y, c.ClipRect.z, c.ClipRect.w, (int) c.TextureId);
+			else
+				jcmd = env->NewObject(clzImDrawCmd, ctorDrawCmdCb, (int) c.UserCallbackData);
 			env->SetObjectArrayElement(arrCmdBuffer, ncmd, jcmd);
 		}
 
@@ -863,4 +866,16 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nBegin2
 JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nIsItemClicked
 (JNIEnv *, jclass, jint btn) {
 	return ImGui::IsItemClicked(btn);
+}
+
+void MyDrawCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd) {}
+
+JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nAddUserCallback
+(JNIEnv* env, jclass, jint ix) {
+	auto g = ImGui::GetCurrentContext();
+	if (g->CurrentWindow != nullptr) {
+		g->CurrentWindow->DrawList->AddCallback(
+			MyDrawCallback, (void*) ix
+		);
+	}
 }

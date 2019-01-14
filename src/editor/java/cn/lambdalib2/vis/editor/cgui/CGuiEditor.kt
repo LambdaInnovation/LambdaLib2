@@ -21,6 +21,10 @@ import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.Display
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL13
+import org.lwjgl.opengl.GL15.*
+import org.lwjgl.opengl.GL30
+import org.lwjgl.opengl.GL30.*
 import org.lwjgl.util.Color
 import org.lwjgl.util.vector.Vector2f
 import org.lwjgl.util.vector.Vector3f
@@ -64,6 +68,7 @@ object CGuiEditor {
         var targetPath: String? = null
         var selectedWidget: Widget? = null
         var reparentingWidget: Widget? = null
+        var sceneRect: Vector4f = Vector4f()
 
         val cgui = CGui()
 
@@ -115,12 +120,12 @@ object CGuiEditor {
             if (selectedWidget != null)
                 doInspector(selectedWidget!!)
             ImGui.showDemoWindow(true)
-            val sceneRect = doScene()
+            sceneRect = doScene()
             // ImGui calls end
 
             ImGui.render()
 
-            drawSceneContents(sceneRect)
+//            drawSceneContents(sceneRect)
 
             GL11.glDisable(GL11.GL_BLEND)
         }
@@ -131,6 +136,8 @@ object CGuiEditor {
             val sceneRect = ImGui.getWindowRect()
             sceneRect.y = Display.getHeight() - sceneRect.y - sceneRect.w
             sceneRect.w -= 20
+
+            ImGui.addUserCallback { this.drawSceneContents(sceneRect) }
 
             ImGui.end()
 
@@ -324,12 +331,17 @@ object CGuiEditor {
         }
 
         private fun drawSceneContents(rect: Vector4f) {
+            val stored = ImGui.StoredGLState()
+
+            glBindVertexArray(0)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+            glBindBuffer(GL_ARRAY_BUFFER, 0)
+
             GL11.glMatrixMode(GL11.GL_MODELVIEW)
             GL11.glPushMatrix()
 //            GL11.glLoadIdentity()
             val aspect = rect.z / rect.w
 
-            val lastViewport = glGetIntegerv(GL11.GL_VIEWPORT, 4);
             GL11.glViewport(rect.x.toInt(), rect.y.toInt(), rect.z.toInt(), rect.w.toInt())
 
             val strechX = rect.z / Display.getWidth()
@@ -355,9 +367,9 @@ object CGuiEditor {
             cgui.draw()
 
             // Restore
-            GL11.glViewport(lastViewport[0], lastViewport[1], lastViewport[2], lastViewport[3])
-
             GL11.glPopMatrix()
+
+            stored.restore()
         }
 
         // Utils
