@@ -11,6 +11,7 @@ import cn.lambdalib2.render.font.Fonts
 import cn.lambdalib2.render.font.IFont
 import cn.lambdalib2.s11n.xml.DOMS11n
 import cn.lambdalib2.util.Colors
+import cn.lambdalib2.util.HudUtils
 import cn.lambdalib2.util.ReflectionUtils
 import cn.lambdalib2.util.TickScheduler
 import cn.lambdalib2.vis.editor.ImGui
@@ -31,6 +32,7 @@ import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.Display
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL15.*
+import org.lwjgl.opengl.GL20.glUseProgram
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.util.vector.Vector2f
 import org.lwjgl.util.vector.Vector4f
@@ -446,7 +448,7 @@ object CGuiEditor {
 
         private fun drawSceneContents(rect: Vector4f) {
             val stored = ImGui.StoredGLState()
-
+            glUseProgram(0)
             glBindVertexArray(0)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
             glBindBuffer(GL_ARRAY_BUFFER, 0)
@@ -461,15 +463,15 @@ object CGuiEditor {
             val strechX = rect.z / Display.getWidth()
             val strechY = rect.w / Display.getHeight()
 
-            val scaledRes = ScaledResolution(Minecraft.getMinecraft())
-            val invScaleFactor = 1.0f / scaledRes.scaleFactor.toFloat()
-            val virtualScaleFactor = when (conf.sceneConf.simulateMC) {
-                true -> Math.max(Math.max((rect.z / 320).toInt(), (rect.w / 240).toInt()), 1)
-                false -> 1
+            val virtualScaleFactor: Float = when (conf.sceneConf.simulateMC) {
+                true -> Math.max(Math.min((rect.z / 320).toInt(), (rect.w / 240).toInt()), 1).toFloat()
+                false -> 1.0f
             }
 
+            val scaledRes = ScaledResolution(Minecraft.getMinecraft())
+            val scaleFactor = scaledRes.scaleFactor.toFloat()
 //            val virtualScaleFactor = 1
-            GL11.glScalef(virtualScaleFactor * invScaleFactor / strechX, virtualScaleFactor * invScaleFactor / strechY, 1.0f)
+            GL11.glScalef(virtualScaleFactor / strechX / scaleFactor, virtualScaleFactor / strechY / scaleFactor, 1.0f)
 
             if (!conf.sceneConf.simulateMC) {
                 GL11.glTranslatef(conf.sceneConf.offset.x, conf.sceneConf.offset.y, 0f)
@@ -477,7 +479,13 @@ object CGuiEditor {
                 GL11.glScalef(scl, scl, 1f)
             }
 
-            cgui.resize(320.0f, 320.0f / aspect)
+            if (conf.sceneConf.simulateMC)
+                cgui.resize(rect.z / virtualScaleFactor, rect.w / virtualScaleFactor)
+            else
+                cgui.resize(rect.z, rect.w)
+
+            GL11.glColor4f(1f, 1f, 1f, 1f)
+            HudUtils.drawRectOutline(0.0, 0.0, rect.z.toDouble(), rect.w.toDouble(), 5.0f)
             cgui.draw()
 
             // Restore
