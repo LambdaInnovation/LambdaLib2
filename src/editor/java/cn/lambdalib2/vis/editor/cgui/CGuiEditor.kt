@@ -82,7 +82,7 @@ object CGuiEditor {
         val inputBuffer = ArrayList<Char>()
         var dWheel = 0.0f
 
-        var targetPath: String? = null
+        var targetPath: File? = null
         var selectedWidget: Widget? = null
         var reparentingWidget: Widget? = null
         var sceneRect: Vector4f = Vector4f()
@@ -100,12 +100,6 @@ object CGuiEditor {
             override fun getExposedFields(klass: Class<*>?): MutableList<Field> {
                 return DOMS11n.instance.serHelper.getExposedFields(klass)
             }
-        }
-
-        init {
-            val container = CGUIDocument.read(ResourceLocation("academy", "guis/rework/page_wireless.xml"))
-            val targetWidget = container.getWidget(0)
-            cgui.addWidget(targetWidget.name, targetWidget.copy())
         }
 
         override fun handleKeyboardInput() {
@@ -165,11 +159,10 @@ object CGuiEditor {
         private fun doMenu() {
             if (ImGui.beginMainMenuBar()) {
                 if (ImGui.beginMenu("File")) {
-
                     if (ImGui.menuItem("Open")) {
-                        val fd = FileDialog(frame, "Choose a file", FileDialog.LOAD)
+                        val fd = FileDialog(frame, "Open...", FileDialog.LOAD)
 
-                        fd.directory = "D:\\" // TODO
+                        fd.directory = File(".").absolutePath
                         fd.file = "*.xml"
                         fd.isVisible = true
 
@@ -182,15 +175,33 @@ object CGuiEditor {
                             }
                         }
                     }
+                    fun saveAs() {
+                        val fd = FileDialog(frame, "Save As...", FileDialog.SAVE)
+                        if (targetPath != null) {
+                            fd.directory = targetPath!!.parentFile.absolutePath
+                            fd.file = targetPath!!.name
+                        } else {
+                            fd.directory = File("").absolutePath
+                            fd.file = "untitled.xml"
+                        }
+                        fd.isVisible = true
 
+                        if (fd.file != null) {
+                            val file = File(fd.directory, fd.file)
+                            CGUIDocument.write(cgui, file)
+                            targetPath = file
+                        }
+                    }
                     if (ImGui.menuItem("Save")) {
-
+                        if (targetPath == null)
+                            saveAs()
+                        else {
+                            CGUIDocument.write(cgui, targetPath)
+                        }
                     }
-
                     if (ImGui.menuItem("Save As")) {
-
+                        saveAs()
                     }
-
                     if (ImGui.menuItem("Exit")) {
                         Minecraft.getMinecraft().displayGuiScreen(null)
                     }
@@ -228,6 +239,7 @@ object CGuiEditor {
                     ImGui.endMenu()
                 }
 
+                ImGui.textColored(Colors.fromRGB32(0xFF8888), if (targetPath == null) "UNNAMED DOCUMENT" else targetPath!!.name)
 
                 ImGui.endMainMenubar()
             }
@@ -242,7 +254,11 @@ object CGuiEditor {
             ImGui.begin("Hierarchy", ImGui.WindowFlags_MenuBar)
             if (ImGui.beginMenuBar()) {
                 if (ImGui.button("Add")) {
+                    val w = Widget()
+                    val container = if (selectedWidget == null) cgui else selectedWidget!!
+                    container.addWidget(w)
 
+                    selectedWidget = w
                 }
 
                 if (selectedWidget != null) {
