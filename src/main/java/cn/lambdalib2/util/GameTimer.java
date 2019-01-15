@@ -1,8 +1,8 @@
 package cn.lambdalib2.util;
 
+import cn.lambdalib2.registry.mc.RegEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -14,17 +14,22 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * @author WeAthFolD
  */
 public enum GameTimer {
+    @RegEventHandler
     INSTANCE;
 
-    GameTimer() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
+    GameTimer() {}
 
     static long storedTime, timeLag;
 
     static long beginTimeClient, beginTimeServer;
 
     public static double getTime() {
+        if (Minecraft.getMinecraft() == null) { // No minecraft, headless mode
+            if (beginTimeClient == 0L)
+                beginTimeClient = System.currentTimeMillis();
+            return (System.currentTimeMillis() - beginTimeClient) / 1000.0;
+        }
+
         boolean isClient = FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT;
         return getTime(isClient);
     }

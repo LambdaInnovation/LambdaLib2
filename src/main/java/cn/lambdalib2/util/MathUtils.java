@@ -109,5 +109,13 @@ public class MathUtils {
     public static double lengthSq(double dx, double dy, double dz) {
         return dx * dx + dy * dy + dz * dz;
     }
-    
+
+    public static float clamp01(float x) {
+        return x < 0 ? 0 : (x > 1 ? 1 : x);
+    }
+
+    public static double clamp01(double x) {
+        return x < 0 ? 0 : (x > 1 ? 1 : x);
+    }
+
 }

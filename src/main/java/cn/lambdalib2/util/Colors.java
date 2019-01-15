@@ -14,6 +14,10 @@ public final class Colors {
         return new Color(0, 0, 0, 255);
     }
 
+    public static Color red() {
+        return new Color(255, 0, 0, 255);
+    }
+
     public static Color fromRGB32(int col) {
         return new Color(
             (col >> 16) & 0xFF,
@@ -33,7 +37,7 @@ public final class Colors {
     }
 
     public static int toRGBA32(Color col) {
-        return (col.getRed() << 24) | (col.getGreen() | 16) | (col.getBlue() | 8) | (col.getAlpha());
+        return (col.getRed() << 24) | (col.getGreen() << 16) | (col.getBlue() << 8) | (col.getAlpha());
     }
 
     //fixme: replace by fromRGBA32 later

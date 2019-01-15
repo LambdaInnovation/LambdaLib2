@@ -9,6 +9,7 @@ package cn.lambdalib2.cgui.component;
 import java.util.*;
 
 import cn.lambdalib2.cgui.Widget;
+import cn.lambdalib2.cgui.annotation.CGuiEditorComponent;
 import cn.lambdalib2.cgui.event.GuiEvent;
 import cn.lambdalib2.util.MathUtils;
 import com.google.common.collect.ImmutableList;
@@ -18,6 +19,7 @@ import com.google.common.collect.ImmutableList;
  * You can add Widgets both before adding the component and in runtime.
  * @author WeAthFolD
  */
+@CGuiEditorComponent
 public class ElementList extends Component {
     
     private List<Widget> subWidgets = new LinkedList<>();

@@ -7,10 +7,12 @@
 package cn.lambdalib2.cgui.component;
 
 import cn.lambdalib2.cgui.Widget;
+import cn.lambdalib2.cgui.annotation.CGuiEditorComponent;
 import cn.lambdalib2.cgui.event.DragEvent;
 import cn.lambdalib2.cgui.event.GuiEvent;
 import cn.lambdalib2.util.MathUtils;
 
+@CGuiEditorComponent
 public class DragBar extends Component {
 
     public static class DraggedEvent implements GuiEvent {}

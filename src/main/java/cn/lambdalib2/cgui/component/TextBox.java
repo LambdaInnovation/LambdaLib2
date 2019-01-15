@@ -6,6 +6,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+
+import cn.lambdalib2.cgui.annotation.CGuiEditorComponent;
 import net.minecraft.client.resources.I18n;
 
 import cn.lambdalib2.cgui.Widget;
@@ -30,6 +32,7 @@ import org.lwjgl.util.vector.Vector2f;
  * Textbox displays text on the widget area, it might also be edited. TextBox is designed to handle single-line texts.
  * @author WeAthFolD
  */
+@CGuiEditorComponent
 public class TextBox extends Component {
     
     /**
