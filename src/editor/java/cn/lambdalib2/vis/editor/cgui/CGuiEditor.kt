@@ -10,10 +10,7 @@ import cn.lambdalib2.registry.StateEventCallback
 import cn.lambdalib2.render.font.Fonts
 import cn.lambdalib2.render.font.IFont
 import cn.lambdalib2.s11n.xml.DOMS11n
-import cn.lambdalib2.util.Colors
-import cn.lambdalib2.util.HudUtils
-import cn.lambdalib2.util.ReflectionUtils
-import cn.lambdalib2.util.TickScheduler
+import cn.lambdalib2.util.*
 import cn.lambdalib2.vis.editor.ImGui
 import cn.lambdalib2.vis.editor.ObjectEditor
 import cn.lambdalib2.vis.editor.ObjectInspection
@@ -78,6 +75,11 @@ object CGuiEditor {
 
     internal val compponentTypes = ReflectionUtils.getClasses(CGuiEditorComponent::class.java)
 
+    // The gui and opening file persists as long as you don't quit MC
+    private val cgui = CGui()
+    private var targetPath: File? = null
+
+    // Config persists in disk
     private fun writeConf(conf: Conf) {
         val json = gson.toJson(conf)
         confPath.writeText(json)
@@ -94,12 +96,9 @@ object CGuiEditor {
         val inputBuffer = ArrayList<Char>()
         var dWheel = 0.0f
 
-        var targetPath: File? = null
         var selectedWidget: Widget? = null
         var reparentingWidget: Widget? = null
         var sceneRect: Vector4f = Vector4f()
-
-        val cgui = CGui()
 
         val conf = readConf()
         val saveScheduler = TickScheduler()
@@ -133,8 +132,41 @@ object CGuiEditor {
         }
 
         override fun handleMouseInput() {
-//            super.handleMouseInput()
+            super.handleMouseInput()
             dWheel += Mouse.getEventDWheel()
+        }
+
+        override fun mouseClickMove(mouseX: Int, mouseY: Int, clickedMouseButton: Int, timeSinceLastClick: Long) {
+            val mpos = mapMousePos(mouseX, mouseY) ?: return
+            cgui.mouseClickMove(mpos.x.toInt(), mpos.y.toInt(), clickedMouseButton, timeSinceLastClick)
+        }
+
+        override fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int) {
+            val mpos = mapMousePos(mouseX, mouseY) ?: return
+            cgui.mouseClicked(mpos.x.toInt(), mpos.y.toInt(), mouseButton)
+        }
+
+        private fun mapMousePos(x: Int, y: Int, clamp: Boolean = false): Vector2f? {
+            val realX = x * mc.displayWidth / width
+            val realY = y * mc.displayHeight / height
+            if (!clamp && (realX < sceneRect.x || realX > sceneRect.x + sceneRect.z))
+                return null
+            if (!clamp && (realY < sceneRect.y || realY > sceneRect.y + sceneRect.w))
+                return null
+
+            val ret = Vector2f(
+                cgui.width * MathUtils.clamp01((realX.toFloat() - sceneRect.x) / sceneRect.z),
+                cgui.height * MathUtils.clamp01((realY.toFloat() - sceneRect.y) / sceneRect.w)
+            )
+
+            if (!conf.sceneConf.simulateMC) {
+                ret.x -= conf.sceneConf.offset.x
+                ret.y -= conf.sceneConf.offset.y
+                ret.x /= conf.sceneConf.scale
+                ret.y /= conf.sceneConf.scale
+            }
+
+            return ret
         }
 
         override fun drawScreen(mx: Int, my: Int, w: Float) {
@@ -154,7 +186,7 @@ object CGuiEditor {
             if (selectedWidget != null)
                 doInspector(selectedWidget!!)
             ImGui.showDemoWindow(true)
-            sceneRect = doScene()
+            sceneRect = doScene(mx, my)
             // ImGui calls end
 
             ImGui.render()
@@ -164,14 +196,14 @@ object CGuiEditor {
             GL11.glDisable(GL11.GL_BLEND)
         }
 
-        private fun doScene(): Vector4f {
+        private fun doScene(mx: Int, my: Int): Vector4f {
             ImGui.begin("Scene")
 
             val sceneRect = ImGui.getWindowRect()
             sceneRect.y = Display.getHeight() - sceneRect.y - sceneRect.w
             sceneRect.w -= 20
 
-            ImGui.addUserCallback { this.drawSceneContents(sceneRect) }
+            ImGui.addUserCallback { this.drawSceneContents(sceneRect, mx, my) }
 
             ImGui.end()
 
@@ -446,7 +478,7 @@ object CGuiEditor {
             ImGui.end()
         }
 
-        private fun drawSceneContents(rect: Vector4f) {
+        private fun drawSceneContents(rect: Vector4f, mx: Int, my: Int) {
             val stored = ImGui.StoredGLState()
             glUseProgram(0)
             glBindVertexArray(0)
@@ -486,7 +518,9 @@ object CGuiEditor {
 
             GL11.glColor4f(1f, 1f, 1f, 1f)
             HudUtils.drawRectOutline(0.0, 0.0, rect.z.toDouble(), rect.w.toDouble(), 5.0f)
-            cgui.draw()
+
+            val mappedMousePos = mapMousePos(mx, my, true)!!
+            cgui.draw(mappedMousePos.x, mappedMousePos.y)
 
             // Restore
             GL11.glPopMatrix()

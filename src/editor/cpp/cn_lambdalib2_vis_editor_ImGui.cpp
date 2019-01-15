@@ -135,6 +135,7 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCreateContext
 
 	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
 	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+	io.ConfigWindowsMoveFromTitleBarOnly = true;
 	io.BackendPlatformName = "imgui_impl_lwjgl";
 
     // Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
