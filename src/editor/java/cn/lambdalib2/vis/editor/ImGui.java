@@ -887,6 +887,22 @@ public class ImGui {
 
     private static native boolean nMenuItem2(String label, ImBoolRef selected, boolean enabled);
 
+    private static final List<Boolean> changeCheckStack = new ArrayList<>();
+
+    public static void beginChangeCheck() {
+        changeCheckStack.add(false);
+    }
+
+    public static boolean endChangeCheck() {
+        if (changeCheckStack.size() == 0) {
+            throw new RuntimeException("ChangeCheck stack is empty!!");
+        }
+
+        boolean ret = changeCheckStack.get(changeCheckStack.size() - 1);
+        changeCheckStack.remove(changeCheckStack.size() - 1);
+        return ret;
+    }
+
     // Windows Utilities
 
     public static Vector4f getWindowRect() {
@@ -1247,6 +1263,12 @@ public class ImGui {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringSelection ss = new StringSelection(content);
         cb.setContents(ss, ss);
+    }
+
+    private static void markChanged() {
+        for (int i = 0; i < changeCheckStack.size(); ++i) {
+            changeCheckStack.set(i, true);
+        }
     }
 
 }

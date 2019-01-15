@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import cn.lambdalib2.cgui.Widget;
+import cn.lambdalib2.cgui.annotation.CGuiEditorComponent;
 import cn.lambdalib2.cgui.event.FrameEvent;
 import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.HudUtils;
@@ -18,6 +19,7 @@ import org.lwjgl.util.Color;
 /**
  * Draws a squared texture that fills the area of the given widget.
  */
+@CGuiEditorComponent
 public class DrawTexture extends Component {
     
     public static final ResourceLocation MISSING = new ResourceLocation("lambdalib2:textures/cgui/missing.png");

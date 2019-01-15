@@ -13,8 +13,13 @@ static JNIEnv* gJNIEnv;
 static jclass gJavaImGuiClass;
 static jclass gJavaImBoolRefClass;
 static jfieldID gImBoolRef_value;
+static jmethodID gImGui_markChanged;
 
 // Utilities
+
+void MarkChanged() {
+	gJNIEnv->CallStaticVoidMethod(gJavaImGuiClass, gImGui_markChanged);
+}
 
 ImVec4 ParseColor(int col) {
 	int r = (col >> 24) & 0xFF;
@@ -116,6 +121,7 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCreateContext
 (JNIEnv * env, jclass clz) {
 	gJNIEnv = env;
 	gJavaImGuiClass = clz;
+	gImGui_markChanged = env->GetStaticMethodID(gJavaImGuiClass, "markChanged", "()V");
 
 	gJavaImBoolRefClass = env->FindClass("cn/lambdalib2/vis/editor/ImBoolRef");
 	gImBoolRef_value = env->GetFieldID(gJavaImBoolRefClass, "value", "Z");
@@ -152,8 +158,8 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCreateContext
     io.KeyMap[ImGuiKey_Y] = KEY_Y;
     io.KeyMap[ImGuiKey_Z] = KEY_Z;
 
-	io.GetClipboardTextFn = GetClipboardText;
-	io.SetClipboardTextFn = SetClipboardText;
+	// io.GetClipboardTextFn = GetClipboardText;
+	// io.SetClipboardTextFn = SetClipboardText;
 
 	std::cout << "IMGui: nCreateContext finish" << std::endl;
 }
@@ -468,7 +474,9 @@ JNIEXPORT jboolean JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCheckbox
 (JNIEnv* env, jclass, jstring text, jboolean active) {
 	JNIStr ctext(env, text);
 	bool cactive = active;
-	ImGui::Checkbox(ctext, &cactive);
+	if (ImGui::Checkbox(ctext, &cactive)) {
+		MarkChanged();
+	}
 	return cactive;
 }
 
@@ -505,7 +513,9 @@ JNIEXPORT jint JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nCombo
 	}
 	
 	JNIStr clabel(env, label);
-	ImGui::Combo(clabel, &cix, &cs.at(0), len);
+	if (ImGui::Combo(clabel, &cix, &cs.at(0), len)) {
+		MarkChanged();
+	}
 
 	for (int i = 0; i < len; ++i) {
 		auto str = (jstring) env->GetObjectArrayElement(arr, i);
@@ -520,7 +530,9 @@ JNIEXPORT jfloat JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderFloat
 	float cf = v;
 	JNIStr clabel(env, label);
 	JNIStr cformat(env, format);
-	ImGui::SliderFloat(clabel, &cf, vmin, vmax, cformat, pwr);
+	if (ImGui::SliderFloat(clabel, &cf, vmin, vmax, cformat, pwr)) {
+		MarkChanged();
+	}
 	return cf;
 }
 
@@ -529,7 +541,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderFloat2
 	jfloat vmin, jfloat vmax, jstring fmt, jfloat pwr) {
 	JNIStr clabel(env, label), cfmt(env, fmt);
 	auto cval = env->GetFloatArrayElements(val, nullptr);
-	ImGui::SliderFloat2(clabel, cval, vmin, vmax, cfmt, pwr);
+	if (ImGui::SliderFloat2(clabel, cval, vmin, vmax, cfmt, pwr)) {
+		MarkChanged();
+	}
 	env->ReleaseFloatArrayElements(val, cval, 0);
 }
 
@@ -538,7 +552,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderFloat3
 	jfloat vmin, jfloat vmax, jstring fmt, jfloat pwr) {
 	JNIStr clabel(env, label), cfmt(env, fmt);
 	auto cval = env->GetFloatArrayElements(val, nullptr);
-	ImGui::SliderFloat3(clabel, cval, vmin, vmax, cfmt, pwr);
+	if (ImGui::SliderFloat3(clabel, cval, vmin, vmax, cfmt, pwr)) {
+		MarkChanged();
+	}
 	env->ReleaseFloatArrayElements(val, cval, 0);
 }
 
@@ -547,14 +563,18 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderFloat4
 	jfloat vmin, jfloat vmax, jstring fmt, jfloat pwr) {
 	JNIStr clabel(env, label), cfmt(env, fmt);
 	auto cval = env->GetFloatArrayElements(val, nullptr);
-	ImGui::SliderFloat4(clabel, cval, vmin, vmax, cfmt, pwr);
+	if (ImGui::SliderFloat4(clabel, cval, vmin, vmax, cfmt, pwr)) {
+		MarkChanged();
+	}
 	env->ReleaseFloatArrayElements(val, cval, 0);
 }
 
 JNIEXPORT jfloat JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderAngle
 (JNIEnv* env, jclass, jstring label, jfloat v, jfloat vmin, jfloat vmax, jstring fmt) {
 	JNIStr clabel(env, label), cfmt(env, fmt);
-	ImGui::SliderAngle(clabel, &v, vmin, vmax, cfmt);
+	if (ImGui::SliderAngle(clabel, &v, vmin, vmax, cfmt)) {
+		MarkChanged();
+	}
 	return v;
 }
 
@@ -562,7 +582,9 @@ JNIEXPORT jint JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nSliderInt
 (JNIEnv* env, jclass, jstring label, jint v, jint vmin, jint vmax) {
 	JNIStr clabel(env, label);
 	int cv = v;
-	ImGui::SliderInt(clabel, &cv, vmin, vmax);
+	if (ImGui::SliderInt(clabel, &cv, vmin, vmax)) {
+		MarkChanged();
+	}
 	return cv;
 }
 
@@ -574,7 +596,9 @@ JNIEXPORT jstring JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputText
 	JNIStr ctext(env, text);
 	strcpy(textBuf, ctext);
 
-	ImGui::InputText(clabel, textBuf, 65535, flags);
+	if (ImGui::InputText(clabel, textBuf, 65535, flags)) {
+		MarkChanged();
+	}
 
 	return strcmp(textBuf, ctext) == 0 ? text : env->NewStringUTF(textBuf);
 }
@@ -585,7 +609,9 @@ JNIEXPORT jstring JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputTextMultilin
 	JNIStr ctext(env, text);
 	strcpy(textBuf, ctext);
 
-	ImGui::InputTextMultiline(clabel, textBuf, 65535, ImVec2(sx, sy), flags);
+	if (ImGui::InputTextMultiline(clabel, textBuf, 65535, ImVec2(sx, sy), flags)) {
+		MarkChanged();
+	}
 
 	return strcmp(textBuf, ctext) == 0 ? text : env->NewStringUTF(textBuf);
 }
@@ -594,7 +620,9 @@ JNIEXPORT jfloat JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputFloat
 (JNIEnv* env, jclass, jstring label, jfloat v, jstring fmt, jint flags) {
 	JNIStr clabel(env, label);
 	JNIStr cfmt(env, fmt);
-	ImGui::InputFloat(clabel, &v, 0.0f, 0.0f, cfmt, flags);
+	if (ImGui::InputFloat(clabel, &v, 0.0f, 0.0f, cfmt, flags)) {
+		MarkChanged();
+	}
 	return v;
 }
 
@@ -602,7 +630,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputFloat2
 (JNIEnv* env, jclass, jstring label, jfloatArray v, jstring fmt, jint flags) {
 	JNIStr clabel(env, label), cfmt(env, fmt);
 	auto cv = env->GetFloatArrayElements(v, nullptr);
-	ImGui::InputFloat2(clabel, cv, cfmt, flags);
+	if (ImGui::InputFloat2(clabel, cv, cfmt, flags)) {
+		MarkChanged();
+	}
 	env->ReleaseFloatArrayElements(v, cv, 0);
 }
 
@@ -610,7 +640,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputFloat3
 (JNIEnv* env, jclass, jstring label, jfloatArray v, jstring fmt, jint flags) {
 	JNIStr clabel(env, label), cfmt(env, fmt);
 	auto cv = env->GetFloatArrayElements(v, nullptr);
-	ImGui::InputFloat3(clabel, cv, cfmt, flags);
+	if (ImGui::InputFloat3(clabel, cv, cfmt, flags)) {
+		MarkChanged();
+	}
 	env->ReleaseFloatArrayElements(v, cv, 0);
 }
 
@@ -618,7 +650,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputFloat4
 (JNIEnv* env, jclass, jstring label, jfloatArray v, jstring fmt, jint flags) {
 	JNIStr clabel(env, label), cfmt(env, fmt);
 	auto cv = env->GetFloatArrayElements(v, nullptr);
-	ImGui::InputFloat4(clabel, cv, cfmt, flags);
+	if (ImGui::InputFloat4(clabel, cv, cfmt, flags)) {
+		MarkChanged();
+	}
 	env->ReleaseFloatArrayElements(v, cv, 0);
 }
 
@@ -631,7 +665,9 @@ JNIEXPORT jint JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputInt
 (JNIEnv* env, jclass, jstring label, jint v, jint flags) {
 	int cv = v;
 	JNIStr clabel(env, label);
-	ImGui::InputInt(clabel, &cv, 1, 100, flags);
+	if (ImGui::InputInt(clabel, &cv, 1, 100, flags)) {
+		MarkChanged();
+	}
 	return cv;
 }
 
@@ -649,7 +685,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputInt2
 	jint* carr = env->GetIntArrayElements(v, nullptr); // ! begin carr
 	std::copy(carr, carr + len, cv);
 
-	ImGui::InputInt2(clabel, &cv[0], flags);
+	if (ImGui::InputInt2(clabel, &cv[0], flags)) {
+		MarkChanged();
+	}
 
 	std::copy(cv, cv + len, carr);
 	env->ReleaseIntArrayElements(v, carr, 0); // ! end carr
@@ -670,7 +708,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputInt3
 	jint* carr = env->GetIntArrayElements(v, nullptr); // ! begin carr
 	std::copy(carr, carr + len, cv);
 
-	ImGui::InputInt3(clabel, &cv[0], flags);
+	if (ImGui::InputInt3(clabel, &cv[0], flags)) {
+		MarkChanged();
+	}
 
 	std::copy(cv, cv + len, carr);
 	env->ReleaseIntArrayElements(v, carr, 0); // ! end carr
@@ -691,7 +731,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputInt4
 	jint* carr = env->GetIntArrayElements(v, nullptr); // ! begin carr
 	std::copy(carr, carr + len, cv);
 
-	ImGui::InputInt4(clabel, &cv[0], flags);
+	if (ImGui::InputInt4(clabel, &cv[0], flags)) {
+		MarkChanged();
+	}
 
 	std::copy(cv, cv + len, carr);
 	env->ReleaseIntArrayElements(v, carr, 0); // ! end carr
@@ -706,7 +748,9 @@ JNIEXPORT void JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputInt4
 JNIEXPORT jdouble JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nInputDouble
 (JNIEnv * env, jclass, jstring label, jdouble v, jint flags) {
 	JNIStr clabel(env, label);
-	ImGui::InputDouble(clabel, &v, 0, 0, "%.6f", flags);
+	if (ImGui::InputDouble(clabel, &v, 0, 0, "%.6f", flags)) {
+		MarkChanged();
+	}
 	return v;
 }
 
@@ -720,7 +764,9 @@ JNIEXPORT jint JNICALL Java_cn_lambdalib2_vis_editor_ImGui_nColorEdit4
 	JNIStr clabel(env, label);
 	ImVec4 c = ParseColor(col);
 	float arr[4] = { c.x, c.y, c.z, c.w };
-	ImGui::ColorEdit4(clabel, arr, flags);
+	if (ImGui::ColorEdit4(clabel, arr, flags)) {
+		MarkChanged();
+	}
 	c.x = arr[0]; c.y = arr[1]; c.z = arr[2]; c.w = arr[3];
 	return Vec4ToColor(c);
 }

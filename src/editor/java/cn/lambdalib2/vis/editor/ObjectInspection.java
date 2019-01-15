@@ -7,9 +7,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class ObjectInspection {
     public static final String UNNAMED_FIELD = "<unnamed>";
+
+    public Consumer<Object> objectInspectCallback;
 
     private final Map<Class<?>, ObjectEditor<?>> editorMap = new HashMap<>();
 
@@ -74,6 +77,23 @@ public class ObjectInspection {
             }
         }, boolean.class, Boolean.class);
 
+        registerMulti(new ObjectEditor<Character>() {
+            @Override
+            public Character inspect(Character target, String fieldName) {
+                String s = target.toString();
+                ImGui.beginChangeCheck();
+                String ss = ImGui.inputText(fieldName, s);
+                if (ImGui.endChangeCheck()) {
+                    for (char c : ss.toCharArray()) {
+                        if (c != target) {
+                            return c;
+                        }
+                    }
+                }
+                return target;
+            }
+        }, char.class, Character.class);
+
         registerMulti(new ObjectEditor<Enum>() {
             private final Map<Class<? extends Enum>, String[]> namesCache = new HashMap<>();
 
@@ -126,6 +146,12 @@ public class ObjectInspection {
                 return (ObjectEditor) editorMap.get(cls);
             cls = cls.getSuperclass();
         }
+
+        for (Class itf : obj.getClass().getInterfaces()) {
+            if (editorMap.containsKey(itf))
+                return (ObjectEditor) editorMap.get(itf);
+        }
+
         return null;
     }
 
@@ -138,6 +164,8 @@ public class ObjectInspection {
                     String headerName = fieldName.equals(UNNAMED_FIELD) ?
                         target.getClass().getSimpleName() : fieldName;
                     if (ImGui.treeNode(headerName)) {
+                        if (objectInspectCallback != null)
+                            objectInspectCallback.accept(target);
                         for (Field f : exposedFields) {
                             Object fieldVal = f.get(target);
                             Object editedVal = fieldVal;

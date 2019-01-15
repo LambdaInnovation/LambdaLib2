@@ -2,12 +2,19 @@ package cn.lambdalib2.vis.editor.cgui
 
 import cn.lambdalib2.cgui.CGui
 import cn.lambdalib2.cgui.Widget
+import cn.lambdalib2.cgui.annotation.CGuiEditorComponent
+import cn.lambdalib2.cgui.component.Component
+import cn.lambdalib2.cgui.component.Transform
 import cn.lambdalib2.cgui.loader.CGUIDocument
 import cn.lambdalib2.registry.StateEventCallback
+import cn.lambdalib2.render.font.Fonts
+import cn.lambdalib2.render.font.IFont
 import cn.lambdalib2.s11n.xml.DOMS11n
 import cn.lambdalib2.util.Colors
+import cn.lambdalib2.util.ReflectionUtils
 import cn.lambdalib2.util.TickScheduler
 import cn.lambdalib2.vis.editor.ImGui
+import cn.lambdalib2.vis.editor.ObjectEditor
 import cn.lambdalib2.vis.editor.ObjectInspection
 import com.google.gson.Gson
 import net.minecraft.client.Minecraft
@@ -31,6 +38,7 @@ import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
 import java.lang.reflect.Field
+import java.util.function.Consumer
 
 object CGuiEditor {
 
@@ -66,6 +74,8 @@ object CGuiEditor {
 
     private val gson = Gson()
 
+    internal val compponentTypes = ReflectionUtils.getClasses(CGuiEditorComponent::class.java)
+
     private fun writeConf(conf: Conf) {
         val json = gson.toJson(conf)
         confPath.writeText(json)
@@ -99,6 +109,18 @@ object CGuiEditor {
         val inspection = object : ObjectInspection() {
             override fun getExposedFields(klass: Class<*>?): MutableList<Field> {
                 return DOMS11n.instance.serHelper.getExposedFields(klass)
+            }
+
+            init {
+                register(object: ObjectEditor<IFont>() {
+                    override fun inspect(target: IFont, fieldName: String): IFont {
+                        val fonts = Fonts.getFonts().toList()
+                        val fontNames = fonts.map { Fonts.getName(it) }.toTypedArray()
+                        val ix = fonts.indexOf(target)
+                        val newIx = ImGui.combo(fieldName, ix, fontNames)
+                        return fonts[newIx]
+                    }
+                }, IFont::class.java)
             }
         }
 
@@ -375,12 +397,48 @@ object CGuiEditor {
         private fun doInspector(target: Widget) {
             ImGui.begin("Inspector")
 
-            inspection.inspect(target, "Widget: " + target.fullName)
+            ImGui.textColored(Colors.fromRGB32(0x8888FF), "Widget: " + target.fullName)
+            var name = target.name
+            ImGui.beginChangeCheck()
+            name = ImGui.inputText("Name", name)
+            if (ImGui.endChangeCheck()) {
+                target.rename(name)
+            }
 
-            ImGui.separator()
+            if (ImGui.beginMenu("Add component")) {
+                for (comType in CGuiEditor.compponentTypes) {
+                    if (ImGui.menuItem(comType.simpleName)) {
+                        val instance = comType.getConstructor().newInstance()
+                        when (instance) {
+                            is Component -> target.addComponent(instance)
+                        }
+                    }
+                }
+                ImGui.endMenu()
+            }
+
+            var comToRemove: Component? = null
 
             for (com in target.componentList) {
+                ImGui.separator()
+                ImGui.pushID(com.name)
+                if (com !is Transform) {
+                    if (ImGui.button("DELETE")) {
+                        comToRemove = com
+                    }
+                    ImGui.sameLine()
+                }
+                ImGui.popID()
+                ImGui.beginChangeCheck()
                 inspection.inspect(com)
+                if (ImGui.endChangeCheck() && com is Transform) {
+                    target.markDirty()
+                }
+                inspection.objectInspectCallback = null
+            }
+
+            if (comToRemove != null) {
+                target.removeComponent(comToRemove)
             }
 
             ImGui.end()

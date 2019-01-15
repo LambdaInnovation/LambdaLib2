@@ -6,6 +6,7 @@
 */
 package cn.lambdalib2.cgui.component;
 
+import cn.lambdalib2.cgui.annotation.CGuiEditorComponent;
 import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.HudUtils;
 import org.lwjgl.opengl.GL11;
@@ -16,6 +17,7 @@ import org.lwjgl.util.Color;
 /**
  * @author WeAthFolD
  */
+@CGuiEditorComponent
 public class Outline extends Component {
     
     public Color color;
