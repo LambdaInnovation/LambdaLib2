@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * Util to aid timed tick scheduling. You can use it at anywhere that requires ticking to handle multiple schedules.
+ * Util to aid timed tick(frame) scheduling. You can use it at anywhere that requires ticking to handle multiple schedules.
  */
 public class TickScheduler {
 
@@ -19,10 +19,10 @@ public class TickScheduler {
 
         Optional<Supplier<Boolean>> condition;
         Optional<String> name;
-        int interval;
+        float interval;
         Runnable runnable;
 
-        int counter;
+        float counter;
         boolean disposed;
 
     }
@@ -36,10 +36,10 @@ public class TickScheduler {
 
         Side runSide = null;
 
-        int tickIntv;
+        float timeIntv;
 
-        public ScheduleCreator(int _interval) {
-            tickIntv = _interval;
+        private ScheduleCreator(float _interval) {
+            timeIntv = _interval;
         }
 
         public ScheduleCreator atOnly(Side side) {
@@ -73,9 +73,9 @@ public class TickScheduler {
             Schedule add = new Schedule();
             add.name = name;
             add.condition = condition;
-            add.interval = tickIntv;
+            add.interval = timeIntv;
             add.runnable = _task;
-            add.counter = tickIntv;
+            add.counter = timeIntv;
             schedules.add(add);
             return this;
         }
@@ -101,7 +101,11 @@ public class TickScheduler {
     }
 
     public ScheduleCreator every(int ticks) {
-        return new ScheduleCreator(ticks);
+        return everySec(ticks / 20f);
+    }
+
+    public ScheduleCreator everySec(float sec) {
+        return new ScheduleCreator(sec);
     }
 
     public void remove(String name) {
@@ -112,12 +116,20 @@ public class TickScheduler {
     }
 
     public void updateInterval(String name, int newInterval) {
+        updateIntervalSec(name, newInterval / 20f);
+    }
+
+    public void updateIntervalSec(String name, float newInterval) {
         find(name).ifPresent(s -> {
             s.interval = newInterval;
         });
     }
 
     public void runTick() {
+        runFrame(0.05f);
+    }
+
+    public void runFrame(float deltaTime) {
         Iterator<Schedule> itr = schedules.iterator();
         while (itr.hasNext()) {
             Schedule s = itr.next();
@@ -125,9 +137,10 @@ public class TickScheduler {
                 itr.remove();
             } else {
                 if (!s.condition.isPresent() || s.condition.get().get()) {
-                    if (--s.counter <= 0) {
+                    s.counter -= deltaTime;
+                    if (s.counter <= 0) {
                         s.runnable.run();
-                        s.counter = s.interval;
+                        s.counter += s.interval;
                     }
                 }
             }

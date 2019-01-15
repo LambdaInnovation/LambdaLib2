@@ -16,6 +16,7 @@ import cn.lambdalib2.util.HudUtils;
 import cn.lambdalib2.render.font.IFont;
 import cn.lambdalib2.render.font.IFont.FontOption;
 import cn.lambdalib2.render.font.TrueTypeFont;
+import cn.lambdalib2.util.MathUtils;
 import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL11;
 
@@ -43,6 +44,14 @@ public class CGui extends WidgetContainer {
     private float xOffset, yOffset;
 
     private boolean debug;
+
+    private double lastFrameTime = -1;
+
+    public float getDeltaTime() {
+        return (float) deltaTime;
+    }
+
+    private double deltaTime = 0;
 
     public CGui() {}
     
@@ -337,6 +346,13 @@ public class CGui extends WidgetContainer {
      */
     private void frameUpdate() {
         double time = GameTimer.getAbsTime();
+
+        if (lastFrameTime == -1)
+            deltaTime = 0;
+        else
+            deltaTime = MathUtils.clampd(0f, 0.1f, GameTimer.getAbsTime() - lastFrameTime);
+
+        lastFrameTime = time;
         
         // Update drag
         if(draggingNode != null) {
@@ -385,7 +401,7 @@ public class CGui extends WidgetContainer {
                 GL11.glTranslated(-cur.transform.pivotX, -cur.transform.pivotY, 0);
                 
                 GL11.glColor4d(1, 1, 1, 1); //Force restore color for any widget
-                cur.post(new FrameEvent((mx - cur.x) / cur.scale, (my - cur.y) / cur.scale, cur == top));
+                cur.post(new FrameEvent((mx - cur.x) / cur.scale, (my - cur.y) / cur.scale, cur == top, (float) deltaTime));
                 GL11.glPopMatrix();
 
                 int error = GL11.glGetError();

@@ -6,8 +6,10 @@ import cn.lambdalib2.cgui.loader.CGUIDocument
 import cn.lambdalib2.registry.StateEventCallback
 import cn.lambdalib2.s11n.xml.DOMS11n
 import cn.lambdalib2.util.Colors
+import cn.lambdalib2.util.TickScheduler
 import cn.lambdalib2.vis.editor.ImGui
 import cn.lambdalib2.vis.editor.ObjectInspection
+import com.google.gson.Gson
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.gui.ScaledResolution
@@ -21,14 +23,13 @@ import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.Display
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL13
 import org.lwjgl.opengl.GL15.*
-import org.lwjgl.opengl.GL30
 import org.lwjgl.opengl.GL30.*
-import org.lwjgl.util.Color
 import org.lwjgl.util.vector.Vector2f
-import org.lwjgl.util.vector.Vector3f
 import org.lwjgl.util.vector.Vector4f
+import java.awt.FileDialog
+import java.awt.Frame
+import java.io.File
 import java.lang.reflect.Field
 
 object CGuiEditor {
@@ -57,9 +58,25 @@ object CGuiEditor {
     )
 
     private class Conf(
-        var drawBackground: Boolean = false,
+        var drawBackground: Boolean = true,
         val sceneConf: SceneConf = SceneConf()
     )
+
+    private val confPath = File("./cgui.json")
+
+    private val gson = Gson()
+
+    private fun writeConf(conf: Conf) {
+        val json = gson.toJson(conf)
+        confPath.writeText(json)
+    }
+
+    private fun readConf(): Conf {
+        if (!confPath.isFile)
+            return Conf()
+
+        return gson.fromJson(confPath.readText(), Conf::class.java)
+    }
 
     private class Editor : GuiScreen() {
         val inputBuffer = ArrayList<Char>()
@@ -72,7 +89,12 @@ object CGuiEditor {
 
         val cgui = CGui()
 
-        val conf = Conf()
+        val conf = readConf()
+        val saveScheduler = TickScheduler()
+
+        init {
+            saveScheduler.everySec(10f).run { writeConf(conf) }
+        }
 
         val inspection = object : ObjectInspection() {
             override fun getExposedFields(klass: Class<*>?): MutableList<Field> {
@@ -81,18 +103,12 @@ object CGuiEditor {
         }
 
         init {
-//            cgui.addWidget(
-//                Widget().size(200.0f, 200.0f).addComponent(
-//                    DrawTexture(null, Colors.fromHexColor(0xFF22FFFF.toInt()))
-//                )
-//            )
             val container = CGUIDocument.read(ResourceLocation("academy", "guis/rework/page_wireless.xml"))
             val targetWidget = container.getWidget(0)
-            cgui.addWidget(targetWidget)
+            cgui.addWidget(targetWidget.name, targetWidget.copy())
         }
 
         override fun handleKeyboardInput() {
-            super.handleKeyboardInput()
             val chr = Keyboard.getEventCharacter()
             if (!chr.isISOControl())
                 inputBuffer += chr
@@ -144,12 +160,27 @@ object CGuiEditor {
             return sceneRect
         }
 
+        val frame = Frame()
+
         private fun doMenu() {
             if (ImGui.beginMainMenuBar()) {
                 if (ImGui.beginMenu("File")) {
 
                     if (ImGui.menuItem("Open")) {
+                        val fd = FileDialog(frame, "Choose a file", FileDialog.LOAD)
 
+                        fd.directory = "D:\\" // TODO
+                        fd.file = "*.xml"
+                        fd.isVisible = true
+
+                        val f = fd.file
+                        if (f != null) {
+                            cgui.clear()
+                            val doc = File(fd.directory + "/" + fd.file).inputStream().use { CGUIDocument.read(it) }
+                            for (w in doc) {
+                                cgui.addWidget(w.name, w)
+                            }
+                        }
                     }
 
                     if (ImGui.menuItem("Save")) {
@@ -158,6 +189,10 @@ object CGuiEditor {
 
                     if (ImGui.menuItem("Save As")) {
 
+                    }
+
+                    if (ImGui.menuItem("Exit")) {
+                        Minecraft.getMinecraft().displayGuiScreen(null)
                     }
 
                     ImGui.endMenu()
@@ -196,6 +231,11 @@ object CGuiEditor {
 
                 ImGui.endMainMenubar()
             }
+        }
+
+        override fun onGuiClosed() {
+            super.onGuiClosed()
+            writeConf(conf)
         }
 
         private fun doHierarchy() {
@@ -363,13 +403,15 @@ object CGuiEditor {
                 GL11.glScalef(scl, scl, 1f)
             }
 
-            cgui.resize(320.0f, 240.0f)
+            cgui.resize(320.0f, 320.0f / aspect)
             cgui.draw()
 
             // Restore
             GL11.glPopMatrix()
 
             stored.restore()
+
+            saveScheduler.runFrame(cgui.deltaTime)
         }
 
         // Utils
