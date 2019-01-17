@@ -23,7 +23,14 @@ public class VecUtils {
     }
 
     public static Vec3d toDirVector(Entity ent) {
-        return toDirVector(ent.rotationYaw, ent.rotationPitch);
+        return toDirVector(ent, 1.0f);
+    }
+
+    public static Vec3d toDirVector(Entity ent, float partialTicks) {
+        return toDirVector(
+            MathUtils.lerpDegree(ent.prevRotationYaw, ent.rotationYaw, partialTicks),
+            MathUtils.lerpDegree(ent.prevRotationPitch, ent.rotationPitch, partialTicks)
+        );
     }
     
     /**

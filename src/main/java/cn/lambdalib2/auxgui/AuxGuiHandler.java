@@ -68,7 +68,7 @@ public class AuxGuiHandler {
         iterating = false;
     }
     
-    @SubscribeEvent
+    @SubscribeEvent(receiveCanceled = true)
     public void drawHudEvent(RenderGameOverlayEvent event) {
         if(event.getType() == ElementType.EXPERIENCE) {
             doRender(event);

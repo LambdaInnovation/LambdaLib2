@@ -118,4 +118,14 @@ public class MathUtils {
         return x < 0 ? 0 : (x > 1 ? 1 : x);
     }
 
+    public static float lerpDegree(float a, float b, float t) {
+        while (b < a) b += 360.0f;
+
+        if (b - a < 180f)
+            return lerpf(a, b, t);
+
+        b -= 360.0f;
+        return lerpf(a, b, t);
+    }
+
 }
