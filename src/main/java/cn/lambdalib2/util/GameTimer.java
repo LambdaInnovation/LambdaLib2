@@ -24,7 +24,7 @@ public enum GameTimer {
     static long beginTimeClient, beginTimeServer;
 
     public static double getTime() {
-        if (Minecraft.getMinecraft() == null) { // No minecraft, headless mode
+        if (isHeadless()) { // No minecraft, headless mode
             if (beginTimeClient == 0L)
                 beginTimeClient = System.currentTimeMillis();
             return (System.currentTimeMillis() - beginTimeClient) / 1000.0;
@@ -32,6 +32,10 @@ public enum GameTimer {
 
         boolean isClient = FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT;
         return getTime(isClient);
+    }
+
+    private static boolean isHeadless() {
+        return SideUtils.getRuntimeSide().isClient() && Minecraft.getMinecraft() == null;
     }
 
     public static double getAbsTime() {
