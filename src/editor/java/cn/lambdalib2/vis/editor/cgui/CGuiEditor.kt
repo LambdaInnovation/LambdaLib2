@@ -23,6 +23,8 @@ import net.minecraft.command.ICommandSender
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent
+import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.relauncher.SideOnly
 import org.lwjgl.BufferUtils
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
@@ -39,6 +41,7 @@ import java.io.File
 import java.lang.reflect.Field
 import java.util.function.Consumer
 
+@SideOnly(Side.CLIENT)
 object CGuiEditor {
 
     @JvmStatic
