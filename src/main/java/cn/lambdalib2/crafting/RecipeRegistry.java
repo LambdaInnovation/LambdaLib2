@@ -2,6 +2,7 @@ package cn.lambdalib2.crafting;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.lambdalib2.LambdaLib2;
@@ -10,6 +11,7 @@ import cn.lambdalib2.util.ResourceUtils;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLContainer;
 import net.minecraftforge.fml.common.InjectedModContainer;
@@ -64,15 +66,24 @@ public class RecipeRegistry {
         if (key.startsWith("@") && !OreDictionary.getOres(key.substring(1)).isEmpty()) {
             return key.substring(1);
         }
-
-        if(!key.contains(":")) key = "minecraft:" + key;
-        ResourceLocation resLoc = new ResourceLocation(key);
+        String fullName = key;
+        if(!key.contains(":"))
+            fullName = "minecraft:" + key;
+        ResourceLocation resLoc = new ResourceLocation(fullName);
 
         if (Item.REGISTRY.containsKey(resLoc))
             return Item.REGISTRY.getObject(resLoc);
         if (Block.REGISTRY.containsKey(resLoc))
             return Block.REGISTRY.getObject(resLoc);
 
+        List<ItemStack> items = OreDictionary.getOres(key);
+        if(!items.isEmpty())
+        {
+            ItemStack[] stacks = new ItemStack[items.size()];
+            for(int i=0;i<items.size();i++)
+                stacks[i] = items.get(i);
+            return Ingredient.fromStacks(stacks);
+        }
         throw new RuntimeException("Registry object " + key + " doesn't exist");
     }
 
