@@ -51,6 +51,7 @@ public class CGuiScreenContainer extends GuiContainer {
         if(isSlotActive()) {
             this.drawDefaultBackground();
             super.drawScreen(a, b, c);
+            renderHoveredToolTip(a, b);
         } else {
             gui.resize(width, height);
             this.drawDefaultBackground();
