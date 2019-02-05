@@ -11,6 +11,10 @@ public class TransformChain {
     public TransformChain() {
     }
 
+    public TransformChain(Matrix4f other) {
+        _result.load(other);
+    }
+
     public TransformChain translate(float dx, float dy, float dz) {
         TransformUtils.translate(dx, dy, dz, _temp);
         return applyTemp();
