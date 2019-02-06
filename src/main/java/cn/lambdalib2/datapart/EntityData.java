@@ -108,19 +108,22 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
             throw new RuntimeException("Failed to get EntityData of "+entity+" ret="+ret);
         }
 
+        ((EntityData) ret).checkInit();
+
         return (EntityData)ret;
     }
     
     // ---------------------------------------------------------
 
-    private ImmutableMap<Class, DataPart> constructed;
+    private final ImmutableMap<Class, DataPart> constructed;
 
     private Ent entity;
 
-    void init(Ent entity) {
+    private boolean _init = false;
+
+    public EntityData(Ent entity) {
         Debug.assertNotNull(entity);
-        Debug.assert2(this.entity == null);
-        this.entity=entity;
+        this.entity = entity;
 
         // Construct all DataParts
         Map<Class, DataPart> map = new HashMap<>();
@@ -137,7 +140,13 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
         }
 
         constructed = ImmutableMap.copyOf(map);
+    }
 
+    private void checkInit() {
+        if (_init)
+            return;
+
+        _init = true;
         for (DataPart dp : constructed.values()) {
             dp.wake();
         }
@@ -221,6 +230,7 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
     }
 
     private void tick() {
+        checkInit();
         for (DataPart part : constructed.values()) {
             part.callTick();
         }
@@ -255,6 +265,7 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
             EntityData<EntityPlayer> data = EntityData.get(evt.getOriginal());
             if (data != null) {
                 // Keep the DataPart instance, re-serialize the data
+                Debug.assertNotNull(evt.getEntityPlayer());
                 data.entity = evt.getEntityPlayer();
                 NBTBase nbt = CapDataPartHandler.storage.writeNBT(getCapability(), evt.getOriginal().getCapability(getCapability(), null), null);
                 CapDataPartHandler.storage.readNBT(getCapability(), evt.getEntityPlayer().getCapability(getCapability(), null), null, nbt);

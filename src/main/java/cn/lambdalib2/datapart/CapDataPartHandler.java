@@ -59,8 +59,7 @@ public class CapDataPartHandler
 
             private IEntityData getEntityData() {
                 if (_instance == null) {
-                    _instance = new EntityData<>();
-                    _instance.init(entity);
+                    _instance = new EntityData<>(entity);
                 }
                 return _instance;
             }
