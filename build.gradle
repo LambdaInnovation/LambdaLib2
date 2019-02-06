@@ -10,7 +10,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven'
 
-version = "0.1.4"
+version = "0.1.5"
 group = "cn.lambdalib2" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "LambdaLib2"
 
