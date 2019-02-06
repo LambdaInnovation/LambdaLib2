@@ -6,7 +6,7 @@ import net.minecraft.item.Item;
 public class ItemTest extends Item {
 
     public ItemTest(String name) {
-        setUnlocalizedName(name);
+        setTranslationKey(name);
         setCreativeTab(TestMod.cct);
         setRegistryName(name);
     }

@@ -24,7 +24,7 @@ public class TestMod {
 
     public static CreativeTabs cct = new CreativeTabs("LLTestMod") {
         @Override
-        public ItemStack getTabIconItem() {
+        public ItemStack createIcon() {
             return new ItemStack(Items.BONE);
         }
     };

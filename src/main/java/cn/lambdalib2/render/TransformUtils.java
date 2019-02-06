@@ -110,6 +110,10 @@ public class TransformUtils {
         return q;
     }
 
+    public static Matrix4f quaternionToMatrix(Quaternion q) {
+        return quaternionToMatrix(q, null);
+    }
+
     public static Matrix4f quaternionToMatrix(Quaternion q, Matrix4f matrix) {
         matrix = init(matrix);
         matrix.m00 = 1.0f - 2.0f * (q.getY() * q.getY() + q.getZ() * q.getZ());
