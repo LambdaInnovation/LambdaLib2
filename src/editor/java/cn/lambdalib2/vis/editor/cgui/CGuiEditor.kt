@@ -9,6 +9,7 @@ import cn.lambdalib2.cgui.loader.CGUIDocument
 import cn.lambdalib2.registry.StateEventCallback
 import cn.lambdalib2.render.font.Fonts
 import cn.lambdalib2.render.font.IFont
+import cn.lambdalib2.s11n.CopyHelper
 import cn.lambdalib2.s11n.xml.DOMS11n
 import cn.lambdalib2.util.*
 import cn.lambdalib2.vis.editor.ImGui
@@ -21,7 +22,6 @@ import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -35,11 +35,16 @@ import org.lwjgl.opengl.GL20.glUseProgram
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.util.vector.Vector2f
 import org.lwjgl.util.vector.Vector4f
+import org.w3c.dom.Element
 import java.awt.FileDialog
 import java.awt.Frame
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.lang.reflect.Field
-import java.util.function.Consumer
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 
 @SideOnly(Side.CLIENT)
 object CGuiEditor {
@@ -105,6 +110,13 @@ object CGuiEditor {
 
         val conf = readConf()
         val saveScheduler = TickScheduler()
+
+        val documentBuilder = DocumentBuilderFactory.newInstance()
+            .let {
+                it.isIgnoringElementContentWhitespace = true
+                it
+            }
+            .newDocumentBuilder()
 
         init {
             saveScheduler.everySec(10f).run { writeConf(conf) }
@@ -186,8 +198,14 @@ object CGuiEditor {
             // ImGui calss begin
             doMenu()
             doHierarchy()
-            if (selectedWidget != null)
-                doInspector(selectedWidget!!)
+            if (selectedWidget != null) {
+                val s = selectedWidget!!
+                if (s.disposed || s.name == null) {
+                    selectedWidget = null
+                } else {
+                    doInspector(selectedWidget!!)
+                }
+            }
             ImGui.showDemoWindow(true)
             sceneRect = doScene(mx, my)
             // ImGui calls end
@@ -218,6 +236,10 @@ object CGuiEditor {
         private fun doMenu() {
             if (ImGui.beginMainMenuBar()) {
                 if (ImGui.beginMenu("File")) {
+                    if (ImGui.menuItem("New")) {
+                        cgui.clear()
+                        targetPath = null
+                    }
                     if (ImGui.menuItem("Open")) {
                         val fd = FileDialog(frame, "Open...", FileDialog.LOAD)
 
@@ -228,10 +250,13 @@ object CGuiEditor {
                         val f = fd.file
                         if (f != null) {
                             cgui.clear()
-                            val doc = File(fd.directory + "/" + fd.file).inputStream().use { CGUIDocument.read(it) }
+                            val absoluteFile = File(fd.directory + "/" + fd.file)
+                            val doc = absoluteFile.inputStream().use { CGUIDocument.read(it) }
                             for (w in doc) {
                                 cgui.addWidget(w.name, w)
                             }
+
+                            targetPath = absoluteFile
                         }
                     }
                     fun saveAs() {
@@ -329,6 +354,11 @@ object CGuiEditor {
                         selectedWidget = null
                     }
 
+                    if (ImGui.button("Dup")) {
+                        val dup = selected.copy()
+                        selected.abstractParent.addWidget(dup)
+                    }
+
                     if (ImGui.button("Up")) {
                         val prevIx = selected.abstractParent.indexOf(selected)
                         if (prevIx > 0) {
@@ -336,7 +366,7 @@ object CGuiEditor {
                         }
                     }
 
-                    if (ImGui.button("Down")) {
+                    if (ImGui.button("Dn")) {
                         val prevIx = selected.abstractParent.indexOf(selected)
                         if (prevIx < selected.abstractParent.widgetCount() - 1) {
                             selected.abstractParent.reorder(selected, prevIx + 2)
@@ -431,7 +461,35 @@ object CGuiEditor {
             ImGui.end()
         }
 
+        var lastClipboard = ""
+        var lastCopiedComponent: Component? = null
+
+        private fun resolveCopiedComponent() {
+            val clip = ClientUtils.getClipboardContent()
+            if (clip != lastClipboard) {
+                lastClipboard = clip
+                Debug.log("Copied component has changed")
+
+                if (clip.startsWith("<?xml")) {
+                    val bis = clip.byteInputStream()
+                    val doc = documentBuilder.parse(bis)
+                    val comList = doc.getElementsByTagName(CGUIDocument.TAG_COMPONENT)
+                    if (comList != null && comList.length > 0) {
+                        val firstComData = comList.item(0)
+                        val com = CGUIDocument.instance.readComponent(firstComData as Element)
+                        if (com.isPresent) {
+                            lastCopiedComponent = com.get()
+                        }
+                    }
+                } else {
+                    lastCopiedComponent = null
+                }
+            }
+        }
+
         private fun doInspector(target: Widget) {
+            resolveCopiedComponent()
+
             ImGui.begin("Inspector")
 
             ImGui.textColored(Colors.fromRGB32(0x8888FF), "Widget: " + target.fullName)
@@ -456,15 +514,46 @@ object CGuiEditor {
 
             var comToRemove: Component? = null
 
+            var ix = 0
             for (com in target.componentList) {
                 ImGui.separator()
-                ImGui.pushID(com.name)
+                ImGui.pushID(com.name + "/" + ix)
                 if (com !is Transform) {
                     if (ImGui.button("DELETE")) {
                         comToRemove = com
                     }
                     ImGui.sameLine()
                 }
+                if (ImGui.button("^C")) {
+                    val doc = documentBuilder.newDocument()
+                    doc.appendChild(CGUIDocument.instance.writeComponent(com, doc))
+
+                    val transformerFactory = TransformerFactory.newInstance()
+                    val transformer = transformerFactory.newTransformer()
+                    val source = DOMSource(doc)
+
+                    val bos = ByteArrayOutputStream()
+                    val result = StreamResult(bos)
+                    transformer.transform(source, result)
+
+                    val clipContent = bos.toString("UTF-8")
+                    ClientUtils.setClipboardContent(clipContent)
+                }
+                ImGui.sameLine()
+
+                if (lastCopiedComponent?.javaClass == com.javaClass) {
+                    if (ImGui.button("^V")) {
+                        val serHelper = DOMS11n.instance.serHelper
+                        val exposedFields = serHelper.getExposedFields(com.javaClass)
+                        val src = lastCopiedComponent!!
+                        for (f in exposedFields) {
+                            val copiedValue = CopyHelper.instance.copy(f.get(src))
+                            f.set(com, copiedValue)
+                        }
+                    }
+                    ImGui.sameLine()
+                }
+
                 ImGui.popID()
                 ImGui.beginChangeCheck()
                 inspection.inspect(com)
@@ -472,6 +561,16 @@ object CGuiEditor {
                     target.markDirty()
                 }
                 inspection.objectInspectCallback = null
+                ix += 1
+            }
+
+            if (lastCopiedComponent != null && lastCopiedComponent !is Transform) {
+                val copyCom = lastCopiedComponent!!
+                ImGui.separator()
+                if (ImGui.button("Paste Component As New")) {
+                    val newCom = CopyHelper.instance.copy(copyCom)
+                    target.addComponent(newCom)
+                }
             }
 
             if (comToRemove != null) {

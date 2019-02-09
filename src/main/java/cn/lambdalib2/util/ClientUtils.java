@@ -9,6 +9,13 @@ import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+
 /**
  * Client-Side judgement helper and other stuffs.
  * @author WeAthFolD
@@ -41,6 +48,24 @@ public class ClientUtils {
     public static void playSound(ResourceLocation src, float pitch) {
         Minecraft.getMinecraft().getSoundHandler().playSound(
             PositionedSoundRecord.getMasterRecord(new SoundEvent(src), pitch));
+    }
+
+    public static String getClipboardContent() {
+        Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+        if(cb.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+            try {
+                return (String) cb.getData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
+    }
+
+    public static void setClipboardContent(String content) {
+        Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection ss = new StringSelection(content);
+        cb.setContents(ss, ss);
     }
 
 }

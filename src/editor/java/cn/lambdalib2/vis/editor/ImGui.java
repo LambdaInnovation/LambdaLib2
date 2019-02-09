@@ -1,9 +1,6 @@
 package cn.lambdalib2.vis.editor;
 
-import cn.lambdalib2.util.Colors;
-import cn.lambdalib2.util.Debug;
-import cn.lambdalib2.util.GameTimer;
-import cn.lambdalib2.util.MathUtils;
+import cn.lambdalib2.util.*;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.BufferUtils;
@@ -1248,21 +1245,11 @@ public class ImGui {
 
     // Methods for cpp
     private static String getClipboardContent() {
-        Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        if(cb.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-            try {
-                return (String) cb.getData(DataFlavor.stringFlavor);
-            } catch (UnsupportedFlavorException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return "";
+        return ClientUtils.getClipboardContent();
     }
 
     private static void setClipboardContent(String content) {
-        Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        StringSelection ss = new StringSelection(content);
-        cb.setContents(ss, ss);
+        ClientUtils.setClipboardContent(content);
     }
 
     private static void markChanged() {

@@ -208,12 +208,6 @@ public class Widget extends WidgetContainer {
         if(c.widget != null)
             throw new RuntimeException("Can't add one component into multiple widgets!");
 
-        for(Component cc : components) {
-            if(cc.name.equals(c.name)) {
-                throw new RuntimeException("Duplicate component!");
-            }
-        }
-        
         c.widget = this;
         components.add(c);
         c.onAdded();
@@ -221,14 +215,14 @@ public class Widget extends WidgetContainer {
     }
     
     public void removeComponent(Component c) {
-        removeComponent(c.name);
+        removeComponent(c.getClass());
     }
-    
-    public void removeComponent(String name) {
+
+    public void removeComponent(Class<? extends Component> klass) {
         Iterator<Component> iter = components.iterator();
         while(iter.hasNext()) {
             Component c = iter.next();
-            if(c.name.equals(name)) {
+            if(klass.isInstance(c)) {
                 c.onRemoved();
                 c.widget = null;
                 iter.remove();
@@ -236,7 +230,7 @@ public class Widget extends WidgetContainer {
             }
         }
     }
-    
+
     /**
      * Return the raw component list.
      */

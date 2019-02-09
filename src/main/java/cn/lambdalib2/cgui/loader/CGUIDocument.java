@@ -73,7 +73,7 @@ public enum CGUIDocument {
     }
 
     // IMPL
-    private static final String TAG_WIDGET = "Widget", TAG_COMPONENT = "Component";
+    public static final String TAG_WIDGET = "Widget", TAG_COMPONENT = "Component";
 
     private final DOMS11n s11n = DOMS11n.instance;
     private final DocumentBuilder db;
@@ -125,7 +125,7 @@ public enum CGUIDocument {
                         Optional<Component> comp = readComponent((Element) n);
                         comp.ifPresent(c -> {
                             if (c.name.equals("Transform")) { // Currently Transform needs special treatment
-                                w.removeComponent("Transform");
+                                w.removeComponent(Transform.class);
                                 w.transform = (Transform) c;
                             }
                             w.addComponent(c);
@@ -140,7 +140,7 @@ public enum CGUIDocument {
     }
 
     @SuppressWarnings("unchecked")
-    private Optional<Component> readComponent(Element node) {
+    public Optional<Component> readComponent(Element node) {
         try {
             Class<? extends Component> klass = (Class<? extends Component>) Class.forName(node.getAttribute("class"));
             return Optional.of(s11n.deserialize(klass, node));
@@ -172,7 +172,7 @@ public enum CGUIDocument {
         });
     }
 
-    private Node writeComponent(Component component, Document doc) {
+    public Node writeComponent(Component component, Document doc) {
         Element ret = (Element) s11n.serialize(doc, TAG_COMPONENT, component);
         ret.setAttribute("class", component.getClass().getCanonicalName());
         return ret;

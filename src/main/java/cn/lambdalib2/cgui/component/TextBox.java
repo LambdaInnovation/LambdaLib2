@@ -1,13 +1,7 @@
 package cn.lambdalib2.cgui.component;
 
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-
 import cn.lambdalib2.cgui.annotation.CGuiEditorComponent;
+import cn.lambdalib2.util.ClientUtils;
 import net.minecraft.client.resources.I18n;
 
 import cn.lambdalib2.cgui.Widget;
@@ -142,12 +136,12 @@ public class TextBox extends Component {
                     displayOffset = caretPos;
                 }
             } else if (keyCode == Keyboard.KEY_V && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
-                setContent(content.substring(0, caretPos) + getClipboardContent() + content.substring(caretPos));
+                setContent(content.substring(0, caretPos) + ClientUtils.getClipboardContent() + content.substring(caretPos));
                 validate();
 
                 widget.post(new ChangeContentEvent());
             } else if (keyCode == Keyboard.KEY_C && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
-                saveClipboardContent();
+                ClientUtils.setClipboardContent(content);
             } else if (keyCode == Keyboard.KEY_BACK) {
                 if (caretPos != 0) {
                     content = content.substring(0, caretPos - 1) + content.substring(caretPos);
@@ -282,24 +276,6 @@ public class TextBox extends Component {
 
     private float sumLength(String str, int begin, int end) {
         return font.getTextWidth(str.substring(begin, end), option);
-    }
-    
-    private String getClipboardContent() {
-        Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        if(cb.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-            try {
-                return (String) cb.getData(DataFlavor.stringFlavor);
-            } catch (UnsupportedFlavorException|IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return "";
-    }
-    
-    private void saveClipboardContent() {
-        Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        StringSelection ss = new StringSelection(content);
-        cb.setContents(ss, ss);
     }
 
     public static TextBox get(Widget w) {
