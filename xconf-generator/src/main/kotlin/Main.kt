@@ -43,6 +43,7 @@ object Main {
         val id: String,
         val baseClass: String,
         val ctorArgs: String,
+        val translationKey: String?,
         val maxStackSize: Int?,
         val maxDamage: Int?,
         val creativeTab: String?,
@@ -173,6 +174,7 @@ object Main {
                     ItemMetadata(
                         id = id,
                         baseClass = obj.getStringOrDefault("baseClass", "net.minecraft.item.Item"),
+                        translationKey = obj.getStringOrNull("translationKey"),
                         ctorArgs = obj.getStringOrDefault("ctorArgs", ""),
                         maxStackSize = obj.getIntOrNull("maxStackSize"),
                         maxDamage = obj.getIntOrNull("maxDamage"),

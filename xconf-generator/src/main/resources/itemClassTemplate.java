@@ -38,7 +38,7 @@ public class $className {
     #foreach ($item in $items)
         #set($id = $item.id)
         ${id}.setRegistryName("$config.domain:$id");
-        ${id}.setTranslationKey("${config.locPrefix}$id");
+        ${id}.setTranslationKey("#if($item.translationKey)$item.translationKey#else${config.locPrefix}$id#end");
     #if($item.creativeTab)
         ${id}.setCreativeTab($item.creativeTab);
     #end
