@@ -52,12 +52,12 @@ public class ClientUtils {
 
     public static String getClipboardContent() {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-        if(cb.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-            try {
+        try {
+            if(cb.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
                 return (String) cb.getData(DataFlavor.stringFlavor);
-            } catch (UnsupportedFlavorException | IOException e) {
-                e.printStackTrace();
             }
+        } catch (UnsupportedFlavorException | IOException | IllegalStateException e) {
+            e.printStackTrace();
         }
         return "";
     }
@@ -65,7 +65,11 @@ public class ClientUtils {
     public static void setClipboardContent(String content) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringSelection ss = new StringSelection(content);
-        cb.setContents(ss, ss);
+        try {
+            cb.setContents(ss, ss);
+        } catch (IllegalStateException ex) {
+            ex.printStackTrace();
+        }
     }
 
 }

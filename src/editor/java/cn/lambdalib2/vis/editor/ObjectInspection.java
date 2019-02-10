@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class ObjectInspection {
     public static final String UNNAMED_FIELD = "<unnamed>";
@@ -15,6 +16,8 @@ public class ObjectInspection {
     public Consumer<Object> objectInspectCallback;
 
     private final Map<Class<?>, ObjectEditor<?>> editorMap = new HashMap<>();
+
+    private final Map<Class<?>, Supplier<?>> ctorMap = new HashMap<>();
 
     public ObjectInspection() {
         registerMulti(new ObjectEditor<Integer>() {
@@ -50,6 +53,10 @@ public class ObjectInspection {
             public ResourceLocation inspect(ResourceLocation target, String fieldName) {
                 String domain = target.getNamespace();
                 String path = target.getPath();
+                if (ImGui.button("NULL")) {
+                    return null;
+                }
+                ImGui.sameLine();
                 if (ImGui.treeNode(fieldName)) {
                     domain = ImGui.inputText("domain", domain, 0);
                     path = ImGui.inputText("path", path, 0);
@@ -61,6 +68,8 @@ public class ObjectInspection {
                 return target;
             }
         }, ResourceLocation.class);
+
+        registerCtor(ResourceLocation.class, () -> new ResourceLocation("lambdalib2", "default"));
 
         registerMulti(new ObjectEditor<Color>() {
             @Override
@@ -114,6 +123,10 @@ public class ObjectInspection {
             }
         }, Enum.class);
 
+    }
+
+    public <T> void registerCtor(Class<T> type, Supplier<T> ctor) {
+        ctorMap.put(type, ctor);
     }
 
     @SuppressWarnings("unchecked")
@@ -180,18 +193,24 @@ public class ObjectInspection {
                                 if (!editable) {
                                     ImGui.button("<null> - final field");
                                 } else {
-                                    Constructor ctor = null;
-                                    try {
-                                        ctor = f.getType().getDeclaredConstructor();
-                                    } catch (NoSuchMethodException ex) {}
-                                    if (ctor != null)
-                                        ctor.setAccessible(true);
-
-                                    if (ctor == null)
-                                        ImGui.button("<null> - No default ctor");
-                                    else {
+                                    if (ctorMap.containsKey(f.getType())) {
                                         if (ImGui.button("<null> - new instance?")) {
-                                            editedVal = ctor.newInstance();
+                                            editedVal = ctorMap.get(f.getType()).get();
+                                        }
+                                    } else {
+                                        Constructor ctor = null;
+                                        try {
+                                            ctor = f.getType().getDeclaredConstructor();
+                                        } catch (NoSuchMethodException ex) {}
+                                        if (ctor != null)
+                                            ctor.setAccessible(true);
+
+                                        if (ctor == null)
+                                            ImGui.button("<null> - No default ctor");
+                                        else {
+                                            if (ImGui.button("<null> - new instance?")) {
+                                                editedVal = ctor.newInstance();
+                                            }
                                         }
                                     }
                                 }

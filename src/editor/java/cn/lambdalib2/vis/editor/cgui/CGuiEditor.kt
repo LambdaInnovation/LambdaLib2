@@ -74,7 +74,8 @@ object CGuiEditor {
 
     private class Conf(
         var drawBackground: Boolean = true,
-        val sceneConf: SceneConf = SceneConf()
+        val sceneConf: SceneConf = SceneConf(),
+        var saveFilePath: String = "."
     )
 
     private val confPath = File("./cgui.json")
@@ -162,8 +163,8 @@ object CGuiEditor {
         }
 
         private fun mapMousePos(x: Int, y: Int, clamp: Boolean = false): Vector2f? {
-            val realX = x * mc.displayWidth / width
-            val realY = y * mc.displayHeight / height
+            val realX = Mouse.getX()
+            val realY = Mouse.getY()
             if (!clamp && (realX < sceneRect.x || realX > sceneRect.x + sceneRect.z))
                 return null
             if (!clamp && (realY < sceneRect.y || realY > sceneRect.y + sceneRect.w))
@@ -171,7 +172,7 @@ object CGuiEditor {
 
             val ret = Vector2f(
                 cgui.width * MathUtils.clamp01((realX.toFloat() - sceneRect.x) / sceneRect.z),
-                cgui.height * MathUtils.clamp01((realY.toFloat() - sceneRect.y) / sceneRect.w)
+                cgui.height * (1 - MathUtils.clamp01((realY.toFloat() - sceneRect.y) / sceneRect.w))
             )
 
             if (!conf.sceneConf.simulateMC) {
@@ -190,12 +191,12 @@ object CGuiEditor {
             if (conf.drawBackground)
                 drawDefaultBackground()
 
-            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glEnable(GL11.GL_BLEND)
             ImGui.newFrame(dWheel, inputBuffer.toCharArray())
             dWheel = 0.0f
             inputBuffer.clear()
 
-            // ImGui calss begin
+            // ImGui class begin
             doMenu()
             doHierarchy()
             if (selectedWidget != null) {
@@ -243,7 +244,7 @@ object CGuiEditor {
                     if (ImGui.menuItem("Open")) {
                         val fd = FileDialog(frame, "Open...", FileDialog.LOAD)
 
-                        fd.directory = File(".").absolutePath
+                        fd.directory = File(conf.saveFilePath).absolutePath
                         fd.file = "*.xml"
                         fd.isVisible = true
 
@@ -257,6 +258,7 @@ object CGuiEditor {
                             }
 
                             targetPath = absoluteFile
+                            conf.saveFilePath = fd.directory
                         }
                     }
                     fun saveAs() {
@@ -265,7 +267,7 @@ object CGuiEditor {
                             fd.directory = targetPath!!.parentFile.absolutePath
                             fd.file = targetPath!!.name
                         } else {
-                            fd.directory = File("").absolutePath
+                            fd.directory = File(conf.saveFilePath).absolutePath
                             fd.file = "untitled.xml"
                         }
                         fd.isVisible = true
@@ -274,6 +276,7 @@ object CGuiEditor {
                             val file = File(fd.directory, fd.file)
                             CGUIDocument.write(cgui, file)
                             targetPath = file
+                            conf.saveFilePath = fd.directory
                         }
                     }
                     if (ImGui.menuItem("Save")) {
@@ -623,6 +626,17 @@ object CGuiEditor {
 
             val mappedMousePos = mapMousePos(mx, my, true)!!
             cgui.draw(mappedMousePos.x, mappedMousePos.y)
+
+            if (this.selectedWidget != null) {
+                val w = selectedWidget!!
+                GL11.glColor4f(.5f, .5f, 1f, .5f)
+                HudUtils.drawRectOutline(
+                    w.x.toDouble(),
+                    w.y.toDouble(),
+                    (w.scale * w.transform.width).toDouble(),
+                    (w.scale * w.transform.height).toDouble(), 2.0f
+                )
+            }
 
             // Restore
             GL11.glPopMatrix()
