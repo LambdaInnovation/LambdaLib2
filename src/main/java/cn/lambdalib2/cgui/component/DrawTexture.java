@@ -1,11 +1,6 @@
 package cn.lambdalib2.cgui.component;
 
-import static org.lwjgl.opengl.GL11.GL_ALPHA_TEST;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.glBlendFunc;
-import static org.lwjgl.opengl.GL11.glDepthMask;
-import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import cn.lambdalib2.cgui.Widget;
@@ -14,6 +9,7 @@ import cn.lambdalib2.cgui.event.FrameEvent;
 import cn.lambdalib2.util.Colors;
 import cn.lambdalib2.util.HudUtils;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Color;
 
 /**
@@ -23,7 +19,9 @@ import org.lwjgl.util.Color;
 public class DrawTexture extends Component {
     
     public static final ResourceLocation MISSING = new ResourceLocation("lambdalib2:textures/cgui/missing.png");
-    
+
+    public enum DepthTestMode { Default, Equals }
+
     public ResourceLocation texture;
     
     public Color color;
@@ -35,6 +33,8 @@ public class DrawTexture extends Component {
     public boolean doesUseUV;
 
     public double u = 0, v = 0, texWidth = 0, texHeight = 0;
+
+    public DepthTestMode depthTestMode = DepthTestMode.Default;
 
     private int shaderId = 0;
 
@@ -57,11 +57,22 @@ public class DrawTexture extends Component {
             glDisable(GL_ALPHA_TEST);
             glDepthMask(writeDepth);
             glUseProgram(shaderId);
+            int lastDepthFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
+            boolean lastDepthTest = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
+            if (depthTestMode == DepthTestMode.Equals) {
+                GL11.glEnable(GL_DEPTH_TEST);
+                GL11.glDepthFunc(GL_EQUAL);
+            } else if (writeDepth) {
+                GL11.glEnable(GL_DEPTH_TEST);
+                GL11.glDepthFunc(GL_ALWAYS);
+            } else {
+                GL11.glDisable(GL_DEPTH_TEST);
+            }
 
             Colors.bindToGL(color);
 
             double preLevel = HudUtils.zLevel;
-            HudUtils.zLevel = zLevel;
+           HudUtils.zLevel = zLevel;
 
             if(texture != null && !texture.getPath().equals("<null>")) {
                 HudUtils.loadTexture(texture);
@@ -74,6 +85,12 @@ public class DrawTexture extends Component {
                 HudUtils.colorRect(0, 0, w.transform.width, w.transform.height);
             }
             HudUtils.zLevel = preLevel;
+
+            GL11.glDepthFunc(lastDepthFunc);
+            if (!lastDepthTest)
+                GL11.glDisable(GL_DEPTH_TEST);
+            else
+                GL11.glEnable(GL_DEPTH_TEST);
             glUseProgram(0);
             glDepthMask(true);
         });
