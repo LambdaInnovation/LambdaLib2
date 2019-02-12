@@ -57,8 +57,6 @@ public class DrawTexture extends Component {
             glDisable(GL_ALPHA_TEST);
             glDepthMask(writeDepth);
             glUseProgram(shaderId);
-            int lastDepthFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
-            boolean lastDepthTest = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
             if (depthTestMode == DepthTestMode.Equals) {
                 GL11.glEnable(GL_DEPTH_TEST);
                 GL11.glDepthFunc(GL_EQUAL);
@@ -71,8 +69,10 @@ public class DrawTexture extends Component {
 
             Colors.bindToGL(color);
 
-            double preLevel = HudUtils.zLevel;
-           HudUtils.zLevel = zLevel;
+            if (zLevel != 0) {
+                GL11.glPushMatrix();
+                GL11.glTranslated(0, 0, zLevel);
+            }
 
             if(texture != null && !texture.getPath().equals("<null>")) {
                 HudUtils.loadTexture(texture);
@@ -84,13 +84,14 @@ public class DrawTexture extends Component {
             } else {
                 HudUtils.colorRect(0, 0, w.transform.width, w.transform.height);
             }
-            HudUtils.zLevel = preLevel;
 
-            GL11.glDepthFunc(lastDepthFunc);
-            if (!lastDepthTest)
-                GL11.glDisable(GL_DEPTH_TEST);
-            else
-                GL11.glEnable(GL_DEPTH_TEST);
+            if (zLevel != 0) {
+                GL11.glPopMatrix();
+            }
+
+            GL11.glDisable(GL_DEPTH_TEST);
+            GL11.glDepthFunc(GL_LEQUAL);
+
             glUseProgram(0);
             glDepthMask(true);
         });
