@@ -385,7 +385,7 @@ public class NetworkMessage {
                         processMessage(message.instance, message.channel, message.params);
                     });
                 }
-            } else {
+            } else if (LambdaLib2.DEBUG) {
                 Debug.log("Ignored network message " + message.instance + ", " + message.channel + ", reason: " + message.failReason);
             }
             return null;
