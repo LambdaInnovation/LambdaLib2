@@ -175,8 +175,8 @@ public abstract class BlockMulti extends BlockContainer {
     // Placement API
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        if (world.isRemote)
-            return;
+//        if (world.isRemote)
+//            return;
 
         int l = MathHelper.floor(placer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
         EnumFacing dir = rotMap[l];
@@ -186,7 +186,7 @@ public abstract class BlockMulti extends BlockContainer {
     private void updateDirInfo(World world, BlockPos pos, EnumFacing dir) {
         // Set the origin block.
         TileEntity te = world.getTileEntity(pos);
-        ((IMultiTile) te).setBlockInfo(new InfoBlockMulti(te, dir, 0));
+        trySetBlockInfo(te, new InfoBlockMulti(te, dir, 0));
 
         List<SubBlockPos> rotatedList = buffer[dir.ordinal()];
         // Check done in ItemBlockMulti, brutely replace here.
@@ -195,7 +195,15 @@ public abstract class BlockMulti extends BlockContainer {
             BlockPos npos = pos.add(sub.dx, sub.dy, sub.dz);
             world.setBlockState(npos, blockState.getBaseState());
             te = world.getTileEntity(npos);
-            ((IMultiTile) te).setBlockInfo(new InfoBlockMulti(te, dir, i));
+
+            trySetBlockInfo(te, new InfoBlockMulti(te, dir, i));
+        }
+    }
+
+    private void trySetBlockInfo(TileEntity te, InfoBlockMulti info) {
+        if (te instanceof IMultiTile) {
+            info.setLoaded();
+            ((IMultiTile) te).setBlockInfo(info);
         }
     }
 
