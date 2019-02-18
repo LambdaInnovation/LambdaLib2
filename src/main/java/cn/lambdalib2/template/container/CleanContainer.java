@@ -135,7 +135,7 @@ public abstract class CleanContainer extends Container {
                 slot.onSlotChanged();
                 return true;
             } else if(stack.getCount() < max) {
-                stackToMerge.setCount(stackToMerge.getCount() - max - stack.getCount());
+                stackToMerge.shrink( max - stack.getCount() );
                 stack.setCount(max);
                 slot.onSlotChanged();
                 return true;
