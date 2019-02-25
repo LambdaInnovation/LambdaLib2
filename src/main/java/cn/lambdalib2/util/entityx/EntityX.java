@@ -29,6 +29,8 @@ public class EntityX<T extends Entity> {
     
     final T target;
     boolean updated = false;
+
+    int _localTick = -1;
     
     public EntityX(T _target) {
         target = _target;
@@ -51,11 +53,17 @@ public class EntityX<T extends Entity> {
                 mh.onUpdate();
             }
         }
-        
-        List<EntityCallback> ecList = callbacks.remove(target.ticksExisted);
-        if(ecList != null) {
-            for(EntityCallback ec : ecList) {
-                ec.execute(target);
+
+        // HACK: this ensures all EntityCallback get called
+        // (Sometimes ticks will be skipped, e.g. culled by SpongeForge)
+        while (_localTick < target.ticksExisted) {
+            ++_localTick;
+
+            List<EntityCallback> ecList = callbacks.remove(_localTick);
+            if(ecList != null) {
+                for(EntityCallback ec : ecList) {
+                    ec.execute(target);
+                }
             }
         }
     }
