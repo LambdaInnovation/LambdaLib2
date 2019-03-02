@@ -44,7 +44,7 @@ public class ShapelessOreRegistry implements IRecipeRegistry {
         GameRegistry.addShapelessRecipe(new ResourceLocation(registry.PREFIX + ':' + UUID.randomUUID()),
                 new ResourceLocation(registry.PREFIX), output, ing);
 
-        Debug.log("[ShapelessOre] " +
+        Debug.debug("[ShapelessOre] " +
                 RecipeRegistry.reprStack(output) + " => " +
                 Joiner.on(',').join(input));
     }
