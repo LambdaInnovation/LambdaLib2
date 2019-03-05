@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -31,6 +32,8 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.discovery.ASMDataTable;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -299,6 +302,12 @@ public class NetworkS11n {
 
             @Override
             public Entity read(ByteBuf buf) {
+                if (SideUtils.isClient() && !checkClientCanRead()) {
+                    // See WorldClient#getEntityByID
+                    // if we try to read when mc.player == null, a crash will occur
+                    throw new ContextException("Client player hasn't been setup yet");
+                }
+
                 World wrld = SideUtils.getWorld(buf.readShort());
                 if (wrld == null) {
                     throw new ContextException("Invalid world");
@@ -310,6 +319,12 @@ public class NetworkS11n {
                         return ret;
                     }
                 }
+            }
+
+            @SideOnly(Side.CLIENT)
+            private boolean checkClientCanRead() {
+                Minecraft mc = Minecraft.getMinecraft();
+                return mc != null && mc.player != null;
             }
         });
         addDirect(World.class, new NetS11nAdaptor<World>() {
