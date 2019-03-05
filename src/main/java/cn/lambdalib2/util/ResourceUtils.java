@@ -8,11 +8,21 @@ public class ResourceUtils {
 
     public static InputStream getResourceStream(ResourceLocation res) {
         try {
-            String domain = res.getNamespace(), path = res.getPath();
-            return Debug.assertNotNull(ResourceUtils.class.getResourceAsStream("/assets/" + domain + "/" + path), () -> "Can't find resource " + res.toString());
+            return Debug.assertNotNull(
+                ResourceUtils.class.getResourceAsStream(resToPath(res)), () -> "Can't find resource " + res.toString()
+            );
         } catch(Exception e) {
             throw new RuntimeException("Invalid resource " + res, e);
         }
+    }
+
+    public static InputStream getResourceStreamNullable(ResourceLocation res) {
+        return ResourceUtils.class.getResourceAsStream(resToPath(res));
+    }
+
+    private static String resToPath(ResourceLocation res) {
+        String domain = res.getNamespace(), path = res.getPath();
+        return "/assets/" + domain + "/" + path;
     }
 
 }
