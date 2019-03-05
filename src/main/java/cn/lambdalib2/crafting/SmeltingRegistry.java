@@ -36,7 +36,7 @@ public class SmeltingRegistry implements IRecipeRegistry {
             else if (in instanceof Item)
                 GameRegistry.addSmelting((Item) in, output, experience);
 
-            Debug.log("[Smelting] " +
+            Debug.debug("[Smelting] " +
                     in + " => " + RecipeRegistry.reprStack(output));
         }
     }
