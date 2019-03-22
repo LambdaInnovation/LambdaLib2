@@ -52,7 +52,6 @@ public class NetworkS11n {
     // ---
     private static final SerializationHelper serHelper = new SerializationHelper();
     private static final short IDX_NULL = -1, IDX_ARRAY = -2;
-    private static List<Class<?>> serTypes = new ArrayList<>();
     private static BiMap<Integer, Class<?>> serTypesHashLookup = HashBiMap.create();
 
     private static Map<Class<?>, NetS11nAdaptor> adaptors = new HashMap<>();
@@ -182,7 +181,7 @@ public class NetworkS11n {
         addDirect(Class.class, new NetS11nAdaptor<Class>() {
             @Override
             public void write(ByteBuf buf, Class obj) {
-                int idx = serTypes.indexOf(obj);
+                int idx = typeIndex(obj);
                 if (idx == -1) throw new IllegalArgumentException(obj + " is not a network s11n type");
 
                 buf.writeInt(idx);
@@ -190,7 +189,7 @@ public class NetworkS11n {
 
             @Override
             public Class read(ByteBuf buf) throws ContextException {
-                return serTypes.get(buf.readInt());
+                return serTypesHashLookup.get(buf.readInt());
             }
         });
 
@@ -449,13 +448,12 @@ public class NetworkS11n {
      * client programmers must keep registration in both sides consistent.
      */
     public static void register(Class<?> type) {
-        if (!serTypes.contains(type)) {
-            serTypes.add(type);
+        if (!serTypesHashLookup.containsKey(type.getName().hashCode())) {
             serTypesHashLookup.put(type.getName().hashCode(), type);
             serHelper.regS11nType(type);
         }
 
-        if (serTypes.size() > Short.MAX_VALUE) {
+        if (serTypesHashLookup.size() > Short.MAX_VALUE) {
             throw new RuntimeException("Too many objects registered for network serialization...");
         }
     }
