@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.RayTraceResult.Type;
@@ -117,7 +118,15 @@ public class Raytrace {
         }
 
         if (entity != null) {
-            return new RayTraceResult(entity);
+            RayTraceResult result = new RayTraceResult(entity);
+
+            //note: fix, get real entityId for ender dragon, maybe some other mod have different structures
+            if (entity instanceof MultiPartEntityPart) {
+                if (((MultiPartEntityPart) entity).parent instanceof Entity) {
+                    result.entityHit = (Entity)((MultiPartEntityPart) entity).parent;
+                }
+            }
+            return result;
         }
         return null;
     }
