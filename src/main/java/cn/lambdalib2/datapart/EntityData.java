@@ -229,10 +229,23 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
         return bothSideList.get(id).type;
     }
 
+    private boolean needSyncDataPart (DataPart part) {
+        boolean need = false;
+        for (RegData data : bothSideList) {
+            if (data.type == part.getClass() && data.pred.test(this.entity.getClass())) {
+                need = true;
+                break;
+            }
+        }
+        return need;
+    }
     private void tick() {
         checkInit();
         for (DataPart part : constructed.values()) {
-            part.callTick();
+            // some Entity DataPart pair only exist in client
+            if (needSyncDataPart(part)) {
+                part.callTick();
+            }
         }
     }
 
@@ -299,7 +312,11 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
         }
         @Override
         public DataPart read(ByteBuf buf) throws ContextException {
-            return NetworkS11n.deserializeWithHint(buf, EntityData.class).getPart(getTypeFromID(buf.readByte()));
+            EntityData data = NetworkS11n.deserializeWithHint(buf, EntityData.class);
+            if (data == null) {
+                throw new ContextException("EntityData not found");
+            }
+            return data.getPart(getTypeFromID(buf.readByte()));
         }
     };
 
