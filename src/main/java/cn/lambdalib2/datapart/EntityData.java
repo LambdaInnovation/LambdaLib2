@@ -243,9 +243,9 @@ public final class EntityData<Ent extends Entity> implements IEntityData {
         checkInit();
         for (DataPart part : constructed.values()) {
             // some Entity DataPart pair only exist in client
-            if (needSyncDataPart(part)) {
+//            if (needSyncDataPart(part)) {
                 part.callTick();
-            }
+//            }
         }
     }
 
