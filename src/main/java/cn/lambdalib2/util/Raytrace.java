@@ -121,11 +121,11 @@ public class Raytrace {
             RayTraceResult result = new RayTraceResult(entity);
 
             //note: fix, get real entityId for ender dragon, maybe some other mod have different structures
-            if (entity instanceof MultiPartEntityPart) {
-                if (((MultiPartEntityPart) entity).parent instanceof Entity) {
-                    result.entityHit = (Entity)((MultiPartEntityPart) entity).parent;
-                }
-            }
+//            if (entity instanceof MultiPartEntityPart) {
+//                if (((MultiPartEntityPart) entity).parent instanceof Entity) {
+//                    result.entityHit = (Entity)((MultiPartEntityPart) entity).parent;
+//                }
+//            }
             return result;
         }
         return null;

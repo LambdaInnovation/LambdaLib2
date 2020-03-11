@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.MultiPartEntityPart;
+import net.minecraft.entity.boss.EntityDragon;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -296,7 +298,19 @@ public class NetworkS11n {
             @Override
             public void write(ByteBuf buf, Entity obj) {
                 buf.writeShort(obj.dimension);
-                buf.writeInt(obj.getEntityId());
+                // note: only support EntityDragon
+                if (obj instanceof MultiPartEntityPart) {
+                    Entity parent = (Entity)((MultiPartEntityPart) obj).parent;
+                    buf.writeInt(parent.getEntityId());
+                    if (parent instanceof EntityDragon) {
+                        buf.writeInt(obj.getEntityId());
+                    }
+                } else if (obj instanceof EntityDragon) {
+                    buf.writeInt(obj.getEntityId());
+                    buf.writeInt(0);
+                } else {
+                    buf.writeInt(obj.getEntityId());
+                }
             }
 
             @Override
@@ -311,10 +325,21 @@ public class NetworkS11n {
                 if (wrld == null) {
                     throw new ContextException("Invalid world");
                 } else {
-                    Entity ret = wrld.getEntityByID(buf.readInt());
+                    int entityId = buf.readInt();
+                    Entity ret = wrld.getEntityByID(entityId);
                     if (ret == null) {
                         throw new ContextException("No entity with such ID");
                     } else {
+                        if (ret instanceof EntityDragon) {
+                            int partEntityId = buf.readInt();
+                            if (partEntityId != 0) {
+                                for (MultiPartEntityPart part : ((EntityDragon) ret).dragonPartArray) {
+                                    if (part.getEntityId() == partEntityId) {
+                                        return part;
+                                    }
+                                }
+                            }
+                        }
                         return ret;
                     }
                 }
